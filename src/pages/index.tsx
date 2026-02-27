@@ -1,156 +1,104 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import Head from 'next/head';
-import { createClient } from '@supabase/supabase-js';
 import { 
   Activity, Mail, Database, Cpu, Sparkles, 
   Zap, Calendar, TrendingUp, AlertCircle,
   CheckCircle, Clock, RefreshCw, MoreHorizontal,
   Command, Search, Settings, Bell
 } from 'lucide-react';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-);
+import { useCommandPalette, useRealtimeData, useAgentActions } from '../hooks/useMissionControl';
+import { CommandPalette } from '../components/CommandPalette';
 
 // Agent configuration
 const AGENTS = [
-  { id: 'work', name: 'Work Agent', emoji: '🤖', color: 'work', role: 'Orchestrator' },
-  { id: 'build', name: 'Build Agent', emoji: '🔧', color: 'build', role: 'Engineering' },
-  { id: 'research', name: 'Research Agent', emoji: '🔍', color: 'research', role: 'Intelligence' },
-  { id: 'lifestyle', name: 'Lifestyle Agent', emoji: '🧘', color: 'lifestyle', role: 'Wellness' },
-  { id: 'email', name: 'Email Agent', emoji: '📧', color: 'email', role: 'Inbox Monitor' },
-  { id: 'hubspot', name: 'HubSpot Agent', emoji: '📊', color: 'hubspot', role: 'CRM Data' },
+  { id: 'work-agent', name: 'Work Agent', emoji: '🤖', color: 'work', role: 'Orchestrator' },
+  { id: 'build-agent', name: 'Build Agent', emoji: '🔧', color: 'build', role: 'Engineering' },
+  { id: 'research-agent', name: 'Research Agent', emoji: '🔍', color: 'research', role: 'Intelligence' },
+  { id: 'lifestyle-agent', name: 'Lifestyle Agent', emoji: '🧘', color: 'lifestyle', role: 'Wellness' },
+  { id: 'email-agent', name: 'Email Agent', emoji: '📧', color: 'email', role: 'Inbox Monitor' },
+  { id: 'hubspot-agent', name: 'HubSpot Agent', emoji: '📊', color: 'hubspot', role: 'CRM Data' },
 ];
 
+const STAGE_COLORS: any = {
+  'Qualification': 'text-orange-400',
+  'Discovery': 'text-blue-400',
+  'Evaluation': 'text-purple-400',
+  'Confirmation': 'text-green-400',
+  'Negotiation': 'text-red-400',
+};
+
 export default function MissionControl() {
-  const [currentTime, setCurrentTime] = useState('');
-  const [agents, setAgents] = useState([]);
-  const [emails, setEmails] = useState([]);
-  const [pipeline, setPipeline] = useState({ total: 0, deals: [], byStage: {} });
-  const [staleDeals, setStaleDeals] = useState([]);
-  const [activities, setActivities] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { isOpen, setIsOpen } = useCommandPalette();
+  const { spawnAgent, refreshAgent } = useAgentActions();
+  const { 
+    agents, emails, pipeline, staleDeals, activities, 
+    loading, lastRefresh, refresh 
+  } = useRealtimeData();
+  const [activeAction, setActiveAction] = useState('');
 
-  useEffect(() => {
-    // Update time
-    const updateTime = () => {
-      const ptTime = new Date().toLocaleTimeString('en-US', {
-        timeZone: 'America/Los_Angeles',
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true
-      });
-      const ptDate = new Date().toLocaleDateString('en-US', {
-        timeZone: 'America/Los_Angeles',
-        weekday: 'short',
-        month: 'short',
-        day: 'numeric'
-      });
-      setCurrentTime(`${ptDate} • ${ptTime} PT`);
-    };
-    updateTime();
-    const interval = setInterval(updateTime, 1000);
+  const currentTime = new Date().toLocaleTimeString('en-US', {
+    timeZone: 'America/Los_Angeles',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true
+  });
+  const currentDate = new Date().toLocaleDateString('en-US', {
+    timeZone: 'America/Los_Angeles',
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric'
+  });
 
-    // Fetch data
-    fetchData();
+  const handleCommand = async (command: string) => {
+    setActiveAction(command);
     
-    // Subscribe to realtime updates
-    const subscriptions = setupSubscriptions();
-
-    return () => {
-      clearInterval(interval);
-      subscriptions.forEach(sub => sub.unsubscribe());
-    };
-  }, []);
-
-  async function fetchData() {
-    try {
-      // Fetch agents
-      const { data: agentData } = await supabase
-        .from('agent_status')
-        .select('*')
-        .order('updated_at', { ascending: false });
-      setAgents(agentData || []);
-
-      // Fetch recent emails
-      const { data: emailData } = await supabase
-        .from('email_categories')
-        .select('*')
-        .order('received_at', { ascending: false })
-        .limit(10);
-      setEmails(emailData || []);
-
-      // Fetch pipeline
-      const { data: pipelineData } = await supabase
-        .from('pipeline_cache')
-        .select('*');
-      
-      if (pipelineData) {
-        const total = pipelineData.reduce((sum, d) => sum + (d.amount || 0), 0);
-        const byStage = pipelineData.reduce((acc, deal) => {
-          const stage = deal.stageName || 'Unknown';
-          if (!acc[stage]) acc[stage] = { count: 0, value: 0 };
-          acc[stage].count++;
-          acc[stage].value += deal.amount || 0;
-          return acc;
-        }, {});
-        setPipeline({ total, deals: pipelineData, byStage });
-      }
-
-      // Fetch stale deals
-      const { data: staleData } = await supabase
-        .from('stale_deals')
-        .select('*')
-        .order('daysStale', { ascending: false })
-        .limit(5);
-      setStaleDeals(staleData || []);
-
-      // Fetch activities
-      const { data: activityData } = await supabase
-        .from('clawd_logs')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(15);
-      setActivities(activityData || []);
-
-      setLoading(false);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-      setLoading(false);
+    switch (command) {
+      case 'check-inbox':
+        await refreshAgent('email-agent');
+        break;
+      case 'refresh-pipeline':
+        await refreshAgent('hubspot-agent');
+        break;
+      case 'spawn-research':
+        await spawnAgent('research-agent', 'Company research');
+        break;
+      case 'spawn-build':
+        await spawnAgent('build-agent', 'Feature development');
+        break;
+      case 'refresh-all':
+        await refresh();
+        break;
     }
-  }
-
-  function setupSubscriptions() {
-    const subs = [];
     
-    subs.push(
-      supabase.channel('agent-updates')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'agent_status' }, fetchData)
-        .subscribe()
-    );
-    
-    subs.push(
-      supabase.channel('email-updates')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'email_categories' }, fetchData)
-        .subscribe()
-    );
-
-    return subs;
-  }
+    setTimeout(() => setActiveAction(''), 1000);
+  };
 
   const urgentEmails = emails.filter(e => e.category === 'URGENT');
   const replyNeededEmails = emails.filter(e => e.category === 'REPLY_NEEDED');
+  const fyiEmails = emails.filter(e => e.category === 'FYI');
+
+  const closingThisWeek = pipeline.deals.filter((d: any) => {
+    if (!d.closeDate) return false;
+    const close = new Date(d.closeDate);
+    const weekFromNow = new Date();
+    weekFromNow.setDate(weekFromNow.getDate() + 7);
+    return close <= weekFromNow;
+  });
 
   return (
     <div className="min-h-screen bg-background text-white">
       <Head>
         <title>Clawd Mission Control</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
 
+      <CommandPalette 
+        isOpen={isOpen} 
+        onClose={() => setIsOpen(false)}
+        onSelect={handleCommand}
+      />
+
       {/* Header */}
-      <header className="border-b border-border bg-surface/50 backdrop-blur-sm sticky top-0 z-50">
+      <header className="border-b border-border bg-surface/50 backdrop-blur-sm sticky top-0 z-40">
         <div className="max-w-[1800px] mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span className="text-2xl">🦞</span>
@@ -161,301 +109,144 @@ export default function MissionControl() {
           </div>
           
           <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-400 font-mono">{currentTime}</span>
-            <button className="p-2 hover:bg-surface-light rounded-lg transition-colors">
-              <Command className="w-5 h-5" />
+            <div className="flex items-center gap-2 text-sm text-gray-400">
+              <span>{currentDate}</span>
+              <span>•</span>
+              <span className="font-mono">{currentTime} PT</span>
+              {lastRefresh && (
+                <span className="text-xs text-gray-600 ml-2">
+                  (updated {Math.floor((Date.now() - lastRefresh.getTime()) / 1000)}s ago)
+                </span>
+              )}
+            </div>
+
+            <button 
+              onClick={() => setIsOpen(true)}
+              className="flex items-center gap-2 px-3 py-1.5 bg-surface-light hover:bg-border rounded-lg transition-colors text-sm"
+            >
+              <Command className="w-4 h-4" />
+              <span className="hidden sm:inline">Command</span>
+              <span className="text-xs text-gray-500">⌘K</span>
             </button>
+            
+            <button 
+              onClick={refresh}
+              disabled={loading}
+              className={`p-2 hover:bg-surface-light rounded-lg transition-colors ${loading ? 'animate-spin' : ''}`}
+            >
+              <RefreshCw className="w-5 h-5" />
+            </button>
+
             <button className="p-2 hover:bg-surface-light rounded-lg transition-colors relative">
               <Bell className="w-5 h-5" />
               {urgentEmails.length > 0 && (
-                <span className="absolute top-1 right-1 w-2 h-2 bg-error rounded-full animate-pulse" />
+                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
               )}
-            </button>
-            <button className="p-2 hover:bg-surface-light rounded-lg transition-colors">
-              <Settings className="w-5 h-5" />
             </button>
           </div>
         </div>
       </header>
 
-      {loading ? (
-        <div className="flex items-center justify-center h-[calc(100vh-64px)]">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-work" />
-        </div>
-      ) : (
-        <main className="max-w-[1800px] mx-auto p-4">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      {/* Main Content */}
+      <main className="max-w-[1800px] mx-auto p-4">
+        {activeAction && (
+          <div className="mb-4 px-4 py-2 bg-work/20 border border-work/30 rounded-lg text-sm text-work">
+            Executing: {activeAction.replace('-', ' ')}
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          
+          {/* LEFT: Agent Swarm */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Active Agents</h2>
+              <span className="text-xs text-gray-500">{agents.length}/6 Online</span>
+            </div>
             
-            {/* LEFT COLUMN: AGENT SWARM */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Active Agents</h2>
-                <span className="text-xs text-gray-500">{agents.length}/6 Online</span>
-              </div>
-              
-              <div className="space-y-3">
-                {AGENTS.map(agent => {
-                  const agentData = agents.find(a => a.agent_id === agent.id);
-                  const status = agentData?.status || 'offline';
-                  
-                  return (
-                    <AgentCard 
-                      key={agent.id}
-                      agent={agent}
-                      data={agentData}
-                      status={status}
-                    />
-                  );
-                })}
-              </div>
-
-              {/* Agent Communication Flow */}
-              <div className="bg-surface border border-border rounded-xl p-4">
-                <h3 className="text-xs font-semibold text-gray-400 uppercase mb-3">Agent Communication</h3>
-                <div className="space-y-2 text-xs">
-                  <div className="flex items-center gap-2">
-                    <span className="text-email">📧</span>
-                    <span className="text-gray-500">→</span>
-                    <span className="text-work">🤖</span>
-                    <span className="text-gray-500">→</span>
-                    <span>Mat (urgent alerts)</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-hubspot">📊</span>
-                    <span className="text-gray-500">→</span>
-                    <span className="text-work">🤖</span>
-                    <span className="text-gray-500">→</span>
-                    <span>Mat (pipeline insights)</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* CENTER COLUMN: OPERATIONS HUB */}
-            <div className="space-y-4">
-              {/* Email Intelligence */}
-              <div className="bg-surface border border-border rounded-xl overflow-hidden">
-                <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-                  <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Email Intelligence</h2>
-                  <button className="text-xs text-email hover:underline">Open Gmail</button>
-                </div>
-                
-                <div className="p-4 space-y-3">
-                  {urgentEmails.length > 0 && (
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-error text-sm font-medium">
-                        <AlertCircle className="w-4 h-4" />
-                        <span>URGENT ({urgentEmails.length})</span>
-                      </div>
-                      {urgentEmails.slice(0, 2).map((email, i) => (
-                        <EmailCard key={i} email={email} />
-                      ))}
-                    </div>
-                  )}
-                  
-                  {replyNeededEmails.length > 0 && (
-                    <div className="space-y-2 mt-3">
-                      <div className="flex items-center gap-2 text-warning text-sm font-medium">
-                        <Clock className="w-4 h-4" />
-                        <span>Reply Needed ({replyNeededEmails.length})</span>
-                      </div>
-                      {replyNeededEmails.slice(0, 2).map((email, i) => (
-                        <EmailCard key={i} email={email} />
-                      ))}
-                    </div>
-                  )}
-                  
-                  {emails.filter(e => e.category === 'FYI').length > 0 && (
-                    <div className="mt-3 pt-3 border-t border-border">
-                      <span className="text-xs text-gray-500">
-                        {emails.filter(e => e.category === 'FYI').length} FYI emails
-                      </span>
-                    </div>
-                  )}
-                </div>
-                
-                <div className="px-4 py-3 border-t border-border flex gap-2">
-                  <button className="flex-1 py-2 text-xs bg-surface-light hover:bg-border rounded-lg transition-colors">
-                    Mark FYI Read
-                  </button>
-                  <button className="flex-1 py-2 text-xs bg-email/20 text-email hover:bg-email/30 rounded-lg transition-colors">
-                    Draft Response
-                  </button>
-                </div>
-              </div>
-
-              {/* Task Kanban */}
-              <div className="bg-surface border border-border rounded-xl overflow-hidden">
-                <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-                  <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Active Tasks</h2>
-                  <button className="text-xs bg-work/20 text-work px-2 py-1 rounded hover:bg-work/30 transition-colors">
-                    + New
-                  </button>
-                </div>
-                
-                <div className="p-4 grid grid-cols-3 gap-3">
-                  <TaskColumn title="HIGH" color="error" count={2} />
-                  <TaskColumn title="MEDIUM" color="warning" count={1} />
-                  <TaskColumn title="LOW" color="success" count={1} />
-                </div>
-              </div>
-
-              {/* Cron Timeline */}
-              <div className="bg-surface border border-border rounded-xl p-4">
-                <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">Scheduled Operations</h2>
-                <CronTimeline />
-              </div>
-            </div>
-
-            {/* RIGHT COLUMN: INTELLIGENCE FEED */}
-            <div className="space-y-4">
-              {/* Pipeline Command */}
-              <div className="bg-surface border border-border rounded-xl overflow-hidden">
-                <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-                  <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Sales Pipeline</h2>
-                  <button className="p-1 hover:bg-surface-light rounded">
-                    <MoreHorizontal className="w-4 h-4 text-gray-500" />
-                  </button>
-                </div>
-                
-                <div className="p-4">
-                  <div className="grid grid-cols-3 gap-4 mb-4">
-                    <div className="text-center">
-                      <div className="text-2xl font-bold font-mono">{pipeline.deals.length}</div>
-                      <div className="text-xs text-gray-500">Deals</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold font-mono text-hubspot">
-                        ${(pipeline.total / 1000).toFixed(0)}K
-                      </div>
-                      <div className="text-xs text-gray-500">Pipeline</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold font-mono text-success">3</div>
-                      <div className="text-xs text-gray-500">This Week</div>
-                    </div>
-                  </div>
-
-                  {/* By Stage */}
-                  <div className="space-y-2 mb-4">
-                    {Object.entries(pipeline.byStage).map(([stage, data]: [string, any]) => (
-                      <div key={stage} className="flex items-center justify-between text-xs">
-                        <span className="text-gray-400">{stage}</span>
-                        <div className="flex items-center gap-3">
-                          <span className="text-gray-500">{data.count} deals</span>
-                          <span className="font-mono text-gray-300">${(data.value / 1000).toFixed(0)}K</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Closing Soon */}
-                  <div className="border-t border-border pt-3">
-                    <div className="flex items-center gap-2 text-error mb-2">
-                      <AlertCircle className="w-4 h-4" />
-                      <span className="text-xs font-medium">Closing This Week</span>
-                    </div>
-                    <div className="bg-error/10 border border-error/30 rounded-lg p-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm">Clyde's Restaurant</span>
-                        <span className="text-sm font-mono font-bold">$9,000</span>
-                      </div>
-                      <div className="text-xs text-error mt-1">Feb 28 (TOMORROW)</div>
-                    </div>
-                  </div>
-
-                  {/* Stale Deals */}
-                  {staleDeals.length > 0 && (
-                    <div className="border-t border-border pt-3 mt-3">
-                      <div className="flex items-center gap-2 text-warning mb-2">
-                        <Clock className="w-4 h-4" />
-                        <span className="text-xs font-medium">Stale Deals ({staleDeals.length})</span>
-                      </div>
-                      {staleDeals.slice(0, 3).map((deal, i) => (
-                        <div key={i} className="text-xs py-1 flex items-center justify-between">
-                          <span className="text-gray-400">{deal.name}</span>
-                          <span className="text-warning">{deal.daysStale} days</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <div className="px-4 py-3 border-t border-border flex gap-2">
-                  <button className="flex-1 py-2 text-xs bg-surface-light hover:bg-border rounded-lg transition-colors">
-                    View Pipeline
-                  </button>
-                  <button className="flex-1 py-2 text-xs bg-hubspot/20 text-hubspot hover:bg-hubspot/30 rounded-lg transition-colors">
-                    Refresh
-                  </button>
-                </div>
-              </div>
-
-              {/* API Health */}
-              <div className="bg-surface border border-border rounded-xl p-4">
-                <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">Integration Status</h2>
-                <div className="grid grid-cols-2 gap-3">
-                  <ApiStatus name="HubSpot" status="connected" latency={245} />
-                  <ApiStatus name="Calendar" status="connected" latency={189} />
-                  <ApiStatus name="Gmail" status="connected" latency={156} />
-                  <ApiStatus name="Supabase" status="connected" latency={89} />
-                  <ApiStatus name="ElevenLabs" status="connected" latency={334} />
-                  <ApiStatus name="SearXNG" status="connected" latency={120} />
-                </div>
-              </div>
-
-              {/* Activity Feed */}
-              <div className="bg-surface border border-border rounded-xl overflow-hidden">
-                <div className="px-4 py-3 border-b border-border">
-                  <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Recent Events</h2>
-                </div>
-                <div className="p-4 space-y-3 max-h-[300px] overflow-y-auto">
-                  {activities.slice(0, 10).map((activity, i) => (
-                    <ActivityItem key={i} activity={activity} />
-                  ))}
-                </div>
-              </div>
+            <div className="space-y-3">
+              {AGENTS.map(agent => {
+                const agentData = agents.find((a: any) => a.agent_id === agent.id);
+                return (
+                  <AgentCard 
+                    key={agent.id}
+                    config={agent}
+                    data={agentData}
+                    onRefresh={() => refreshAgent(agent.id)}
+                  />
+                );
+              })}
             </div>
           </div>
-        </main>
-      )}
+
+          {/* CENTER: Operations */}
+          <div className="space-y-4">
+            <EmailPanel 
+              urgent={urgentEmails}
+              replyNeeded={replyNeededEmails}
+              fyiCount={fyiEmails.length}
+            />
+
+            <TaskPanel />
+
+            <CronPanel />
+          </div>
+
+          {/* RIGHT: Intelligence */}
+          <div className="space-y-4">
+            <PipelinePanel 
+              pipeline={pipeline}
+              staleDeals={staleDeals}
+              closingThisWeek={closingThisWeek}
+            />
+
+            <ApiHealthPanel />
+
+            <ActivityPanel activities={activities} />
+          </div>
+        </div>
+      </main>
     </div>
   );
 }
 
-// Component: Agent Card
-function AgentCard({ agent, data, status }: any) {
+// Agent Card Component
+function AgentCard({ config, data, onRefresh }: any) {
   const colors: any = {
-    work: 'border-work text-work',
-    build: 'border-build text-build',
-    research: 'border-research text-research',
-    lifestyle: 'border-lifestyle text-lifestyle',
-    email: 'border-email text-email',
-    hubspot: 'border-hubspot text-hubspot',
+    work: 'border-orange-500 text-orange-500',
+    build: 'border-blue-500 text-blue-500',
+    research: 'border-green-500 text-green-500',
+    lifestyle: 'border-purple-500 text-purple-500',
+    email: 'border-pink-500 text-pink-500',
+    hubspot: 'border-cyan-500 text-cyan-500',
   };
 
-  const statusColors: any = {
-    idle: 'bg-gray-500',
-    running: 'bg-warning animate-pulse',
-    error: 'bg-error',
-    offline: 'bg-gray-700',
-    weekend: 'bg-lifestyle',
-  };
+  const status = data?.status || 'offline';
+  const statusColor = status === 'running' ? 'bg-yellow-500 animate-pulse' :
+                     status === 'error' ? 'bg-red-500' :
+                     status === 'idle' ? 'bg-green-500' :
+                     status === 'weekend' ? 'bg-purple-500' : 'bg-gray-600';
 
   return (
-    <div className={`bg-surface border ${status === 'error' ? 'border-error' : 'border-border'} rounded-xl p-4 hover:border-gray-600 transition-colors`}>
+    <div className={`bg-surface border ${status === 'error' ? 'border-red-500' : 'border-border'} rounded-xl p-4 hover:border-gray-600 transition-colors`}>
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
           <div className="relative">
-            <span className="text-2xl">{agent.emoji}</span>
-            <span className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-surface ${statusColors[status] || statusColors.idle}`} />
+            <span className="text-2xl">{config.emoji}</span>
+            <span className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-surface ${statusColor}`} />
           </div>
           <div>
-            <h3 className={`font-semibold ${colors[agent.color].split(' ')[1]}`}>{agent.name}</h3>
-            <p className="text-xs text-gray-500">{agent.role}</p>
+            <h3 className={`font-semibold ${colors[config.color].split(' ')[1]}`}>{config.name}</h3>
+            <p className="text-xs text-gray-500">{config.role}</p>
           </div>
         </div>
-        <span className="text-xs text-gray-500 capitalize">{status}</span>
+        <button 
+          onClick={onRefresh}
+          className="p-1 hover:bg-surface-light rounded transition-colors"
+          title="Refresh"
+        >
+          <RefreshCw className="w-4 h-4 text-gray-500" />
+        </button>
       </div>
 
       {data && (
@@ -466,7 +257,7 @@ function AgentCard({ agent, data, status }: any) {
           </div>
           <div className="w-full bg-gray-800 rounded-full h-1.5">
             <div 
-              className={`h-1.5 rounded-full ${colors[agent.color].split(' ')[1].replace('text-', 'bg-')}`}
+              className={`h-1.5 rounded-full bg-${config.color === 'work' ? 'orange' : config.color === 'build' ? 'blue' : config.color === 'research' ? 'green' : config.color === 'lifestyle' ? 'purple' : config.color === 'email' ? 'pink' : 'cyan'}-500`}
               style={{ width: `${data.success_rate || 0}%` }}
             />
           </div>
@@ -476,112 +267,292 @@ function AgentCard({ agent, data, status }: any) {
         </div>
       )}
 
-      <div className="flex gap-2 mt-3">
-        <button className="flex-1 py-1.5 text-xs bg-surface-light hover:bg-border rounded transition-colors">
-          View Logs
-        </button>
-        <button className="flex-1 py-1.5 text-xs bg-surface-light hover:bg-border rounded transition-colors">
-          Spawn Task
-        </button>
-      </div>
-    </div>
-  );
-}
-
-// Component: Email Card
-function EmailCard({ email }: any) {
-  return (
-    <div className="bg-surface-light rounded-lg p-3 border border-border">
-      <div className="flex items-start justify-between mb-1">
-        <span className="text-sm font-medium truncate">{email.from_name || email.from_email}</span>
-        <span className="text-xs text-gray-500">
-          {new Date(email.received_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
-        </span>
-      </div>
-      <p className="text-sm text-gray-400 truncate">{email.subject}</p>
-      {email.deal_name && (
-        <span className="inline-block mt-1 text-xs bg-work/20 text-work px-2 py-0.5 rounded">
-          {email.deal_name}
-        </span>
+      {!data && (
+        <p className="text-xs text-gray-600">No data available</p>
       )}
     </div>
   );
 }
 
-// Component: Task Column
-function TaskColumn({ title, color, count }: any) {
-  const colorClasses: any = {
-    error: 'text-error border-error/30',
-    warning: 'text-warning border-warning/30',
-    success: 'text-success border-success/30',
-  };
-
+// Email Panel
+function EmailPanel({ urgent, replyNeeded, fyiCount }: any) {
   return (
-    <div className={`border rounded-lg p-2 ${colorClasses[color]}`}>
-      <div className="flex items-center gap-2 mb-2">
-        <div className={`w-2 h-2 rounded-full bg-${color}`} />
-        <span className="text-xs font-medium">{title}</span>
-        <span className="text-xs text-gray-500">({count})</span>
+    <div className="bg-surface border border-border rounded-xl overflow-hidden">
+      <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+        <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Email Intelligence</h2>
+        <a href="https://mail.google.com" target="_blank" rel="noopener" className="text-xs text-pink-500 hover:underline">Open Gmail</a>
       </div>
-      <div className="space-y-1">
-        <div className="text-xs text-gray-500 py-2 text-center">None</div>
+      
+      <div className="p-4 space-y-3">
+        {urgent.length > 0 && (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-red-500 text-sm font-medium">
+              <AlertCircle className="w-4 h-4" />
+              <span>URGENT ({urgent.length})</span>
+            </div>
+            {urgent.slice(0, 2).map((email: any, i: number) => (
+              <div key={i} className="bg-surface-light rounded-lg p-3 border border-red-500/30">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">{email.from_name || email.from_email}</span>
+                  <span className="text-xs text-gray-500">
+                    {new Date(email.received_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                  </span>
+                </div>
+                <p className="text-sm text-gray-400 truncate">{email.subject}</p>
+                {email.deal_name && (
+                  <span className="inline-block mt-1 text-xs bg-orange-500/20 text-orange-400 px-2 py-0.5 rounded">
+                    {email.deal_name}
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {replyNeeded.length > 0 && (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-yellow-500 text-sm font-medium">
+              <Clock className="w-4 h-4" />
+              <span>Reply Needed ({replyNeeded.length})</span>
+            </div>
+            {replyNeeded.slice(0, 2).map((email: any, i: number) => (
+              <div key={i} className="bg-surface-light rounded-lg p-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm">{email.from_name || email.from_email}</span>
+                  <span className="text-xs text-gray-500">
+                    {new Date(email.received_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                  </span>
+                </div>
+                <p className="text-sm text-gray-400 truncate">{email.subject}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {fyiCount > 0 && (
+          <div className="mt-3 pt-3 border-t border-border">
+            <span className="text-xs text-gray-500">{fyiCount} FYI emails • {emails.filter((e: any) => e.category === 'JUNK').length} auto-archived</span>
+          </div>
+        )}
+
+        {urgent.length === 0 && replyNeeded.length === 0 && fyiCount === 0 && (
+          <div className="text-center py-8 text-gray-500">
+            <Mail className="w-8 h-8 mx-auto mb-2 opacity-50" />
+            <p>No emails processed yet</p>
+            <p className="text-xs mt-1">Email Agent will populate this</p>
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-// Component: Cron Timeline
-function CronTimeline() {
+// Task Panel
+function TaskPanel() {
+  const tasks = {
+    high: ['Finalize HAP walkaway', 'Update Rodrigo contract'],
+    medium: ['Update Chubby CPay pricing', 'Create GFG rollout'],
+    low: ['Wellness check', 'Research cache review']
+  };
+
+  return (
+    <div className="bg-surface border border-border rounded-xl overflow-hidden">
+      <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+        <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Active Tasks</h2>
+        <button className="text-xs bg-orange-500/20 text-orange-400 px-2 py-1 rounded hover:bg-orange-500/30">+ New</button>
+      </div>
+      
+      <div className="p-4 grid grid-cols-3 gap-3">
+        {Object.entries(tasks).map(([priority, items]: [string, any]) => (
+          <div key={priority} className={`border rounded-lg p-3 ${
+            priority === 'high' ? 'border-red-500/30' :
+            priority === 'medium' ? 'border-yellow-500/30' :
+            'border-green-500/30'
+          }`}>
+            <div className="flex items-center gap-2 mb-2">
+              <div className={`w-2 h-2 rounded-full ${
+                priority === 'high' ? 'bg-red-500' :
+                priority === 'medium' ? 'bg-yellow-500' :
+                'bg-green-500'
+              }`} />
+              <span className="text-xs font-medium uppercase">{priority}</span>
+              <span className="text-xs text-gray-500">({items.length})</span>
+            </div>
+            <div className="space-y-1">
+              {items.map((task: string, i: number) => (
+                <div key={i} className="text-xs text-gray-400 truncate">{task}</div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Cron Panel
+function CronPanel() {
   const jobs = [
     { time: '8:00 AM', name: 'Morning Briefing', status: 'completed' },
     { time: 'NOW', name: 'Email Agent Check', status: 'running' },
     { time: '12:00 PM', name: 'Pre-Meeting Prep', status: 'pending' },
     { time: '4:00 PM', name: 'HubSpot Cache Refresh', status: 'pending' },
-    { time: '4:00 PM', name: 'Pipeline Check', status: 'pending' },
   ];
 
   return (
-    <div className="space-y-3">
-      {jobs.map((job, i) => (
-        <div key={i} className="flex items-center gap-3">
-          <div className={`w-2 h-2 rounded-full ${
-            job.status === 'completed' ? 'bg-success' :
-            job.status === 'running' ? 'bg-warning animate-pulse' :
-            'bg-gray-600'
-          }`} />
-          <span className="text-xs text-gray-500 w-16">{job.time}</span>
-          <span className="text-sm flex-1">{job.name}</span>
-          <span className={`text-xs capitalize ${
-            job.status === 'completed' ? 'text-success' :
-            job.status === 'running' ? 'text-warning' :
-            'text-gray-500'
-          }`}>
-            {job.status}
-          </span>
-        </div>
-      ))}
+    <div className="bg-surface border border-border rounded-xl p-4">
+      <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">Scheduled Operations</h2>
+      
+      <div className="space-y-2">
+        {jobs.map((job, i) => (
+          <div key={i} className="flex items-center gap-3 text-sm">
+            <div className={`w-2 h-2 rounded-full ${
+              job.status === 'completed' ? 'bg-green-500' :
+              job.status === 'running' ? 'bg-yellow-500 animate-pulse' :
+              'bg-gray-600'
+            }`} />
+            <span className="text-gray-500 w-16 text-xs">{job.time}</span>
+            <span className="flex-1">{job.name}</span>
+            <span className={`text-xs capitalize ${
+              job.status === 'completed' ? 'text-green-500' :
+              job.status === 'running' ? 'text-yellow-500' :
+              'text-gray-500'
+            }`}>
+              {job.status}
+            </span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
 
-// Component: API Status
-function ApiStatus({ name, status, latency }: any) {
+// Pipeline Panel
+function PipelinePanel({ pipeline, staleDeals, closingThisWeek }: any) {
+  const formatCurrency = (val: number) => `$${(val / 1000).toFixed(0)}K`;
+
   return (
-    <div className="flex items-center justify-between bg-surface-light rounded-lg p-2">
-      <div className="flex items-center gap-2">
-        <div className={`w-2 h-2 rounded-full ${status === 'connected' ? 'bg-success' : 'bg-error'}`} />
-        <span className="text-xs">{name}</span>
+    <div className="bg-surface border border-border rounded-xl overflow-hidden">
+      <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+        <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Sales Pipeline</h2>
+        <MoreHorizontal className="w-4 h-4 text-gray-500" />
       </div>
-      <div className="flex items-center gap-2">
-        <span className="text-xs text-gray-500">{latency}ms</span>
-        <span className="text-xs text-success">99.9%</span>
+      
+      <div className="p-4">
+        {/* Stats */}
+        <div className="grid grid-cols-3 gap-4 mb-4">
+          <div className="text-center">
+            <div className="text-2xl font-bold font-mono">{pipeline.deals.length}</div>
+            <div className="text-xs text-gray-500">Deals</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold font-mono text-cyan-400">{formatCurrency(pipeline.total)}</div>
+            <div className="text-xs text-gray-500">Pipeline</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold font-mono text-green-400">{closingThisWeek.length}</div>
+            <div className="text-xs text-gray-500">This Week</div>
+          </div>
+        </div>
+
+        {/* By Stage */}
+        <div className="space-y-2 mb-4">
+          {Object.entries(pipeline.byStage).map(([stage, data]: [string, any]) => (
+            <div key={stage} className="flex items-center justify-between text-xs">
+              <span className={`${STAGE_COLORS[stage] || 'text-gray-400'}`}>{stage}</span>
+              <div className="flex items-center gap-3">
+                <span className="text-gray-500">{data.count} deals</span>
+                <span className="font-mono text-gray-300">{formatCurrency(data.value)}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Closing Soon */}
+        {closingThisWeek.length > 0 && (
+          <div className="border-t border-border pt-3 mb-3">
+            <div className="flex items-center gap-2 text-red-500 mb-2">
+              <AlertCircle className="w-4 h-4" />
+              <span className="text-xs font-medium">Closing This Week</span>
+            </div>
+            {closingThisWeek.map((deal: any, i: number) => (
+              <div key={i} className="bg-red-500/10 border border-red-500/30 rounded-lg p-2 mb-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm">{deal.name}</span>
+                  <span className="text-sm font-mono font-bold">{formatCurrency(deal.amount)}</span>
+                </div>
+                <div className="text-xs text-red-400 mt-1">
+                  {new Date(deal.closeDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  {new Date(deal.closeDate) <= new Date() && new Date(deal.closeDate).toDateString() === new Date().toDateString() && ' (TODAY)'}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Stale Deals */}
+        {staleDeals.length > 0 && (
+          <div className="border-t border-border pt-3">
+            <div className="flex items-center gap-2 text-yellow-500 mb-2">
+              <Clock className="w-4 h-4" />
+              <span className="text-xs font-medium">Stale Deals ({staleDeals.length})</span>
+            </div>
+            {staleDeals.slice(0, 3).map((deal: any, i: number) => (
+              <div key={i} className="text-xs py-1 flex items-center justify-between">
+                <span className="text-gray-400 truncate max-w-[150px]">{deal.name}</span>
+                <span className="text-yellow-500">{deal.daysStale}d</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="px-4 py-3 border-t border-border flex gap-2">
+        <button className="flex-1 py-2 text-xs bg-surface-light hover:bg-border rounded transition-colors">
+          View Pipeline
+        </button>
+        <button className="flex-1 py-2 text-xs bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30 rounded transition-colors">
+          Refresh
+        </button>
       </div>
     </div>
   );
 }
 
-// Component: Activity Item
-function ActivityItem({ activity }: any) {
+// API Health Panel
+function ApiHealthPanel() {
+  const services = [
+    { name: 'HubSpot', status: 'connected', latency: 245 },
+    { name: 'Calendar', status: 'connected', latency: 189 },
+    { name: 'Gmail', status: 'connected', latency: 156 },
+    { name: 'Supabase', status: 'connected', latency: 89 },
+    { name: 'ElevenLabs', status: 'connected', latency: 334 },
+    { name: 'SearXNG', status: 'connected', latency: 120 },
+  ];
+
+  return (
+    <div className="bg-surface border border-border rounded-xl p-4">
+      <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">Integration Status</h2>
+      
+      <div className="grid grid-cols-2 gap-2">
+        {services.map((svc, i) => (
+          <div key={i} className="flex items-center justify-between bg-surface-light rounded-lg p-2">
+            <div className="flex items-center gap-2">
+              <div className={`w-2 h-2 rounded-full ${svc.status === 'connected' ? 'bg-green-500' : 'bg-red-500'}`} />
+              <span className="text-xs">{svc.name}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-gray-500">{svc.latency}ms</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Activity Panel
+function ActivityPanel({ activities }: any) {
   const icons: any = {
     'email-agent': Mail,
     'hubspot-agent': Database,
@@ -590,24 +561,42 @@ function ActivityItem({ activity }: any) {
     'research-agent': Search,
   };
 
-  const Icon = icons[activity.agent] || Activity;
-  const timeAgo = new Date(activity.created_at).toLocaleTimeString('en-US', { 
-    hour: 'numeric', 
-    minute: '2-digit'
-  });
-
   return (
-    <div className="flex items-start gap-3 text-xs">
-      <Icon className="w-4 h-4 text-gray-500 mt-0.5" />
-      <div className="flex-1">
-        <div className="flex items-center gap-2">
-          <span className="text-gray-400">{activity.agent?.replace('-agent', '')}</span>
-          <span className="text-gray-600">{timeAgo}</span>
-        </div>
-        <p className="text-gray-300">{activity.action}</p>
+    <div className="bg-surface border border-border rounded-xl overflow-hidden">
+      <div className="px-4 py-3 border-b border-border">
+        <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Recent Events</h2>
       </div>
-      {activity.status === 'success' && <CheckCircle className="w-3 h-3 text-success" />}
-      {activity.status === 'error' && <AlertCircle className="w-3 h-3 text-error" />}
+      
+      <div className="p-4 space-y-3 max-h-[300px] overflow-y-auto">
+        {activities.length === 0 && (
+          <div className="text-center text-gray-500 py-4">
+            <Activity className="w-6 h-6 mx-auto mb-2 opacity-50" />
+            <p className="text-xs">No recent activity</p>
+          </div>
+        )}
+        
+        {activities.slice(0, 10).map((activity: any, i: number) => {
+          const Icon = icons[activity.agent] || Activity;
+          const timeAgo = activity.created_at 
+            ? new Date(activity.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+            : '';
+          
+          return (
+            <div key={i} className="flex items-start gap-3 text-xs">
+              <Icon className="w-4 h-4 text-gray-500 mt-0.5" />
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-gray-400 capitalize">{activity.agent?.replace('-agent', '')}</span>
+                  <span className="text-gray-600">{timeAgo}</span>
+                </div>
+                <p className="text-gray-300">{activity.action}</p>
+              </div>
+              {activity.status === 'success' && <CheckCircle className="w-3 h-3 text-green-500" />}
+              {activity.status === 'error' && <AlertCircle className="w-3 h-3 text-red-500" />}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
