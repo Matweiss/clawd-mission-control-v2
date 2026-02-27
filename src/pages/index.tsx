@@ -4,10 +4,11 @@ import {
   Activity, Mail, Database, Cpu, Sparkles, 
   Zap, Calendar, TrendingUp, AlertCircle,
   CheckCircle, Clock, RefreshCw, MoreHorizontal,
-  Command, Search, Settings, Bell
+  Command, Search, Settings, Bell, HardDrive
 } from 'lucide-react';
 import { useCommandPalette, useRealtimeData, useAgentActions } from '../hooks/useMissionControl';
 import { CommandPalette } from '../components/CommandPalette';
+import { DocumentRepository } from '../components/DocumentRepository';
 
 // Agent configuration
 const AGENTS = [
@@ -203,6 +204,8 @@ export default function MissionControl() {
             <ApiHealthPanel />
 
             <ActivityPanel activities={activities} />
+
+            <DocumentRepository />
           </div>
         </div>
       </main>
