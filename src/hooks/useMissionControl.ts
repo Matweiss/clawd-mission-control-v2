@@ -31,13 +31,13 @@ export function useCommandPalette() {
 }
 
 export function useRealtimeData() {
-  const [agents, setAgents] = useState([]);
-  const [emails, setEmails] = useState([]);
-  const [pipeline, setPipeline] = useState({ deals: [], total: 0, byStage: {} });
-  const [staleDeals, setStaleDeals] = useState([]);
-  const [activities, setActivities] = useState([]);
+  const [agents, setAgents] = useState<any[]>([]);
+  const [emails, setEmails] = useState<any[]>([]);
+  const [pipeline, setPipeline] = useState<{ deals: any[]; total: number; byStage: Record<string, { count: number; value: number }> }>({ deals: [], total: 0, byStage: {} });
+  const [staleDeals, setStaleDeals] = useState<any[]>([]);
+  const [activities, setActivities] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [lastRefresh, setLastRefresh] = useState(new Date());
+  const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
 
   const fetchData = useCallback(async () => {
     try {
@@ -58,14 +58,14 @@ export function useRealtimeData() {
 
       // Process pipeline data
       if (pipelineData) {
-        const total = pipelineData.reduce((sum, d) => sum + (d.amount || 0), 0);
-        const byStage = pipelineData.reduce((acc, deal) => {
+        const total = pipelineData.reduce((sum: number, d: any) => sum + (d.amount || 0), 0);
+        const byStage = pipelineData.reduce((acc: any, deal: any) => {
           const stage = deal.stageName || 'Unknown';
           if (!acc[stage]) acc[stage] = { count: 0, value: 0 };
           acc[stage].count++;
           acc[stage].value += deal.amount || 0;
           return acc;
-        }, {});
+        }, {} as Record<string, { count: number; value: number }>);
         setPipeline({ deals: pipelineData, total, byStage });
       }
 

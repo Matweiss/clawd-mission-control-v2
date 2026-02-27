@@ -331,7 +331,7 @@ function EmailPanel({ urgent, replyNeeded, fyiCount }: any) {
 
         {fyiCount > 0 && (
           <div className="mt-3 pt-3 border-t border-border">
-            <span className="text-xs text-gray-500">{fyiCount} FYI emails • {emails.filter((e: any) => e.category === 'JUNK').length} auto-archived</span>
+            <span className="text-xs text-gray-500">{fyiCount} FYI emails</span>
           </div>
         )}
 
