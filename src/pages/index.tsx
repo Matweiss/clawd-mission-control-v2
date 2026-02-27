@@ -273,6 +273,21 @@ function AgentCard({ config, data, onRefresh }: any) {
       {!data && (
         <p className="text-xs text-gray-600">No data available</p>
       )}
+
+      <div className="flex gap-2 mt-3">
+        <button 
+          onClick={() => alert(`Logs for ${config.name}:\n\nLast run: ${data?.updated_at || 'Never'}\nStatus: ${status}\nSuccess rate: ${data?.success_rate || 0}%`)}
+          className="flex-1 py-1.5 text-xs bg-surface-light hover:bg-border rounded transition-colors"
+        >
+          View Logs
+        </button>
+        <button 
+          onClick={() => alert(`Spawn task for ${config.name}:\n\nFeature coming soon: Create custom tasks for this agent`)}
+          className="flex-1 py-1.5 text-xs bg-surface-light hover:bg-border rounded transition-colors"
+        >
+          Spawn Task
+        </button>
+      </div>
     </div>
   );
 }
@@ -346,23 +361,99 @@ function EmailPanel({ urgent, replyNeeded, fyiCount }: any) {
           </div>
         )}
       </div>
+
+      <div className="px-4 py-3 border-t border-border flex gap-2">
+        <a
+          href="https://mail.google.com/mail/u/0/#search/is:unread"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex-1 py-2 text-xs bg-surface-light hover:bg-border rounded transition-colors text-center"
+        >
+          Mark FYI Read
+        </a>
+        <a
+          href="https://mail.google.com/mail/u/0/#compose"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex-1 py-2 text-xs bg-pink-500/20 text-pink-400 hover:bg-pink-500/30 rounded transition-colors text-center"
+        >
+          Draft Response
+        </a>
+      </div>
     </div>
   );
 }
 
 // Task Panel
 function TaskPanel() {
-  const tasks = {
+  const [tasks, setTasks] = useState({
     high: ['Finalize HAP walkaway', 'Update Rodrigo contract'],
     medium: ['Update Chubby CPay pricing', 'Create GFG rollout'],
     low: ['Wellness check', 'Research cache review']
+  });
+  const [showNewTask, setShowNewTask] = useState(false);
+  const [newTaskText, setNewTaskText] = useState('');
+  const [newTaskPriority, setNewTaskPriority] = useState('medium');
+
+  const addTask = () => {
+    if (!newTaskText.trim()) return;
+    setTasks(prev => ({
+      ...prev,
+      [newTaskPriority]: [...prev[newTaskPriority as keyof typeof prev], newTaskText]
+    }));
+    setNewTaskText('');
+    setShowNewTask(false);
   };
+
+  if (showNewTask) {
+    return (
+      <div className="bg-surface border border-border rounded-xl overflow-hidden p-4">
+        <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">New Task</h2>
+        <input
+          type="text"
+          value={newTaskText}
+          onChange={(e) => setNewTaskText(e.target.value)}
+          placeholder="Enter task..."
+          className="w-full bg-surface-light border border-border rounded-lg px-3 py-2 text-sm text-white mb-3"
+          autoFocus
+        />
+        <select
+          value={newTaskPriority}
+          onChange={(e) => setNewTaskPriority(e.target.value)}
+          className="w-full bg-surface-light border border-border rounded-lg px-3 py-2 text-sm text-white mb-3"
+        >
+          <option value="high">High Priority</option>
+          <option value="medium">Medium Priority</option>
+          <option value="low">Low Priority</option>
+        </select>
+        <div className="flex gap-2">
+          <button 
+            onClick={addTask}
+            className="flex-1 py-2 text-xs bg-work text-white rounded hover:bg-work/80"
+          >
+            Add Task
+          </button>
+          <button 
+            onClick={() => setShowNewTask(false)}
+            className="flex-1 py-2 text-xs bg-surface-light rounded hover:bg-border"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-surface border border-border rounded-xl overflow-hidden">
       <div className="px-4 py-3 border-b border-border flex items-center justify-between">
         <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Active Tasks</h2>
-        <button className="text-xs bg-orange-500/20 text-orange-400 px-2 py-1 rounded hover:bg-orange-500/30">+ New</button>
+        <button 
+          onClick={() => setShowNewTask(true)}
+          className="text-xs bg-orange-500/20 text-orange-400 px-2 py-1 rounded hover:bg-orange-500/30"
+        >
+          + New
+        </button>
       </div>
       
       <div className="p-4 grid grid-cols-3 gap-3">
@@ -511,10 +602,18 @@ function PipelinePanel({ pipeline, staleDeals, closingThisWeek }: any) {
       </div>
 
       <div className="px-4 py-3 border-t border-border flex gap-2">
-        <button className="flex-1 py-2 text-xs bg-surface-light hover:bg-border rounded transition-colors">
+        <a 
+          href="https://app.hubspot.com/contacts/43832131/objects/0-3/views/9048336/list"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex-1 py-2 text-xs bg-surface-light hover:bg-border rounded transition-colors text-center"
+        >
           View Pipeline
-        </button>
-        <button className="flex-1 py-2 text-xs bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30 rounded transition-colors">
+        </a>
+        <button 
+          onClick={() => window.location.reload()}
+          className="flex-1 py-2 text-xs bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30 rounded transition-colors"
+        >
           Refresh
         </button>
       </div>
