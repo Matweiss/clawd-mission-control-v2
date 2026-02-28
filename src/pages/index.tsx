@@ -12,6 +12,7 @@ import { DocumentRepository } from '../components/DocumentRepository';
 import { PipelineDetailModal } from '../components/PipelineDetailModal';
 import { EmailDetailModal } from '../components/EmailDetailModal';
 import { CalendarPanel } from '../components/CalendarPanel';
+import { TaskDetailModal } from '../components/TaskDetailModal';
 
 // Agent configuration - 3-Tier Architecture
 const AGENTS = [
@@ -47,6 +48,7 @@ export default function MissionControl() {
   const [activeAction, setActiveAction] = useState('');
   const [showPipelineModal, setShowPipelineModal] = useState(false);
   const [showEmailModal, setShowEmailModal] = useState(false);
+  const [showTaskModal, setShowTaskModal] = useState(false);
 
   const currentTime = new Date().toLocaleTimeString('en-US', {
     timeZone: 'America/Los_Angeles',
@@ -89,6 +91,27 @@ export default function MissionControl() {
   const replyNeededEmails = emails.filter(e => e.category === 'REPLY_NEEDED');
   const fyiEmails = emails.filter(e => e.category === 'FYI');
 
+  const [tasks, setTasks] = useState([
+    { id: '1', title: 'Finalize HAP walkaway', priority: 'high' as const, status: 'pending' as const },
+    { id: '2', title: 'Update Rodrigo contract', priority: 'high' as const, status: 'in_progress' as const },
+    { id: '3', title: 'Update Chubby CPay pricing', priority: 'medium' as const, status: 'pending' as const },
+    { id: '4', title: 'Create GFG rollout', priority: 'medium' as const, status: 'pending' as const },
+    { id: '5', title: 'Wellness check', priority: 'low' as const, status: 'completed' as const },
+    { id: '6', title: 'Research cache review', priority: 'low' as const, status: 'pending' as const },
+  ]);
+
+  const addTask = (task: any) => {
+    setTasks([...tasks, { ...task, id: Date.now().toString() }]);
+  };
+
+  const updateTask = (id: string, updates: any) => {
+    setTasks(tasks.map(t => t.id === id ? { ...t, ...updates } : t));
+  };
+
+  const deleteTask = (id: string) => {
+    setTasks(tasks.filter(t => t.id !== id));
+  };
+
   const closingThisWeek = pipeline.deals.filter((d: any) => {
     if (!d.closeDate) return false;
     const close = new Date(d.closeDate);
@@ -120,6 +143,15 @@ export default function MissionControl() {
         isOpen={showEmailModal}
         onClose={() => setShowEmailModal(false)}
         emails={emails}
+      />
+
+      <TaskDetailModal
+        isOpen={showTaskModal}
+        onClose={() => setShowTaskModal(false)}
+        tasks={tasks}
+        onAddTask={addTask}
+        onUpdateTask={updateTask}
+        onDeleteTask={deleteTask}
       />
 
       {/* Header */}
@@ -213,7 +245,10 @@ export default function MissionControl() {
               onViewDetails={() => setShowEmailModal(true)}
             />
 
-            <TaskPanel />
+            <TaskPanel 
+              tasks={tasks}
+              onViewDetails={() => setShowTaskModal(true)}
+            />
 
             <CronPanel />
           </div>
