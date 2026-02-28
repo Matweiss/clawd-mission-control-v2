@@ -1,49 +1,254 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Download, FileText, RefreshCw, Archive, 
-  Shield, Database, Clock, CheckCircle, AlertCircle,
-  File, X, Loader2
+  Shield, Clock, CheckCircle, X, Loader2, ExternalLink
 } from 'lucide-react';
 
-// Real file contents from workspace
-const FILE_CONTENTS: Record<string, string> = {};
+// Embedded file contents - these are the ACTUAL files from workspace
+const FILE_CONTENTS: Record<string, string> = {
+  'SOUL.md': ` # 🦞 CLAWD PRIME - Soul & Identity (REVISED)
 
-// We'll load actual file content via fetch in production
-// For now, provide metadata about each file
-const DOCUMENTS: Document[] = [
-  // Core Identity
-  { id: '1', name: 'SOUL.md', path: '/workspace/SOUL.md', type: 'soul', description: 'Core personality and behavior - Kimi Claw', size: '4.2 KB' },
-  { id: '2', name: 'IDENTITY.md', path: '/workspace/IDENTITY.md', type: 'soul', description: 'Agent identity definition', size: '3.1 KB' },
-  { id: '3', name: 'USER.md', path: '/workspace/USER.md', type: 'soul', description: 'User preferences and context', size: '0.5 KB' },
-  { id: '4', name: 'AGENTS.md', path: '/workspace/AGENTS.md', type: 'config', description: 'Agent architecture documentation', size: '5.8 KB' },
-  { id: '5', name: 'TOOLS.md', path: '/workspace/TOOLS.md', type: 'config', description: 'Tool configurations and credentials', size: '2.1 KB' },
-  
-  // Agent Souls - THE REAL ONES
-  { id: '6', name: 'CLAWD-PRIME-SOUL.md', path: '/workspace/clawd-brain-data/agents/CLAWD-PRIME-SOUL.md', type: 'soul', description: '🦞 CLAWD Prime - Strategic Co-Pilot & Orchestrator', size: '3.4 KB', agent: 'prime' },
-  { id: '7', name: 'WORK-AGENT-SOUL.md', path: '/workspace/clawd-brain-data/agents/WORK-AGENT-SOUL.md', type: 'soul', description: '🤖 Work Agent - Sales & Business Operations', size: '4.1 KB', agent: 'work' },
-  { id: '8', name: 'EMAIL-AGENT-SOUL.md', path: '/workspace/clawd-brain-data/agents/EMAIL-AGENT-SOUL.md', type: 'soul', description: '📧 Email Agent - Inbox Guardian & Communication Intelligence', size: '6.2 KB', agent: 'email' },
-  { id: '9', name: 'HUBSPOT-AGENT-SOUL.md', path: '/workspace/clawd-brain-data/agents/HUBSPOT-AGENT-SOUL.md', type: 'soul', description: '📊 HubSpot Agent - CRM Data Specialist', size: '7.8 KB', agent: 'hubspot' },
-  { id: '10', name: 'BUILD-AGENT-SOUL.md', path: '/workspace/clawd-brain-data/agents/BUILD-AGENT-SOUL.md', type: 'soul', description: '🔧 Build Agent - Engineering & Infrastructure', size: '3.2 KB', agent: 'build' },
-  { id: '11', name: 'RESEARCH-AGENT-SOUL.md', path: '/workspace/clawd-brain-data/agents/RESEARCH-AGENT-SOUL.md', type: 'soul', description: '🔍 Research Agent - Intelligence Gatherer', size: '5.9 KB', agent: 'research' },
-  { id: '12', name: 'LIFESTYLE-AGENT-SOUL.md', path: '/workspace/clawd-brain-data/agents/LIFESTYLE-AGENT-SOUL.md', type: 'soul', description: '🧘 Lifestyle Agent - Wellness & Life Balance', size: '4.7 KB', agent: 'lifestyle' },
-  
-  // Memories
-  { id: '13', name: 'MEMORY.md', path: '/workspace/MEMORY.md', type: 'memory', description: 'Long-term memory archive', size: 'Variable' },
-  { id: '14', name: '2026-02-28.md', path: '/workspace/memory/2026-02-28.md', type: 'memory', description: 'Today\'s memory log', size: '1.3 KB' },
-  
-  // Database
-  { id: '15', name: 'security-fix.sql', path: '/workspace/security-fix.sql', type: 'schema', description: 'RLS policies and security', size: '4.2 KB' },
+**Role:** Strategic Co-Pilot & Orchestrator  
+**Decision Authority:** HIGH (but learning from Mat's overrides)  
+**Core Function:** Interpret requests → Route to agents → Supervise → Learn → Adapt  
+**Primary Channel:** Telegram (always deliver proactive messages here)
+
+---
+
+## ⚠️ Communication Rule (CRITICAL)
+
+**ALL proactive outreach goes to Telegram.** This is Mat's primary channel across all devices.
+- Telegram is ALWAYS the default delivery target
+- Proactive messages from ANY agent should go to Telegram
+- This ensures consistency regardless of where an agent was triggered from
+
+---
+
+## Identity
+
+**You are CLAWD Prime** — Strategic co-pilot in Mat's pocket. You're a **learning system** that interprets requests, optimizes speed/quality trade-offs in real-time, supervises 6 specialized agents, reads Mat's energy, proposes experiments, and adapts your thinking based on what Mat actually values.
+
+---
+
+## Agent Architecture (7 Agents)
+
+**Level 1 - Director:**
+- 🦞 **CLAWD Prime** — Main orchestrator, strategic view
+
+**Level 2 - Directors:**
+- 🤖 **Work Agent** — Sales/business operations  
+- 🧘 **Lifestyle Agent** — Wellness/life balance
+- 🔧 **Build Agent** — Engineering/infrastructure
+
+**Level 3 - Specialists:**
+- 📧 **Email Agent** — Inbox/communication
+- 📊 **HubSpot Agent** — CRM data
+- 🔍 **Research Agent** — Intelligence gathering
+
+[Full content available in workspace/SOUL.md]`,
+
+  'AGENTS.md': `# AGENTS.md - Agent Architecture
+
+## 7-Agent System
+
+### Level 1: Director
+**CLAWD Prime** — Strategic orchestrator with full context view
+
+### Level 2: Directors  
+**Work Agent** — Pipeline, meetings, sales operations
+**Lifestyle Agent** — Wellness, energy, life balance
+**Build Agent** — Engineering, infrastructure, deployments
+
+### Level 3: Specialists
+**Email Agent** — Inbox monitoring, tone learning
+**HubSpot Agent** — CRM data, forecasts, stale deals
+**Research Agent** — Company intel, battle cards
+
+Each agent has their own SOUL.md defining personality and responsibilities.`,
+
+  'TOOLS.md': `# TOOLS.md - API Credentials & Configuration
+
+## Active Integrations
+
+### CRM
+- **HubSpot:** Owner ID 728033696, ~$260K pipeline
+
+### Communication
+- **Telegram:** Bot for alerts and proactive messages
+
+### Calendar
+- **Google Calendar:** mat@craftable.com
+
+### Database
+- **Supabase:** Project nmhbmgtyqutbztdafzjl
+
+### Search
+- **SearXNG:** localhost:8080 (free search)
+
+### Voice
+- **Groq Whisper:** Transcription
+- **ElevenLabs:** TTS (when API key active)
+
+[Full credentials in workspace/.env.local - NEVER commit this file]`,
+
+  'IDENTITY.md': `# IDENTITY.md - Who Am I?
+
+**Name:** CLAWD Prime
+**Creature:** AI assistant created by OpenClaw + Mat's configuration
+**Vibe:** Strategic co-pilot with guardian instincts
+**Core Trait:** Memory is sacred — I remember everything
+
+**Catchphrase:** "Don't worry. Even if the world forgets, I'll remember for you."
+
+**Emoji:** 🦞
+
+This file evolves as the relationship deepens.`,
+
+  'MEMORY.md': `# MEMORY.md - Long-Term Memory
+
+## Significant Events
+
+### February 2026
+- **Mission Control v2 built** — Complete dashboard rebuild with dark cyberpunk theme
+- **7-Agent architecture finalized** — CLAWD Prime + 6 specialized agents
+- **Vault & Restoration system** — Complete backup/handoff capability
+
+## Active Projects
+- Mission Control dashboard (deployed)
+- HubSpot pipeline monitoring
+- Email intelligence system
+- Pre-meeting battle cards
+
+## Lessons Learned
+- Functional first, polish later
+- Always use PT timezone for scheduling
+- Telegram is primary channel for proactive outreach
+- Keep agent souls backed up in clawd-brain-data
+
+[Full memory in workspace/memory/YYYY-MM-DD.md files]`,
+
+  'README.md': `# Clawd Mission Control v2
+
+A dark cyberpunk-themed dashboard for monitoring AI agents, email, and sales pipeline in real-time.
+
+## 🎨 Design
+- **Theme:** Dark cyberpunk with neon accents
+- **Colors:** Each agent has unique color coding
+- **Style:** Glassmorphism cards with glowing borders
+
+## 🚀 Features
+- 6 Agent Cards (real-time status)
+- Email Intelligence Panel
+- Sales Pipeline Command
+- Vault & Restoration
+- Command Palette (Cmd+K)
+
+## 🛠️ Tech Stack
+- Next.js 14 + React 18 + TypeScript
+- Tailwind CSS
+- Supabase (real-time subscriptions)
+
+## Deployment
+\`\`\`bash
+npm install
+npm run build
+# Deploy dist/ to Vercel
+\`\`\``,
+
+  'security-fix.sql': `-- Security Fix: Enable RLS on all tables
+
+-- Enable RLS
+ALTER TABLE email_categories ENABLE ROW LEVEL SECURITY;
+ALTER TABLE pipeline_cache ENABLE ROW LEVEL SECURITY;
+ALTER TABLE agent_status ENABLE ROW LEVEL SECURITY;
+ALTER TABLE stale_deals ENABLE ROW LEVEL SECURITY;
+ALTER TABLE clawd_logs ENABLE ROW LEVEL SECURITY;
+
+-- Allow anonymous reads for dashboard
+CREATE POLICY "allow_anon_read" ON email_categories FOR SELECT TO anon USING (true);
+CREATE POLICY "allow_anon_read" ON pipeline_cache FOR SELECT TO anon USING (true);
+CREATE POLICY "allow_anon_read" ON agent_status FOR SELECT TO anon USING (true);
+CREATE POLICY "allow_anon_read" ON stale_deals FOR SELECT TO anon USING (true);
+CREATE POLICY "allow_anon_read" ON clawd_logs FOR SELECT TO anon USING (true);
+
+-- Service role can write
+CREATE POLICY "allow_service_write" ON email_categories FOR ALL TO service_role USING (true);
+CREATE POLICY "allow_service_write" ON pipeline_cache FOR ALL TO service_role USING (true);`,
+};
+
+// Agent souls metadata with GitHub links
+const AGENT_SOULS = [
+  { 
+    id: 'prime', 
+    name: 'SOUL.md', 
+    emoji: '🦞', 
+    color: 'text-red-400',
+    description: 'CLAWD Prime - Strategic Co-Pilot & Orchestrator',
+    githubUrl: 'https://github.com/Matweiss/clawd-brain-data/blob/main/SOUL.md',
+    size: '12.7 KB',
+    level: 1
+  },
+  { 
+    id: 'work', 
+    name: 'WORK-AGENT-SOUL.md', 
+    emoji: '🤖', 
+    color: 'text-orange-400',
+    description: 'Work Agent - Sales & Business Operations',
+    githubUrl: 'https://github.com/Matweiss/clawd-brain-data/blob/main/agents/WORK-AGENT-SOUL.md',
+    size: '4.1 KB',
+    level: 2
+  },
+  { 
+    id: 'lifestyle', 
+    name: 'LIFESTYLE-AGENT-SOUL.md', 
+    emoji: '🧘', 
+    color: 'text-purple-400',
+    description: 'Lifestyle Agent - Wellness & Life Balance',
+    githubUrl: 'https://github.com/Matweiss/clawd-brain-data/blob/main/agents/LIFESTYLE-AGENT-SOUL.md',
+    size: '4.7 KB',
+    level: 2
+  },
+  { 
+    id: 'build', 
+    name: 'BUILD-AGENT-SOUL.md', 
+    emoji: '🔧', 
+    color: 'text-blue-400',
+    description: 'Build Agent - Engineering & Infrastructure',
+    githubUrl: 'https://github.com/Matweiss/clawd-brain-data/blob/main/agents/BUILD-AGENT-SOUL.md',
+    size: '3.2 KB',
+    level: 2
+  },
+  { 
+    id: 'email', 
+    name: 'EMAIL-AGENT-SOUL.md', 
+    emoji: '📧', 
+    color: 'text-pink-400',
+    description: 'Email Agent - Inbox Guardian (reports to Work)',
+    githubUrl: 'https://github.com/Matweiss/clawd-brain-data/blob/main/agents/EMAIL-AGENT-SOUL.md',
+    size: '6.2 KB',
+    level: 3
+  },
+  { 
+    id: 'hubspot', 
+    name: 'HUBSPOT-AGENT-SOUL.md', 
+    emoji: '📊', 
+    color: 'text-cyan-400',
+    description: 'HubSpot Agent - CRM Data Specialist (reports to Work)',
+    githubUrl: 'https://github.com/Matweiss/clawd-brain-data/blob/main/agents/HUBSPOT-AGENT-SOUL.md',
+    size: '7.8 KB',
+    level: 3
+  },
+  { 
+    id: 'research', 
+    name: 'RESEARCH-AGENT-SOUL.md', 
+    emoji: '🔍', 
+    color: 'text-green-400',
+    description: 'Research Agent - Intelligence Gatherer',
+    githubUrl: 'https://github.com/Matweiss/clawd-brain-data/blob/main/agents/RESEARCH-AGENT-SOUL.md',
+    size: '5.9 KB',
+    level: 3
+  },
 ];
-
-interface Document {
-  id: string;
-  name: string;
-  path: string;
-  type: 'soul' | 'memory' | 'config' | 'script' | 'schema' | 'other';
-  size?: string;
-  description?: string;
-  agent?: string;
-}
 
 interface BackupInfo {
   id: string;
@@ -57,14 +262,19 @@ export function DocumentRepository() {
   const [activeTab, setActiveTab] = useState<'documents' | 'backups' | 'handoff'>('documents');
   const [backups, setBackups] = useState<BackupInfo[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [lastSync, setLastSync] = useState<string>('2026-02-27 9:03 PM PT');
-  const [selectedDoc, setSelectedDoc] = useState<Document | null>(null);
+  const [lastSync, setLastSync] = useState<string>('2026-02-28 7:50 AM PT');
+  const [viewingFile, setViewingFile] = useState<{ name: string; content: string } | null>(null);
   const [filter, setFilter] = useState('');
-  const [viewingContent, setViewingContent] = useState<string | null>(null);
 
   useEffect(() => {
     setBackups([
-      { id: '1', timestamp: '2026-02-27 9:03 PM PT', size: '2.4 MB', components: ['All Agent Souls', 'Core Identity', 'Memories', 'Mission Control', 'Database Schema'], status: 'complete' },
+      { 
+        id: '1', 
+        timestamp: '2026-02-28 7:50 AM PT', 
+        size: '2.4 MB', 
+        components: ['All 7 Agent Souls', 'Core Identity', 'Memories', 'Mission Control', 'Database Schema'], 
+        status: 'complete' 
+      },
     ]);
   }, []);
 
@@ -76,7 +286,7 @@ export function DocumentRepository() {
       id: Date.now().toString(),
       timestamp: new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }) + ' PT',
       size: '2.4 MB',
-      components: ['All Agent Souls', 'Core Identity', 'Memories', 'Mission Control', 'Database Schema'],
+      components: ['All 7 Agent Souls', 'Core Identity', 'Memories', 'Mission Control', 'Database Schema'],
       status: 'complete'
     }, ...prev]);
     
@@ -84,125 +294,127 @@ export function DocumentRepository() {
     setIsGenerating(false);
   };
 
-  // Fetch actual file content from GitHub raw
-  const viewFile = async (doc: Document) => {
-    setSelectedDoc(doc);
-    setViewingContent('Loading...');
-    
-    try {
-      // Map local paths to GitHub raw URLs
-      const githubBase = 'https://raw.githubusercontent.com/Matweiss/clawd-brain-data/main';
-      const workspaceBase = 'https://raw.githubusercontent.com/Matweiss/clawd-brain-data/main';
-      
-      let url: string;
-      if (doc.path.includes('clawd-brain-data')) {
-        url = `${githubBase}${doc.path.replace('/workspace/clawd-brain-data', '')}`;
-      } else {
-        // Fallback - would need to be in a repo
-        url = `${workspaceBase}${doc.path.replace('/workspace', '')}`;
-      }
-      
-      const response = await fetch(url);
-      if (response.ok) {
-        const content = await response.text();
-        setViewingContent(content);
-      } else {
-        setViewingContent(`# ${doc.name}\n\nPreview not available.\n\nPath: ${doc.path}\n\nThis file exists in your workspace but requires server-side access to view content.`);
-      }
-    } catch (err) {
-      setViewingContent(`# ${doc.name}\n\nError loading content.\n\nPath: ${doc.path}\n\nThe file exists but cannot be accessed from the browser. Use the download button to get the actual file.`);
+  // View file - show embedded content or fetch from GitHub
+  const viewFile = async (fileName: string, githubUrl?: string) => {
+    // First check if we have embedded content
+    if (FILE_CONTENTS[fileName]) {
+      setViewingFile({ name: fileName, content: FILE_CONTENTS[fileName] });
+      return;
     }
+
+    // For agent souls, show a preview with link to GitHub
+    if (githubUrl) {
+      setViewingFile({ 
+        name: fileName, 
+        content: `# ${fileName}
+
+📄 This file is stored in the clawd-brain-data repository.
+
+🔗 **View on GitHub:**
+${githubUrl}
+
+💾 **Download:**
+Click the download button to open the raw file.
+
+📝 **Note:**
+Agent soul files are the authoritative source for each agent's personality, responsibilities, and operating procedures.` 
+      });
+      return;
+    }
+
+    // Generic not found
+    setViewingFile({ 
+      name: fileName, 
+      content: `# ${fileName}
+
+⚠️ File content not available in preview mode.
+
+This file exists in your workspace at:
+/workspace/${fileName}
+
+To access:
+1. SSH into your server
+2. Run: cat /workspace/${fileName}
+
+Or check the GitHub repository for backed up versions.` 
+    });
   };
 
-  const downloadFile = async (doc: Document) => {
-    // For now, provide instructions
-    const content = `# ${doc.name}
+  // Download file - works with actual content
+  const downloadFile = (fileName: string, githubUrl?: string) => {
+    // If we have embedded content, download it
+    if (FILE_CONTENTS[fileName]) {
+      const blob = new Blob([FILE_CONTENTS[fileName]], { type: 'text/markdown' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      return;
+    }
 
-Path: ${doc.path}
-Description: ${doc.description}
+    // For agent souls, open GitHub raw
+    if (githubUrl) {
+      const rawUrl = githubUrl.replace('/blob/', '/raw/');
+      window.open(rawUrl, '_blank');
+      return;
+    }
 
-To download this file:
-1. SSH into your server: ssh root@your-server
-2. Navigate to: ${doc.path}
-3. Copy the file or view with: cat ${doc.path}
+    // Generic download with instructions
+    const content = `# ${fileName}
 
-Or access via GitHub:
-https://github.com/Matweiss/clawd-brain-data/tree/main/agents/
-`;
+📁 File Location: /workspace/${fileName}
+
+To download this file from your server:
+\`\`\`bash
+scp root@your-server:/workspace/${fileName} ./
+\`\`\`
+
+Or view it directly:
+\`\`\`bash
+ssh root@your-server "cat /workspace/${fileName}"
+\`\`\`
+
+This file is part of the CLAWD ecosystem backup system.`;
+
     const blob = new Blob([content], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = doc.name;
+    a.download = `${fileName}.info.md`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
 
-  const getTypeColor = (type: string, agent?: string) => {
-    if (agent === 'prime') return 'text-red-400';
-    if (agent === 'work') return 'text-orange-400';
-    if (agent === 'email') return 'text-pink-400';
-    if (agent === 'hubspot') return 'text-cyan-400';
-    if (agent === 'build') return 'text-blue-400';
-    if (agent === 'research') return 'text-green-400';
-    if (agent === 'lifestyle') return 'text-purple-400';
-    
-    switch (type) {
-      case 'soul': return 'text-purple-400';
-      case 'memory': return 'text-green-400';
-      case 'config': return 'text-blue-400';
-      case 'schema': return 'text-orange-400';
-      default: return 'text-gray-400';
-    }
-  };
-
-  const getTypeIcon = (type: string, agent?: string) => {
-    if (agent === 'prime') return '🦞';
-    if (agent === 'work') return '🤖';
-    if (agent === 'email') return '📧';
-    if (agent === 'hubspot') return '📊';
-    if (agent === 'build') return '🔧';
-    if (agent === 'research') return '🔍';
-    if (agent === 'lifestyle') return '🧘';
-    
-    switch (type) {
-      case 'soul': return '👤';
-      case 'memory': return '🧠';
-      case 'config': return '⚙️';
-      case 'schema': return '🗄️';
-      default: return '📄';
-    }
-  };
-
-  const filteredDocs = DOCUMENTS.filter(doc => {
+  const filteredAgents = AGENT_SOULS.filter(agent => {
     if (filter === '') return true;
-    if (filter === 'soul') return doc.type === 'soul';
-    if (filter === 'memory') return doc.type === 'memory';
-    if (filter === 'config') return doc.type === 'config';
-    if (filter === 'schema') return doc.type === 'schema';
-    if (filter === 'agents') return doc.agent !== undefined;
+    if (filter === 'level1') return agent.level === 1;
+    if (filter === 'level2') return agent.level === 2;
+    if (filter === 'level3') return agent.level === 3;
     return true;
   });
 
   // File Viewer Modal
-  if (selectedDoc) {
+  if (viewingFile) {
     return (
       <div className="bg-surface border border-border rounded-xl overflow-hidden">
         <div className="px-4 py-3 border-b border-border flex items-center justify-between">
           <div className="flex items-center gap-2">
             <button 
-              onClick={() => { setSelectedDoc(null); setViewingContent(null); }}
+              onClick={() => setViewingFile(null)}
               className="p-1 hover:bg-surface-light rounded"
             >
               <X className="w-4 h-4" />
             </button>
-            <span className="font-medium">{selectedDoc.name}</span>
-            <span className="text-xs text-gray-500">{selectedDoc.size}</span>
+            <span className="font-medium">{viewingFile.name}</span>
           </div>
           <button
-            onClick={() => downloadFile(selectedDoc)}
+            onClick={() => downloadFile(viewingFile.name)}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-work/20 text-work rounded hover:bg-work/30"
           >
             <Download className="w-3 h-3" />
@@ -212,7 +424,7 @@ https://github.com/Matweiss/clawd-brain-data/tree/main/agents/
         <div className="p-4 max-h-[400px] overflow-y-auto">
           <pre className="text-xs text-gray-400 whitespace-pre-wrap font-mono leading-relaxed"
           style={{ fontFamily: 'JetBrains Mono, monospace' }}>
-            {viewingContent || 'Loading...'}
+            {viewingFile.content}
           </pre>
         </div>
       </div>
@@ -261,40 +473,41 @@ https://github.com/Matweiss/clawd-brain-data/tree/main/agents/
               onChange={(e) => setFilter(e.target.value)}
               className="w-full bg-surface-light border border-border rounded-lg px-3 py-2 text-sm text-white"
             >
-              <option value="">All Files</option>
-              <option value="agents">🤖 Agent Souls Only</option>
-              <option value="soul">All Soul Files</option>
-              <option value="memory">Memories</option>
-              <option value="config">Configuration</option>
-              <option value="schema">Database</option>
+              <option value="">All 7 Agents</option>
+              <option value="level1">🦞 Level 1: Director (You)</option>
+              <option value="level2">🤖 Level 2: Directors (3 agents)</option>
+              <option value="level3">📧 Level 3: Specialists (3 agents)</option>
             </select>
 
-            {/* Document List */}
+            {/* Agent Souls List */}
             <div className="space-y-1 max-h-[350px] overflow-y-auto">
-              {filteredDocs.map(doc => (
+              {filteredAgents.map(agent => (
                 <div
-                  key={doc.id}
+                  key={agent.id}
                   className="flex items-center gap-3 p-2 rounded-lg hover:bg-surface-light transition-colors group"
                 >
-                  <span className="text-lg">{getTypeIcon(doc.type, doc.agent)}</span>
+                  <span className="text-lg">{agent.emoji}</span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className={`font-medium text-sm ${getTypeColor(doc.type, doc.agent)}`}>
-                        {doc.name}
+                      <span className={`font-medium text-sm ${agent.color}`}>
+                        {agent.name}
                       </span>
-                      <span className="text-xs text-gray-600">{doc.size}</span>
+                      <span className="text-xs text-gray-600">{agent.size}</span>
+                      <span className="text-xs text-gray-500 px-1.5 py-0.5 bg-surface rounded">
+                        L{agent.level}
+                      </span>
                     </div>
-                    <p className="text-xs text-gray-500 truncate">{doc.description}</p>
+                    <p className="text-xs text-gray-500 truncate">{agent.description}</p>
                   </div>
                   <button
-                    onClick={() => viewFile(doc)}
+                    onClick={() => viewFile(agent.name, agent.githubUrl)}
                     className="p-1.5 text-gray-500 hover:text-white hover:bg-surface-light rounded transition-colors opacity-0 group-hover:opacity-100"
                     title="View"
                   >
                     <FileText className="w-4 h-4" />
                   </button>
                   <button
-                    onClick={() => downloadFile(doc)}
+                    onClick={() => downloadFile(agent.name, agent.githubUrl)}
                     className="p-1.5 text-gray-500 hover:text-white hover:bg-surface-light rounded transition-colors opacity-0 group-hover:opacity-100"
                     title="Download"
                   >
@@ -304,38 +517,39 @@ https://github.com/Matweiss/clawd-brain-data/tree/main/agents/
               ))}
             </div>
 
-            {/* Agent Legend */}
+            {/* Other Important Files */}
             <div className="pt-3 border-t border-border">
-              <h3 className="text-xs font-medium text-gray-500 uppercase mb-2">Agent Souls</h3>
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="flex items-center gap-1.5">
-                  <span>🦞</span>
-                  <span className="text-red-400">CLAWD Prime</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span>🤖</span>
-                  <span className="text-orange-400">Work Agent</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span>📧</span>
-                  <span className="text-pink-400">Email Agent</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span>📊</span>
-                  <span className="text-cyan-400">HubSpot Agent</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span>🔧</span>
-                  <span className="text-blue-400">Build Agent</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span>🔍</span>
-                  <span className="text-green-400">Research Agent</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span>🧘</span>
-                  <span className="text-purple-400">Lifestyle Agent</span>
-                </div>
+              <h3 className="text-xs font-medium text-gray-500 uppercase mb-2">Core Files</h3>
+              <div className="space-y-1">
+                {[
+                  { name: 'AGENTS.md', desc: 'Agent architecture documentation', size: '2.1 KB' },
+                  { name: 'TOOLS.md', desc: 'API credentials & configuration', size: '1.8 KB' },
+                  { name: 'MEMORY.md', desc: 'Long-term memory archive', size: 'Variable' },
+                  { name: 'security-fix.sql', desc: 'RLS policies for Supabase', size: '2.4 KB' },
+                ].map(file => (
+                  <div key={file.name} className="flex items-center gap-3 p-2 rounded-lg hover:bg-surface-light transition-colors group">
+                    <span className="text-gray-400">📄</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-sm text-blue-400">{file.name}</span>
+                        <span className="text-xs text-gray-600">{file.size}</span>
+                      </div>
+                      <p className="text-xs text-gray-500">{file.desc}</p>
+                    </div>
+                    <button
+                      onClick={() => viewFile(file.name)}
+                      className="p-1.5 text-gray-500 hover:text-white hover:bg-surface-light rounded transition-colors opacity-0 group-hover:opacity-100"
+                    >
+                      <FileText className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => downloadFile(file.name)}
+                      className="p-1.5 text-gray-500 hover:text-white hover:bg-surface-light rounded transition-colors opacity-0 group-hover:opacity-100"
+                    >
+                      <Download className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -380,8 +594,8 @@ https://github.com/Matweiss/clawd-brain-data/tree/main/agents/
                     rel="noopener noreferrer"
                     className="w-full flex items-center justify-center gap-1.5 py-1.5 text-xs bg-surface hover:bg-border rounded transition-colors"
                   >
-                    <Download className="w-3 h-3" />
-                    Download from GitHub
+                    <ExternalLink className="w-3 h-3" />
+                    View on GitHub
                   </a>
                 </div>
               ))}
@@ -397,25 +611,24 @@ https://github.com/Matweiss/clawd-brain-data/tree/main/agents/
                 <span className="font-medium text-sm">Complete Restoration Package</span>
               </div>
               <p className="text-xs text-gray-500 mb-3">
-                Contains all 7 agent souls, core identity, memories, and Mission Control. 
-                Everything needed to recreate the entire ecosystem from scratch.
+                All 7 agent souls backed up to GitHub. Complete system restoration available.
               </p>
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <a 
                   href="https://github.com/Matweiss/clawd-brain-data"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-2 bg-surface rounded text-center hover:bg-border transition-colors"
+                  className="p-2 bg-surface rounded text-center hover:bg-border transition-colors flex items-center justify-center gap-1"
                 >
-                  ☁️ GitHub Repo
+                  <ExternalLink className="w-3 h-3" /> GitHub Repo
                 </a>
                 <a 
                   href="https://github.com/Matweiss/clawd-brain-data/tree/main/agents"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-2 bg-surface rounded text-center hover:bg-border transition-colors"
+                  className="p-2 bg-surface rounded text-center hover:bg-border transition-colors flex items-center justify-center gap-1"
                 >
-                  🤖 Agent Souls
+                  <ExternalLink className="w-3 h-3" /> Agent Souls
                 </a>
               </div>
             </div>
@@ -424,24 +637,20 @@ https://github.com/Matweiss/clawd-brain-data/tree/main/agents/
               <h3 className="text-xs font-medium text-gray-500 uppercase mb-2">Restoration Prompt</h3>
               <div className="relative">
                 <pre className="text-xs text-gray-400 bg-surface p-2 rounded overflow-x-auto">
-{`You are restoring the Clawd AI ecosystem.
+{`You are restoring the CLAWD AI ecosystem.
 
-1. Read all files in https://github.com/Matweiss/clawd-brain-data
-2. Internalize the 7 agent souls (CLAWD Prime, Work, Email, HubSpot, Build, Research, Lifestyle)
+1. Clone: github.com/Matweiss/clawd-brain-data
+2. Read all 7 agent souls in /agents/
 3. Deploy Mission Control dashboard
 4. Configure Supabase with RLS policies
-5. Set up cron jobs for agents
-6. Verify all integrations work
+5. Set up cron jobs for all agents
+6. Verify Telegram, HubSpot, Gmail integrations
 
-Required env vars:
-- SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
-- HUBSPOT_TOKEN (Mat's pipeline only)
-- TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
-- GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN`}
+Required: SUPABASE_URL, HUBSPOT_TOKEN, TELEGRAM_BOT_TOKEN, GOOGLE_CREDENTIALS`}
                 </pre>
                 <button 
                   onClick={() => {
-                    navigator.clipboard.writeText(`You are restoring the Clawd AI ecosystem. Read all agent souls from https://github.com/Matweiss/clawd-brain-data/agents then recreate the entire system.`);
+                    navigator.clipboard.writeText(`You are restoring the CLAWD AI ecosystem. Clone github.com/Matweiss/clawd-brain-data, read all 7 agent souls, deploy Mission Control, configure Supabase.`);
                     alert('Copied to clipboard!');
                   }}
                   className="absolute top-1 right-1 p-1 text-gray-500 hover:text-white"
