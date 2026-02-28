@@ -11,6 +11,7 @@ import { CommandPalette } from '../components/CommandPalette';
 import { DocumentRepository } from '../components/DocumentRepository';
 import { PipelineDetailModal } from '../components/PipelineDetailModal';
 import { EmailDetailModal } from '../components/EmailDetailModal';
+import { CalendarPanel } from '../components/CalendarPanel';
 
 // Agent configuration - 3-Tier Architecture
 const AGENTS = [
@@ -40,7 +41,7 @@ export default function MissionControl() {
   const { isOpen, setIsOpen } = useCommandPalette();
   const { spawnAgent, refreshAgent } = useAgentActions();
   const { 
-    agents, emails, pipeline, staleDeals, activities, 
+    agents, emails, pipeline, staleDeals, activities, calendarEvents,
     loading, lastRefresh, refresh 
   } = useRealtimeData();
   const [activeAction, setActiveAction] = useState('');
@@ -229,6 +230,8 @@ export default function MissionControl() {
             <ApiHealthPanel />
 
             <ActivityPanel activities={activities} />
+
+            <CalendarPanel events={calendarEvents || []} />
 
             <DocumentRepository />
           </div>

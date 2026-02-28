@@ -128,7 +128,7 @@ export function useRealtimeData() {
   }, [fetchData]);
 
   return { 
-    agents, emails, pipeline, staleDeals, activities, 
+    agents, emails, pipeline, staleDeals, activities, calendarEvents, syncStatus,
     loading, lastRefresh, refresh: fetchData 
   };
 }
