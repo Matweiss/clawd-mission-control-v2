@@ -461,71 +461,25 @@ function EmailPanel({ urgent, replyNeeded, fyiCount, onViewDetails }: any) {
 }
 
 // Task Panel
-function TaskPanel() {
-  const [tasks, setTasks] = useState({
-    high: ['Finalize HAP walkaway', 'Update Rodrigo contract'],
-    medium: ['Update Chubby CPay pricing', 'Create GFG rollout'],
-    low: ['Wellness check', 'Research cache review']
-  });
-  const [showNewTask, setShowNewTask] = useState(false);
-  const [newTaskText, setNewTaskText] = useState('');
-  const [newTaskPriority, setNewTaskPriority] = useState('medium');
-
-  const addTask = () => {
-    if (!newTaskText.trim()) return;
-    setTasks(prev => ({
-      ...prev,
-      [newTaskPriority]: [...prev[newTaskPriority as keyof typeof prev], newTaskText]
-    }));
-    setNewTaskText('');
-    setShowNewTask(false);
+function TaskPanel({ tasks: taskList, onViewDetails }: any) {
+  const taskCounts = {
+    high: taskList.filter((t: any) => t.priority === 'high' && t.status !== 'completed').length,
+    medium: taskList.filter((t: any) => t.priority === 'medium' && t.status !== 'completed').length,
+    low: taskList.filter((t: any) => t.priority === 'low' && t.status !== 'completed').length,
   };
 
-  if (showNewTask) {
-    return (
-      <div className="bg-surface border border-border rounded-xl overflow-hidden p-4">
-        <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">New Task</h2>
-        <input
-          type="text"
-          value={newTaskText}
-          onChange={(e) => setNewTaskText(e.target.value)}
-          placeholder="Enter task..."
-          className="w-full bg-surface-light border border-border rounded-lg px-3 py-2 text-sm text-white mb-3"
-          autoFocus
-        />
-        <select
-          value={newTaskPriority}
-          onChange={(e) => setNewTaskPriority(e.target.value)}
-          className="w-full bg-surface-light border border-border rounded-lg px-3 py-2 text-sm text-white mb-3"
-        >
-          <option value="high">High Priority</option>
-          <option value="medium">Medium Priority</option>
-          <option value="low">Low Priority</option>
-        </select>
-        <div className="flex gap-2">
-          <button 
-            onClick={addTask}
-            className="flex-1 py-2 text-xs bg-work text-white rounded hover:bg-work/80"
-          >
-            Add Task
-          </button>
-          <button 
-            onClick={() => setShowNewTask(false)}
-            className="flex-1 py-2 text-xs bg-surface-light rounded hover:bg-border"
-          >
-            Cancel
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const taskNames = {
+    high: taskList.filter((t: any) => t.priority === 'high' && t.status !== 'completed').map((t: any) => t.title),
+    medium: taskList.filter((t: any) => t.priority === 'medium' && t.status !== 'completed').map((t: any) => t.title),
+    low: taskList.filter((t: any) => t.priority === 'low' && t.status !== 'completed').map((t: any) => t.title),
+  };
 
   return (
-    <div className="bg-surface border border-border rounded-xl overflow-hidden">
+    <div className="bg-surface border border-border rounded-xl overflow-hidden cursor-pointer hover:border-gray-600 transition-colors" onClick={onViewDetails}>
       <div className="px-4 py-3 border-b border-border flex items-center justify-between">
         <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Active Tasks</h2>
         <button 
-          onClick={() => setShowNewTask(true)}
+          onClick={(e) => { e.stopPropagation(); onViewDetails(); }}
           className="text-xs bg-orange-500/20 text-orange-400 px-2 py-1 rounded hover:bg-orange-500/30"
         >
           + New
@@ -533,7 +487,7 @@ function TaskPanel() {
       </div>
       
       <div className="p-4 grid grid-cols-3 gap-3">
-        {Object.entries(tasks).map(([priority, items]: [string, any]) => (
+        {Object.entries(taskCounts).map(([priority, count]: [string, any]) => (
           <div key={priority} className={`border rounded-lg p-3 ${
             priority === 'high' ? 'border-red-500/30' :
             priority === 'medium' ? 'border-yellow-500/30' :
@@ -546,12 +500,15 @@ function TaskPanel() {
                 'bg-green-500'
               }`} />
               <span className="text-xs font-medium uppercase">{priority}</span>
-              <span className="text-xs text-gray-500">({items.length})</span>
+              <span className="text-xs text-gray-500">({count})</span>
             </div>
             <div className="space-y-1">
-              {items.map((task: string, i: number) => (
+              {taskNames[priority as keyof typeof taskNames].slice(0, 2).map((task: string, i: number) => (
                 <div key={i} className="text-xs text-gray-400 truncate">{task}</div>
               ))}
+              {(taskNames[priority as keyof typeof taskNames].length > 2) && (
+                <div className="text-xs text-gray-600">+{taskNames[priority as keyof typeof taskNames].length - 2} more</div>
+              )}
             </div>
           </div>
         ))}
