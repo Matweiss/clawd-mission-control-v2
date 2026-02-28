@@ -42,7 +42,7 @@ export default function MissionControl() {
   const { isOpen, setIsOpen } = useCommandPalette();
   const { spawnAgent, refreshAgent } = useAgentActions();
   const { 
-    agents, emails, pipeline, staleDeals, activities, calendarEvents,
+    agents, emails, pipeline, calendarEvents,
     loading, lastRefresh, refresh 
   } = useRealtimeData();
   const [activeAction, setActiveAction] = useState('');
@@ -260,14 +260,13 @@ export default function MissionControl() {
           <div className="space-y-4">
             <PipelinePanel 
               pipeline={pipeline}
-              staleDeals={staleDeals}
               closingThisWeek={closingThisWeek}
               onViewDetails={() => setShowPipelineModal(true)}
             />
 
             <ApiHealthPanel />
 
-            <ActivityPanel activities={activities} />
+            <ActivityPanel activities={[]} />
 
             <CalendarPanel events={calendarEvents || []} />
 
@@ -558,7 +557,7 @@ function CronPanel() {
 }
 
 // Pipeline Panel
-function PipelinePanel({ pipeline, staleDeals, closingThisWeek, onViewDetails }: any) {
+function PipelinePanel({ pipeline, closingThisWeek, onViewDetails }: any) {
   const formatCurrency = (val: number) => `$${(val / 1000).toFixed(0)}K`;
 
   return (
