@@ -36,6 +36,8 @@ export function useRealtimeData() {
   const [pipeline, setPipeline] = useState<{ deals: any[]; total: number; byStage: Record<string, { count: number; value: number }> }>({ deals: [], total: 0, byStage: {} });
   const [staleDeals, setStaleDeals] = useState<any[]>([]);
   const [activities, setActivities] = useState<any[]>([]);
+  const [calendarEvents, setCalendarEvents] = useState<any[]>([]);
+  const [syncStatus, setSyncStatus] = useState<{ lastSync: string | null; status: string }>({ lastSync: null, status: 'idle' });
   const [loading, setLoading] = useState(true);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
 
@@ -47,13 +49,17 @@ export function useRealtimeData() {
         { data: emailsData },
         { data: pipelineData },
         { data: staleData },
-        { data: activitiesData }
+        { data: activitiesData },
+        { data: eventsData },
+        { data: syncData }
       ] = await Promise.all([
         supabase.from('agent_status').select('*').order('updated_at', { ascending: false }),
         supabase.from('email_categories').select('*').order('received_at', { ascending: false }).limit(20),
         supabase.from('pipeline_cache').select('*'),
         supabase.from('stale_deals').select('*').order('daysStale', { ascending: false }),
-        supabase.from('clawd_logs').select('*').order('created_at', { ascending: false }).limit(20)
+        supabase.from('clawd_logs').select('*').order('created_at', { ascending: false }).limit(20),
+        supabase.from('calendar_events').select('*').gte('start_time', new Date().toISOString()).order('start_time', { ascending: true }).limit(10),
+        supabase.from('sync_status').select('*').order('last_sync_at', { ascending: false }).limit(1).single()
       ]);
 
       // Process pipeline data
@@ -73,6 +79,15 @@ export function useRealtimeData() {
       setEmails(emailsData || []);
       setStaleDeals(staleData || []);
       setActivities(activitiesData || []);
+      setCalendarEvents(eventsData || []);
+      
+      if (syncData) {
+        setSyncStatus({
+          lastSync: syncData.last_sync_at,
+          status: syncData.status
+        });
+      }
+      
       setLastRefresh(new Date());
       setLoading(false);
     } catch (error) {

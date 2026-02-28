@@ -9,6 +9,8 @@ import {
 import { useCommandPalette, useRealtimeData, useAgentActions } from '../hooks/useMissionControl';
 import { CommandPalette } from '../components/CommandPalette';
 import { DocumentRepository } from '../components/DocumentRepository';
+import { PipelineDetailModal } from '../components/PipelineDetailModal';
+import { EmailDetailModal } from '../components/EmailDetailModal';
 
 // Agent configuration - 3-Tier Architecture
 const AGENTS = [
@@ -42,6 +44,8 @@ export default function MissionControl() {
     loading, lastRefresh, refresh 
   } = useRealtimeData();
   const [activeAction, setActiveAction] = useState('');
+  const [showPipelineModal, setShowPipelineModal] = useState(false);
+  const [showEmailModal, setShowEmailModal] = useState(false);
 
   const currentTime = new Date().toLocaleTimeString('en-US', {
     timeZone: 'America/Los_Angeles',
@@ -102,6 +106,19 @@ export default function MissionControl() {
         isOpen={isOpen} 
         onClose={() => setIsOpen(false)}
         onSelect={handleCommand}
+      />
+
+      <PipelineDetailModal
+        isOpen={showPipelineModal}
+        onClose={() => setShowPipelineModal(false)}
+        pipeline={pipeline}
+        staleDeals={staleDeals}
+      />
+
+      <EmailDetailModal
+        isOpen={showEmailModal}
+        onClose={() => setShowEmailModal(false)}
+        emails={emails}
       />
 
       {/* Header */}
@@ -192,6 +209,7 @@ export default function MissionControl() {
               urgent={urgentEmails}
               replyNeeded={replyNeededEmails}
               fyiCount={fyiEmails.length}
+              onViewDetails={() => setShowEmailModal(true)}
             />
 
             <TaskPanel />
@@ -205,6 +223,7 @@ export default function MissionControl() {
               pipeline={pipeline}
               staleDeals={staleDeals}
               closingThisWeek={closingThisWeek}
+              onViewDetails={() => setShowPipelineModal(true)}
             />
 
             <ApiHealthPanel />
@@ -307,12 +326,17 @@ function AgentCard({ config, data, onRefresh }: any) {
 }
 
 // Email Panel
-function EmailPanel({ urgent, replyNeeded, fyiCount }: any) {
+function EmailPanel({ urgent, replyNeeded, fyiCount, onViewDetails }: any) {
   return (
     <div className="bg-surface border border-border rounded-xl overflow-hidden">
       <div className="px-4 py-3 border-b border-border flex items-center justify-between">
         <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Email Intelligence</h2>
-        <a href="https://mail.google.com" target="_blank" rel="noopener" className="text-xs text-pink-500 hover:underline">Open Gmail</a>
+        <button 
+          onClick={onViewDetails}
+          className="text-xs text-pink-500 hover:underline"
+        >
+          View All
+        </button>
       </div>
       
       <div className="p-4 space-y-3">
@@ -536,7 +560,7 @@ function CronPanel() {
 }
 
 // Pipeline Panel
-function PipelinePanel({ pipeline, staleDeals, closingThisWeek }: any) {
+function PipelinePanel({ pipeline, staleDeals, closingThisWeek, onViewDetails }: any) {
   const formatCurrency = (val: number) => `$${(val / 1000).toFixed(0)}K`;
 
   return (
@@ -616,14 +640,12 @@ function PipelinePanel({ pipeline, staleDeals, closingThisWeek }: any) {
       </div>
 
       <div className="px-4 py-3 border-t border-border flex gap-2">
-        <a 
-          href="https://app.hubspot.com/contacts/43832131/objects/0-3/views/9048336/list"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex-1 py-2 text-xs bg-surface-light hover:bg-border rounded transition-colors text-center"
+        <button 
+          onClick={onViewDetails}
+          className="flex-1 py-2 text-xs bg-surface-light hover:bg-border rounded transition-colors"
         >
           View Pipeline
-        </a>
+        </button>
         <button 
           onClick={() => window.location.reload()}
           className="flex-1 py-2 text-xs bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30 rounded transition-colors"
