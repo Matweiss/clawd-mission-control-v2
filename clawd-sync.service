@@ -1,0 +1,15 @@
+[Unit]
+Description=CLAWD Sync Service
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/.openclaw/workspace/clawd-mission-control-v2
+ExecStart=/usr/bin/node sync-service.js
+Restart=always
+RestartSec=60
+EnvironmentFile=/root/.openclaw/workspace/clawd-mission-control-v2/.env
+
+[Install]
+WantedBy=multi-user.target
