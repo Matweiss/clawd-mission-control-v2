@@ -96,9 +96,17 @@ export function useRealtimeData() {
     }
   }, []);
 
-  // Initial fetch
+  // Initial fetch - client side only
   useEffect(() => {
+    // Force immediate fetch on mount
     fetchData();
+    
+    // Also fetch after a short delay to ensure Supabase client is ready
+    const timer = setTimeout(() => {
+      fetchData();
+    }, 500);
+    
+    return () => clearTimeout(timer);
   }, [fetchData]);
 
   // Real-time subscriptions

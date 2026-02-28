@@ -242,7 +242,10 @@ export default function MissionControl() {
               urgent={urgentEmails}
               replyNeeded={replyNeededEmails}
               fyiCount={fyiEmails.length}
+              totalCount={emails.length}
               onViewDetails={() => setShowEmailModal(true)}
+              onRefresh={refresh}
+              isLoading={loading}
             />
 
             <TaskPanel 
