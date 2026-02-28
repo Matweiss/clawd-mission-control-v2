@@ -6,3 +6,6 @@
 .env
 *.log
 .DS_Store
+sync-service.js
+clawd-sync.service
+*.tar.gz
