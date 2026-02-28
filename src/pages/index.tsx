@@ -10,14 +10,20 @@ import { useCommandPalette, useRealtimeData, useAgentActions } from '../hooks/us
 import { CommandPalette } from '../components/CommandPalette';
 import { DocumentRepository } from '../components/DocumentRepository';
 
-// Agent configuration
+// Agent configuration - 3-Tier Architecture
 const AGENTS = [
-  { id: 'work-agent', name: 'Work Agent', emoji: '🤖', color: 'work', role: 'Orchestrator' },
-  { id: 'build-agent', name: 'Build Agent', emoji: '🔧', color: 'build', role: 'Engineering' },
-  { id: 'research-agent', name: 'Research Agent', emoji: '🔍', color: 'research', role: 'Intelligence' },
-  { id: 'lifestyle-agent', name: 'Lifestyle Agent', emoji: '🧘', color: 'lifestyle', role: 'Wellness' },
-  { id: 'email-agent', name: 'Email Agent', emoji: '📧', color: 'email', role: 'Inbox Monitor' },
-  { id: 'hubspot-agent', name: 'HubSpot Agent', emoji: '📊', color: 'hubspot', role: 'CRM Data' },
+  // Level 1: Director (You)
+  { id: 'clawd-prime', name: 'CLAWD Prime', emoji: '🦞', color: 'work', role: 'Director & Orchestrator', level: 1 },
+  
+  // Level 2: Directors
+  { id: 'work-agent', name: 'Work Agent', emoji: '🤖', color: 'work', role: 'Sales & Business Operations', level: 2 },
+  { id: 'lifestyle-agent', name: 'Lifestyle Agent', emoji: '🧘', color: 'lifestyle', role: 'Wellness & Life Balance', level: 2 },
+  { id: 'build-agent', name: 'Build Agent', emoji: '🔧', color: 'build', role: 'Engineering & Infrastructure', level: 2 },
+  
+  // Level 3: Specialists
+  { id: 'email-agent', name: 'Email Agent', emoji: '📧', color: 'email', role: 'Inbox Monitor → Work Agent', level: 3 },
+  { id: 'hubspot-agent', name: 'HubSpot Agent', emoji: '📊', color: 'hubspot', role: 'CRM Data → Work Agent', level: 3 },
+  { id: 'research-agent', name: 'Research Agent', emoji: '🔍', color: 'research', role: 'Intelligence Gathering', level: 3 },
 ];
 
 const STAGE_COLORS: any = {
@@ -162,7 +168,7 @@ export default function MissionControl() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Active Agents</h2>
-              <span className="text-xs text-gray-500">{agents.length}/6 Online</span>
+              <span className="text-xs text-gray-500">{agents.length}/7 Online</span>
             </div>
             
             <div className="space-y-3">
@@ -231,7 +237,7 @@ function AgentCard({ config, data, onRefresh }: any) {
                      status === 'weekend' ? 'bg-purple-500' : 'bg-gray-600';
 
   return (
-    <div className={`bg-surface border ${status === 'error' ? 'border-red-500' : 'border-border'} rounded-xl p-4 hover:border-gray-600 transition-colors`}>
+    <div className={`bg-surface border ${status === 'error' ? 'border-red-500' : config.level === 1 ? 'border-red-500/50' : 'border-border'} rounded-xl p-4 hover:border-gray-600 transition-colors ${config.level === 1 ? 'ring-1 ring-red-500/20' : ''}`}>
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
           <div className="relative">
@@ -239,7 +245,15 @@ function AgentCard({ config, data, onRefresh }: any) {
             <span className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-surface ${statusColor}`} />
           </div>
           <div>
-            <h3 className={`font-semibold ${colors[config.color].split(' ')[1]}`}>{config.name}</h3>
+            <div className="flex items-center gap-2">
+              <h3 className={`font-semibold ${colors[config.color].split(' ')[1]}`}>{config.name}</h3>
+              {config.level === 1 && (
+                <span className="text-xs px-1.5 py-0.5 bg-red-500/20 text-red-400 rounded">YOU</span>
+              )}
+              {config.level === 3 && (
+                <span className="text-xs px-1.5 py-0.5 bg-gray-700 text-gray-400 rounded">L3</span>
+              )}
+            </div>
             <p className="text-xs text-gray-500">{config.role}</p>
           </div>
         </div>
