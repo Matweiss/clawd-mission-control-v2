@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import { 
   Activity, Mail, Database, Cpu, Sparkles, 
@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { useCommandPalette, useRealtimeData, useAgentActions } from '../hooks/useMissionControl';
 import { CommandPalette } from '../components/CommandPalette';
+import { QuickActionsPalette } from '../components/QuickActionsPalette';
 import { DocumentRepository } from '../components/DocumentRepository';
 import { PipelineDetailModal } from '../components/PipelineDetailModal';
 import { EmailDetailModal } from '../components/EmailDetailModal';
@@ -49,6 +50,20 @@ export default function MissionControl() {
   const [showPipelineModal, setShowPipelineModal] = useState(false);
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
+  const [showQuickActions, setShowQuickActions] = useState(false);
+
+  // Quick Actions keyboard shortcut (Cmd+K or Ctrl+K)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setShowQuickActions(prev => !prev);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const currentTime = new Date().toLocaleTimeString('en-US', {
     timeZone: 'America/Los_Angeles',
@@ -130,6 +145,15 @@ export default function MissionControl() {
         isOpen={isOpen} 
         onClose={() => setIsOpen(false)}
         onSelect={handleCommand}
+      />
+
+      <QuickActionsPalette
+        isOpen={showQuickActions}
+        onClose={() => setShowQuickActions(false)}
+        agents={agents}
+        pipeline={pipeline}
+        emails={emails}
+        onRefresh={refresh}
       />
 
       <PipelineDetailModal
