@@ -60,7 +60,7 @@ export function useRealtimeData() {
 
       const { data: pipelineData, error: pipelineError } = await supabase
         .from('pipeline_cache')
-        .select('deal_id,name,amount,stage_name,close_date');
+        .select('id,name,amount,stagename,closedate');
       
       if (pipelineError) console.error('Pipeline error:', pipelineError);
 
@@ -84,7 +84,7 @@ export function useRealtimeData() {
       if (pipelineData) {
         const total = pipelineData.reduce((sum: number, d: any) => sum + (d.amount || 0), 0);
         const byStage = pipelineData.reduce((acc: any, deal: any) => {
-          const stage = deal.stage_name || 'Unknown';
+          const stage = deal.stagename || 'Unknown';
           if (!acc[stage]) acc[stage] = { count: 0, value: 0 };
           acc[stage].count++;
           acc[stage].value += deal.amount || 0;
