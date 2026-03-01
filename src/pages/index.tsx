@@ -10,6 +10,7 @@ import { useCommandPalette, useRealtimeData, useAgentActions } from '../hooks/us
 import { CommandPalette } from '../components/CommandPalette';
 import { QuickActionsPalette } from '../components/QuickActionsPalette';
 import { AgentCommandCenter } from '../components/AgentCommandCenter';
+import { SalesIntelligenceHub } from '../components/SalesIntelligenceHub';
 import { DocumentRepository } from '../components/DocumentRepository';
 import { PipelineDetailModal } from '../components/PipelineDetailModal';
 import { EmailDetailModal } from '../components/EmailDetailModal';
@@ -54,6 +55,7 @@ export default function MissionControl() {
   const [showQuickActions, setShowQuickActions] = useState(false);
   const [showAgentCommandCenter, setShowAgentCommandCenter] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState<any>(null);
+  const [showSalesHub, setShowSalesHub] = useState(false);
 
   // Quick Actions keyboard shortcut (Cmd+K or Ctrl+K)
   useEffect(() => {
@@ -178,6 +180,21 @@ export default function MissionControl() {
         onAddTask={addTask}
         onUpdateTask={updateTask}
         onDeleteTask={deleteTask}
+      />
+
+      <AgentCommandCenter
+        isOpen={showAgentCommandCenter}
+        onClose={() => setShowAgentCommandCenter(false)}
+        agent={selectedAgent}
+        onRefresh={(agentId) => console.log('Refresh', agentId)}
+        onRestart={(agentId) => console.log('Restart', agentId)}
+      />
+
+      <SalesIntelligenceHub
+        isOpen={showSalesHub}
+        onClose={() => setShowSalesHub(false)}
+        pipeline={pipeline}
+        onRefresh={refresh}
       />
 
       {/* Header */}
