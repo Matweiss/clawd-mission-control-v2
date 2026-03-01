@@ -9,6 +9,7 @@ import {
 import { useCommandPalette, useRealtimeData, useAgentActions } from '../hooks/useMissionControl';
 import { CommandPalette } from '../components/CommandPalette';
 import { QuickActionsPalette } from '../components/QuickActionsPalette';
+import { AgentCommandCenter } from '../components/AgentCommandCenter';
 import { DocumentRepository } from '../components/DocumentRepository';
 import { PipelineDetailModal } from '../components/PipelineDetailModal';
 import { EmailDetailModal } from '../components/EmailDetailModal';
@@ -51,6 +52,8 @@ export default function MissionControl() {
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [showQuickActions, setShowQuickActions] = useState(false);
+  const [showAgentCommandCenter, setShowAgentCommandCenter] = useState(false);
+  const [selectedAgent, setSelectedAgent] = useState<any>(null);
 
   // Quick Actions keyboard shortcut (Cmd+K or Ctrl+K)
   useEffect(() => {
