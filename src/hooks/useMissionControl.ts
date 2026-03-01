@@ -11,7 +11,6 @@ export function useCommandPalette() {
   const [search, setSearch] = useState('');
   const [results, setResults] = useState([]);
 
-  // Toggle with Cmd+K
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
@@ -34,39 +33,58 @@ export function useRealtimeData() {
   const [agents, setAgents] = useState<any[]>([]);
   const [emails, setEmails] = useState<any[]>([]);
   const [pipeline, setPipeline] = useState<{ deals: any[]; total: number; byStage: Record<string, { count: number; value: number }> }>({ deals: [], total: 0, byStage: {} });
-  const [staleDeals, setStaleDeals] = useState<any[]>([]);
-  const [activities, setActivities] = useState<any[]>([]);
   const [calendarEvents, setCalendarEvents] = useState<any[]>([]);
-  const [syncStatus, setSyncStatus] = useState<{ lastSync: string | null; status: string }>({ lastSync: null, status: 'idle' });
   const [loading, setLoading] = useState(true);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
 
   const fetchData = useCallback(async () => {
+    console.log('🔍 Fetching data from Supabase...');
+    setLoading(true);
+    
     try {
-      // Fetch all data in parallel
-      const [
-        { data: agentsData },
-        { data: emailsData },
-        { data: pipelineData },
-        { data: staleData },
-        { data: activitiesData },
-        { data: eventsData },
-        { data: syncData }
-      ] = await Promise.all([
-        supabase.from('agent_status').select('*').order('updated_at', { ascending: false }),
-        supabase.from('email_categories').select('*').order('received_at', { ascending: false }).limit(20),
-        supabase.from('pipeline_cache').select('*'),
-        supabase.from('stale_deals').select('*').order('daysStale', { ascending: false }),
-        supabase.from('clawd_logs').select('*').order('created_at', { ascending: false }).limit(20),
-        supabase.from('calendar_events').select('*').gte('start_time', new Date().toISOString()).order('start_time', { ascending: true }).limit(10),
-        supabase.from('sync_status').select('*').order('last_sync_at', { ascending: false }).limit(1).single()
-      ]);
+      // Only query tables that exist
+      const { data: agentsData, error: agentsError } = await supabase
+        .from('agent_status')
+        .select('agent_id,status,success_rate,last_task,updated_at')
+        .order('updated_at', { ascending: false });
+      
+      if (agentsError) console.error('Agents error:', agentsError);
+
+      const { data: emailsData, error: emailsError } = await supabase
+        .from('email_categories')
+        .select('message_id,from_email,from_name,subject,category,received_at,snippet')
+        .order('received_at', { ascending: false })
+        .limit(20);
+      
+      if (emailsError) console.error('Emails error:', emailsError);
+
+      const { data: pipelineData, error: pipelineError } = await supabase
+        .from('pipeline_cache')
+        .select('deal_id,name,amount,stage_name,close_date');
+      
+      if (pipelineError) console.error('Pipeline error:', pipelineError);
+
+      const { data: calendarData, error: calendarError } = await supabase
+        .from('calendar_events')
+        .select('id,summary,start_time,end_time,attendees,meet_link,location')
+        .gte('start_time', new Date().toISOString())
+        .order('start_time', { ascending: true })
+        .limit(10);
+      
+      if (calendarError) console.error('Calendar error:', calendarError);
+
+      console.log('📊 Fetched:', {
+        agents: agentsData?.length || 0,
+        emails: emailsData?.length || 0,
+        pipeline: pipelineData?.length || 0,
+        calendar: calendarData?.length || 0,
+      });
 
       // Process pipeline data
       if (pipelineData) {
         const total = pipelineData.reduce((sum: number, d: any) => sum + (d.amount || 0), 0);
         const byStage = pipelineData.reduce((acc: any, deal: any) => {
-          const stage = deal.stageName || 'Unknown';
+          const stage = deal.stage_name || 'Unknown';
           if (!acc[stage]) acc[stage] = { count: 0, value: 0 };
           acc[stage].count++;
           acc[stage].value += deal.amount || 0;
@@ -77,39 +95,23 @@ export function useRealtimeData() {
 
       setAgents(agentsData || []);
       setEmails(emailsData || []);
-      setStaleDeals(staleData || []);
-      setActivities(activitiesData || []);
-      setCalendarEvents(eventsData || []);
-      
-      if (syncData) {
-        setSyncStatus({
-          lastSync: syncData.last_sync_at,
-          status: syncData.status
-        });
-      }
-      
+      setCalendarEvents(calendarData || []);
       setLastRefresh(new Date());
-      setLoading(false);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error('❌ Error fetching data:', error);
+    } finally {
       setLoading(false);
     }
   }, []);
 
-  // Initial fetch - client side only
+  // Initial fetch
   useEffect(() => {
-    // Force immediate fetch on mount
     fetchData();
-    
-    // Also fetch after a short delay to ensure Supabase client is ready
-    const timer = setTimeout(() => {
-      fetchData();
-    }, 500);
-    
+    const timer = setTimeout(fetchData, 500);
     return () => clearTimeout(timer);
   }, [fetchData]);
 
-  // Real-time subscriptions
+  // Real-time subscriptions (only for tables that exist)
   useEffect(() => {
     const channels = [
       supabase.channel('agents')
@@ -121,9 +123,6 @@ export function useRealtimeData() {
       supabase.channel('pipeline')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'pipeline_cache' }, fetchData)
         .subscribe(),
-      supabase.channel('activities')
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'clawd_logs' }, fetchData)
-        .subscribe()
     ];
 
     return () => channels.forEach(ch => ch.unsubscribe());
@@ -136,29 +135,19 @@ export function useRealtimeData() {
   }, [fetchData]);
 
   return { 
-    agents, emails, pipeline, staleDeals, activities, calendarEvents, syncStatus,
+    agents, emails, pipeline, calendarEvents,
     loading, lastRefresh, refresh: fetchData 
   };
 }
 
 export function useAgentActions() {
   const spawnAgent = async (agentType: string, task: string) => {
-    // Log to activity
-    await supabase.from('clawd_logs').insert({
-      agent: 'work-agent',
-      action: `Spawned ${agentType} for: ${task}`,
-      status: 'info',
-      details: { spawned: agentType, task }
-    });
+    console.log('Spawn agent:', agentType, task);
     return true;
   };
 
   const refreshAgent = async (agentId: string) => {
-    await supabase.from('clawd_logs').insert({
-      agent: agentId,
-      action: 'Manual refresh triggered',
-      status: 'info'
-    });
+    console.log('Refresh agent:', agentId);
     return true;
   };
 

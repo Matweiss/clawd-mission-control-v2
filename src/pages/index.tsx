@@ -136,7 +136,6 @@ export default function MissionControl() {
         isOpen={showPipelineModal}
         onClose={() => setShowPipelineModal(false)}
         pipeline={pipeline}
-        staleDeals={staleDeals}
       />
 
       <EmailDetailModal
@@ -619,19 +618,13 @@ function PipelinePanel({ pipeline, closingThisWeek, onViewDetails }: any) {
           </div>
         )}
 
-        {/* Stale Deals */}
-        {staleDeals.length > 0 && (
+        {/* Stale Deals - disabled, table doesn't exist */}
+        {false && (
           <div className="border-t border-border pt-3">
             <div className="flex items-center gap-2 text-yellow-500 mb-2">
               <Clock className="w-4 h-4" />
-              <span className="text-xs font-medium">Stale Deals ({staleDeals.length})</span>
+              <span className="text-xs font-medium">Stale Deals</span>
             </div>
-            {staleDeals.slice(0, 3).map((deal: any, i: number) => (
-              <div key={i} className="text-xs py-1 flex items-center justify-between">
-                <span className="text-gray-400 truncate max-w-[150px]">{deal.name}</span>
-                <span className="text-yellow-500">{deal.daysStale}d</span>
-              </div>
-            ))}
           </div>
         )}
       </div>

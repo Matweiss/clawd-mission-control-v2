@@ -14,7 +14,7 @@ interface PipelineDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   pipeline: { deals: Deal[]; total: number; byStage: Record<string, { count: number; value: number }> };
-  staleDeals: Deal[];
+  staleDeals?: Deal[];
 }
 
 const STAGE_ORDER = ['Qualification', 'Discovery', 'Evaluation', 'Confirmation', 'Negotiation'];
@@ -26,7 +26,7 @@ const STAGE_COLORS: Record<string, string> = {
   'Negotiation': 'text-red-400',
 };
 
-export function PipelineDetailModal({ isOpen, onClose, pipeline, staleDeals }: PipelineDetailModalProps) {
+export function PipelineDetailModal({ isOpen, onClose, pipeline, staleDeals = [] }: PipelineDetailModalProps) {
   const [activeTab, setActiveTab] = useState<'all' | 'byStage' | 'closing' | 'stale'>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<'amount' | 'closeDate' | 'name'>('amount');
