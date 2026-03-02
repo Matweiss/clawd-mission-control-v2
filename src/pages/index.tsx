@@ -312,7 +312,7 @@ export default function MissionControl() {
 
             <ActivityPanel activities={[]} />
             
-            <PetTrackerPanel onRefresh={refresh} />
+            <PetTrackerPanel />
 
             <CalendarPanel events={calendarEvents || []} />
 
