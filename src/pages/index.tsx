@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { useCommandPalette, useRealtimeData, useAgentActions } from '../hooks/useMissionControl';
 import { CommandPalette } from '../components/CommandPalette';
+import { PetTrackerPanel } from '../components/PetTrackerPanel';
 import { QuickActionsPalette } from '../components/QuickActionsPalette';
 import { AgentCommandCenter } from '../components/AgentCommandCenter';
 import { SalesIntelligenceHub } from '../components/SalesIntelligenceHub';
@@ -310,6 +311,8 @@ export default function MissionControl() {
             <ApiHealthPanel />
 
             <ActivityPanel activities={[]} />
+            
+            <PetTrackerPanel onRefresh={refresh} />
 
             <CalendarPanel events={calendarEvents || []} />
 
