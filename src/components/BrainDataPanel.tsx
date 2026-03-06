@@ -10,8 +10,13 @@ import {
   Clock,
   RefreshCw,
   Search,
-  FolderOpen
+  FolderOpen,
+  Plus,
+  Network,
+  Mic
 } from 'lucide-react';
+import { MemoryEditor } from './MemoryEditor';
+import { MemoryGraph } from './MemoryGraph';
 
 interface BrainDataFile {
   path: string;
@@ -40,6 +45,8 @@ export function BrainDataPanel() {
   const [activeTab, setActiveTab] = useState<'all' | 'memories' | 'handoffs' | 'docs' | 'daily'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFile, setSelectedFile] = useState<BrainDataFile | null>(null);
+  const [showEditor, setShowEditor] = useState(false);
+  const [showGraph, setShowGraph] = useState(false);
 
   useEffect(() => {
     fetchBrainData();
@@ -121,16 +128,35 @@ export function BrainDataPanel() {
             </div>
           </div>
           
-          <a
-            href="https://github.com/Matweiss/clawd-brain-data"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1 px-3 py-1.5 bg-[#1a1a1a] rounded-lg text-xs text-gray-400 hover:text-white hover:bg-[#222] transition-colors"
-          >
-            <FolderOpen className="w-3 h-3" />
-            Open Repo
-            <ExternalLink className="w-3 h-3" />
-          </a>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowGraph(true)}
+              className="flex items-center gap-1 px-3 py-1.5 bg-[#1a1a1a] rounded-lg text-xs text-gray-400 hover:text-white hover:bg-[#222] transition-colors"
+              title="View linked memories graph"
+            >
+              <Network className="w-3 h-3" />
+              Graph
+            </button>
+            
+            <button
+              onClick={() => setShowEditor(true)}
+              className="flex items-center gap-1 px-3 py-1.5 bg-purple-500/20 text-purple-400 rounded-lg text-xs hover:bg-purple-500/30 transition-colors"
+            >
+              <Plus className="w-3 h-3" />
+              New
+            </button>
+            
+            <a
+              href="https://github.com/Matweiss/clawd-brain-data"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 px-3 py-1.5 bg-[#1a1a1a] rounded-lg text-xs text-gray-400 hover:text-white hover:bg-[#222] transition-colors"
+            >
+              <FolderOpen className="w-3 h-3" />
+              Repo
+              <ExternalLink className="w-3 h-3" />
+            </a>
+          </div>
         </div>
 
         {/* Stats */}
@@ -281,6 +307,27 @@ export function BrainDataPanel() {
           </button>
         </div>
       </div>
+
+      {/* Modals */}
+      {showEditor && (
+        <MemoryEditor
+          onClose={() => setShowEditor(false)}
+          onSave={() => {
+            fetchBrainData();
+            setShowEditor(false);
+          }}
+        />
+      )}
+
+      {showGraph && (
+        <MemoryGraph
+          onSelectMemory={(path) => {
+            window.open(getGitHubUrl(path), '_blank');
+            setShowGraph(false);
+          }}
+          onClose={() => setShowGraph(false)}
+        />
+      )}
     </div>
   );
 }
