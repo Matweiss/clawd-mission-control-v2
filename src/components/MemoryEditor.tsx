@@ -9,8 +9,11 @@ import {
   GitCommit,
   Sparkles,
   MicOff,
-  Loader2
+  Loader2,
+  LayoutTemplate
 } from 'lucide-react';
+import { TemplateSelector, Template, TEMPLATES } from './TemplateSelector';
+import { MemorySuggestions } from './MemorySuggestions';
 
 interface MemoryEditorProps {
   onClose: () => void;
@@ -48,6 +51,7 @@ export function MemoryEditor({ onClose, onSave }: MemoryEditorProps) {
   const [type, setType] = useState<'memory' | 'handoff' | 'decision' | 'doc'>('memory');
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
+  const [showTemplateSelector, setShowTemplateSelector] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
@@ -225,22 +229,33 @@ export function MemoryEditor({ onClose, onSave }: MemoryEditorProps) {
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {/* Type Selector */}
-          <div className="flex gap-2">
-            {MEMORY_TYPES.map((t) => (
-              <button
-                key={t.id}
-                onClick={() => setType(t.id as any)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  type === t.id
-                    ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
-                    : 'bg-[#1a1a1a] text-gray-400 hover:bg-[#222]'
-                }`}
-              >
-                <span>{t.icon}</span>
-                {t.label}
-              </button>
-            ))}
+          <div className="flex items-center justify-between">
+            {/* Type Selector */}
+            <div className="flex gap-2">
+              {MEMORY_TYPES.map((t) => (
+                <button
+                  key={t.id}
+                  onClick={() => setType(t.id as any)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    type === t.id
+                      ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
+                      : 'bg-[#1a1a1a] text-gray-400 hover:bg-[#222]'
+                  }`}
+                >
+                  <span>{t.icon}</span>
+                  {t.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Template Button */}
+            <button
+              onClick={() => setShowTemplateSelector(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-[#1a1a1a] text-gray-400 rounded-lg text-sm hover:bg-[#222] transition-colors"
+            >
+              <LayoutTemplate className="w-4 h-4" />
+              Use Template
+            </button>
           </div>
 
           {/* Title */}
@@ -388,6 +403,16 @@ export function MemoryEditor({ onClose, onSave }: MemoryEditorProps) {
               className="w-full min-h-[200px] bg-[#1a1a1a] rounded-lg p-4 text-gray-300 placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-purple-500 resize-y font-mono text-sm"
             />
           )}
+
+          {/* Related Memories Suggestions */}
+          <MemorySuggestions
+            currentTitle={title}
+            currentContent={content}
+            currentTags={tags}
+            onSelectMemory={(path) => {
+              window.open(`https://github.com/Matweiss/clawd-brain-data/blob/main/${path}`, '_blank');
+            }}
+          />
         </div>
 
         {/* Footer */}
@@ -442,6 +467,20 @@ export function MemoryEditor({ onClose, onSave }: MemoryEditorProps) {
             </button>
           </div>
         </div>
+
+        {/* Template Selector Modal */}
+        {showTemplateSelector && (
+          <TemplateSelector
+            onSelect={(template: Template) => {
+              setType(template.type);
+              setTitle(template.name);
+              setContent(template.content);
+              setTags(template.tags);
+              setShowTemplateSelector(false);
+            }}
+            onClose={() => setShowTemplateSelector(false)}
+          />
+        )}
       </div>
     </div>
   );

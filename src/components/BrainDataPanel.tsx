@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { MemoryEditor } from './MemoryEditor';
 import { MemoryGraph } from './MemoryGraph';
+import { ExportModal } from './ExportModal';
 
 interface BrainDataFile {
   path: string;
@@ -47,6 +48,7 @@ export function BrainDataPanel() {
   const [selectedFile, setSelectedFile] = useState<BrainDataFile | null>(null);
   const [showEditor, setShowEditor] = useState(false);
   const [showGraph, setShowGraph] = useState(false);
+  const [showExport, setShowExport] = useState(false);
 
   useEffect(() => {
     fetchBrainData();
@@ -144,6 +146,15 @@ export function BrainDataPanel() {
             >
               <Plus className="w-3 h-3" />
               New
+            </button>
+
+            <button
+              onClick={() => setShowExport(true)}
+              className="flex items-center gap-1 px-3 py-1.5 bg-[#1a1a1a] rounded-lg text-xs text-gray-400 hover:text-white hover:bg-[#222] transition-colors"
+              title="Export memories"
+            >
+              <Download className="w-3 h-3" />
+              Export
             </button>
             
             <a
@@ -326,6 +337,13 @@ export function BrainDataPanel() {
             setShowGraph(false);
           }}
           onClose={() => setShowGraph(false)}
+        />
+      )}
+
+      {showExport && (
+        <ExportModal
+          memories={files}
+          onClose={() => setShowExport(false)}
         />
       )}
     </div>
