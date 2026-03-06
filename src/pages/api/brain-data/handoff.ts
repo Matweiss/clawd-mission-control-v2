@@ -229,7 +229,8 @@ export default async function handler(
       );
       
       // Get new path based on status
-      const title = content.match(/title: "([^"]+)")?.[1] || 'untitled';
+      const titleMatch = content.match(/title: "([^"]+)"/);
+      const title = titleMatch ? titleMatch[1] : 'untitled';
       const { path: newRelativePath } = getFilePath(newStatus, title);
       const newFullPath = join(BRAIN_DATA_PATH, newRelativePath);
       
