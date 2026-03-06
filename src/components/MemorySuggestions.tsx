@@ -54,13 +54,14 @@ export function MemorySuggestions({
       // Calculate simple similarity based on shared words/tags
       const currentText = (currentTitle + ' ' + currentContent).toLowerCase();
       const currentWords = new Set(currentText.split(/\s+/).filter(w => w.length > 3));
+      const currentWordsArray = Array.from(currentWords);
       
       const scored = data.files.map((file: any) => {
         const fileText = (file.title + ' ' + file.preview).toLowerCase();
         const fileWords = new Set(fileText.split(/\s+/).filter(w => w.length > 3));
         
         // Word overlap
-        const sharedWords = [...currentWords].filter(w => fileWords.has(w));
+        const sharedWords = currentWordsArray.filter(w => fileWords.has(w));
         let score = sharedWords.length;
         
         // Tag overlap
