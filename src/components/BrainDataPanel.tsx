@@ -13,11 +13,13 @@ import {
   FolderOpen,
   Plus,
   Network,
-  Mic
+  Mic,
+  Mail
 } from 'lucide-react';
 import { MemoryEditor } from './MemoryEditor';
 import { MemoryGraph } from './MemoryGraph';
 import { ExportModal } from './ExportModal';
+import { EmailImport } from './EmailImport';
 
 interface BrainDataFile {
   path: string;
@@ -49,6 +51,7 @@ export function BrainDataPanel() {
   const [showEditor, setShowEditor] = useState(false);
   const [showGraph, setShowGraph] = useState(false);
   const [showExport, setShowExport] = useState(false);
+  const [showEmailImport, setShowEmailImport] = useState(false);
 
   useEffect(() => {
     fetchBrainData();
@@ -138,6 +141,15 @@ export function BrainDataPanel() {
             >
               <Network className="w-3 h-3" />
               Graph
+            </button>
+
+            <button
+              onClick={() => setShowEmailImport(true)}
+              className="flex items-center gap-1 px-3 py-1.5 bg-[#1a1a1a] rounded-lg text-xs text-gray-400 hover:text-white hover:bg-[#222] transition-colors"
+              title="Import from Gmail"
+            >
+              <Mail className="w-3 h-3" />
+              Email
             </button>
             
             <button
@@ -344,6 +356,15 @@ export function BrainDataPanel() {
         <ExportModal
           memories={files}
           onClose={() => setShowExport(false)}
+        />
+      )}
+
+      {showEmailImport && (
+        <EmailImport
+          onClose={() => {
+            setShowEmailImport(false);
+            fetchBrainData(); // Refresh after importing
+          }}
         />
       )}
     </div>
