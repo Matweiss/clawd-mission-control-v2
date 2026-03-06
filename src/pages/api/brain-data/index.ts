@@ -37,16 +37,18 @@ function parseFrontmatter(content: string) {
     const colonIndex = line.indexOf(':');
     if (colonIndex > 0) {
       const key = line.slice(0, colonIndex).trim();
-      let value = line.slice(colonIndex + 1).trim();
+      const rawValue = line.slice(colonIndex + 1).trim();
+      
+      let parsedValue: string | string[];
       
       // Parse arrays
-      if (value.startsWith('[') && value.endsWith(']')) {
-        value = value.slice(1, -1).split(',').map((v: string) => v.trim().replace(/"/g, ''));
+      if (rawValue.startsWith('[') && rawValue.endsWith(']')) {
+        parsedValue = rawValue.slice(1, -1).split(',').map((v: string) => v.trim().replace(/"/g, ''));
       } else {
-        value = value.replace(/"/g, '');
+        parsedValue = rawValue.replace(/"/g, '');
       }
       
-      metadata[key] = value;
+      metadata[key] = parsedValue;
     }
   });
   
