@@ -72,7 +72,7 @@ export function EmailImport({ onClose }: EmailImportProps) {
       });
 
       if (response.ok) {
-        setImported(new Set([...imported, emailId]));
+        setImported(new Set(Array.from(imported).concat([emailId])));
       }
     } catch (error) {
       console.error('Failed to import email:', error);
