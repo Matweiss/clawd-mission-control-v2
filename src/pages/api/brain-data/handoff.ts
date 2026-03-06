@@ -1,9 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { writeFileSync, mkdirSync, existsSync, readFileSync, renameSync } from 'fs';
-import { join, dirname } from 'path';
-import { execSync } from 'child_process';
 
-const BRAIN_DATA_PATH = '/root/.openclaw/workspace/clawd-brain-data';
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+const REPO_OWNER = 'Matweiss';
+const REPO_NAME = 'clawd-brain-data';
 
 export type HandoffStatus = 'draft' | 'pending' | 'active' | 'complete' | 'archived';
 export type HandoffPriority = 'low' | 'medium' | 'high' | 'urgent';
@@ -156,6 +155,81 @@ function getFilePath(status: HandoffStatus, title: string): { path: string; isAc
   return { path: `handoffs/active/${filename}`, isActive: true };
 }
 
+async function createFileInGitHub(path: string, content: string, message: string): Promise<boolean> {
+  try {
+    const contentBase64 = Buffer.from(content).toString('base64');
+    
+    const response = await fetch(
+      `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${path}`,
+      {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${GITHUB_TOKEN}`,
+          'Accept': 'application/vnd.github.v3+json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          message: message,
+          content: contentBase64,
+          branch: 'main'
+        })
+      }
+    );
+    
+    return response.ok;
+  } catch (error) {
+    console.error('Error creating file:', error);
+    return false;
+  }
+}
+
+async function getFileSha(path: string): Promise<string | null> {
+  try {
+    const response = await fetch(
+      `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${path}?ref=main`,
+      {
+        headers: {
+          'Authorization': `Bearer ${GITHUB_TOKEN}`,
+          'Accept': 'application/vnd.github.v3+json'
+        }
+      }
+    );
+    
+    if (!response.ok) return null;
+    
+    const data = await response.json();
+    return data.sha;
+  } catch (error) {
+    return null;
+  }
+}
+
+async function deleteFileFromGitHub(path: string, sha: string, message: string): Promise<boolean> {
+  try {
+    const response = await fetch(
+      `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${path}`,
+      {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${GITHUB_TOKEN}`,
+          'Accept': 'application/vnd.github.v3+json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          message: message,
+          sha: sha,
+          branch: 'main'
+        })
+      }
+    );
+    
+    return response.ok;
+  } catch (error) {
+    console.error('Error deleting file:', error);
+    return false;
+  }
+}
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -170,28 +244,19 @@ export default async function handler(
       }
 
       const { path: relativePath, isActive } = getFilePath(data.status, data.title);
-      const fullPath = join(BRAIN_DATA_PATH, relativePath);
-      
-      // Ensure directory exists
-      const dir = dirname(fullPath);
-      if (!existsSync(dir)) {
-        mkdirSync(dir, { recursive: true });
-      }
 
-      // Generate content
       const frontmatter = generateFrontmatter(data);
       const content = generateHandoffContent(data);
       const fullContent = frontmatter + content;
       
-      writeFileSync(fullPath, fullContent, 'utf-8');
+      const success = await createFileInGitHub(
+        relativePath,
+        fullContent,
+        `[handoff] ${data.title} (${data.status})`
+      );
       
-      // Git commit
-      try {
-        execSync('git add -A', { cwd: BRAIN_DATA_PATH });
-        execSync(`git commit -m "[handoff] ${data.title} (${data.status})"`, { cwd: BRAIN_DATA_PATH });
-        execSync('git push origin main', { cwd: BRAIN_DATA_PATH });
-      } catch (e) {
-        console.log('Git commit optional, continuing...');
+      if (!success) {
+        return res.status(500).json({ error: 'Failed to create handoff' });
       }
       
       res.status(200).json({
@@ -205,61 +270,73 @@ export default async function handler(
       res.status(500).json({ error: 'Failed to create handoff' });
     }
   } else if (req.method === 'PUT') {
-    // Update handoff status (move between active/archived)
+    // Update handoff status
     try {
-      const { path: currentPath, newStatus } = req.body;
+      const { path: currentPath, newStatus, content: newContent } = req.body;
       
       if (!currentPath || !newStatus) {
         return res.status(400).json({ error: 'Path and newStatus are required' });
       }
 
-      const currentFullPath = join(BRAIN_DATA_PATH, currentPath);
+      // Get current file content
+      const fileResponse = await fetch(
+        `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${currentPath}?ref=main`,
+        {
+          headers: {
+            'Authorization': `Bearer ${GITHUB_TOKEN}`,
+            'Accept': 'application/vnd.github.v3+json'
+          }
+        }
+      );
       
-      if (!existsSync(currentFullPath)) {
+      if (!fileResponse.ok) {
         return res.status(404).json({ error: 'Handoff not found' });
       }
-
-      // Read current content
-      const content = readFileSync(currentFullPath, 'utf-8');
+      
+      const fileData = await fileResponse.json();
+      const currentContent = Buffer.from(fileData.content, 'base64').toString('utf-8');
       
       // Update status in frontmatter
-      const updatedContent = content.replace(
+      const updatedContent = newContent || currentContent.replace(
         /status: (\w+)/,
         `status: ${newStatus}`
       );
       
       // Get new path based on status
-      const titleMatch = content.match(/title: "([^"]+)"/);
+      const titleMatch = updatedContent.match(/title: "([^"]+)"/);
       const title = titleMatch ? titleMatch[1] : 'untitled';
       const { path: newRelativePath } = getFilePath(newStatus, title);
-      const newFullPath = join(BRAIN_DATA_PATH, newRelativePath);
       
-      // Ensure new directory exists
-      const newDir = dirname(newFullPath);
-      if (!existsSync(newDir)) {
-        mkdirSync(newDir, { recursive: true });
-      }
-      
-      // Write to new location
-      writeFileSync(newFullPath, updatedContent, 'utf-8');
-      
-      // Remove old file if path changed
-      if (currentPath !== newRelativePath) {
-        try {
-          const { unlinkSync } = require('fs');
-          unlinkSync(currentFullPath);
-        } catch (e) {
-          console.log('Could not remove old file');
+      // Create new file
+      const contentBase64 = Buffer.from(updatedContent).toString('base64');
+      const createResponse = await fetch(
+        `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${newRelativePath}`,
+        {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${GITHUB_TOKEN}`,
+            'Accept': 'application/vnd.github.v3+json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            message: `[handoff] ${title} → ${newStatus}`,
+            content: contentBase64,
+            branch: 'main'
+          })
         }
+      );
+      
+      if (!createResponse.ok) {
+        return res.status(500).json({ error: 'Failed to create new file' });
       }
       
-      // Git commit
-      try {
-        execSync('git add -A', { cwd: BRAIN_DATA_PATH });
-        execSync(`git commit -m "[handoff] ${title} → ${newStatus}"`, { cwd: BRAIN_DATA_PATH });
-        execSync('git push origin main', { cwd: BRAIN_DATA_PATH });
-      } catch (e) {
-        console.log('Git commit optional');
+      // Delete old file if path changed
+      if (currentPath !== newRelativePath) {
+        await deleteFileFromGitHub(
+          currentPath,
+          fileData.sha,
+          `[handoff] Archive ${title}`
+        );
       }
       
       res.status(200).json({

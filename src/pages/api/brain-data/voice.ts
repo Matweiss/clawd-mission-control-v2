@@ -1,10 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { writeFileSync, mkdirSync, existsSync } from 'fs';
-import { join, dirname } from 'path';
-import { execSync } from 'child_process';
 
-const BRAIN_DATA_PATH = '/root/.openclaw/workspace/clawd-brain-data';
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
+const REPO_OWNER = 'Matweiss';
+const REPO_NAME = 'clawd-brain-data';
 
 export const config = {
   api: {
@@ -22,16 +21,17 @@ interface TranscribeRequest {
   type?: 'memory' | 'handoff' | 'decision';
 }
 
-async function transcribeWithGroq(audioBuffer: Buffer, mimeType: string): Promise<string> {
-  // Determine file extension
+async function transcribeWithGroq(audioBase64: string, mimeType: string): Promise<string> {
   const ext = mimeType.includes('webm') ? 'webm' : 
               mimeType.includes('mp4') ? 'm4a' : 
               mimeType.includes('mp3') ? 'mp3' : 'wav';
   
-  // Create form data
-  const formData = new FormData();
+  // Convert base64 to buffer and then to blob
+  const audioBuffer = Buffer.from(audioBase64, 'base64');
   const uint8Array = new Uint8Array(audioBuffer);
   const blob = new Blob([uint8Array], { type: mimeType });
+  
+  const formData = new FormData();
   formData.append('file', blob, `audio.${ext}`);
   formData.append('model', 'whisper-large-v3');
   formData.append('response_format', 'text');
@@ -80,6 +80,34 @@ function getFilePath(type: string, title: string): string {
   return `memories/${year}/${month}/${year}-${month}-${day}-voice-${slug}.md`;
 }
 
+async function createFileInGitHub(path: string, content: string, message: string): Promise<boolean> {
+  try {
+    const contentBase64 = Buffer.from(content).toString('base64');
+    
+    const response = await fetch(
+      `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${path}`,
+      {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${GITHUB_TOKEN}`,
+          'Accept': 'application/vnd.github.v3+json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          message: message,
+          content: contentBase64,
+          branch: 'main'
+        })
+      }
+    );
+    
+    return response.ok;
+  } catch (error) {
+    console.error('Error creating file:', error);
+    return false;
+  }
+}
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -95,45 +123,29 @@ export default async function handler(
       return res.status(400).json({ error: 'Audio data is required' });
     }
 
-    // Decode base64 audio
-    const audioBuffer = Buffer.from(audioBase64, 'base64');
-    
     // Transcribe
     let transcription: string;
     try {
-      transcription = await transcribeWithGroq(audioBuffer, mimeType);
+      transcription = await transcribeWithGroq(audioBase64, mimeType);
     } catch (error) {
       console.error('Transcription error:', error);
       return res.status(500).json({ error: 'Failed to transcribe audio' });
     }
     
-    // Generate title if not provided
     const memoryTitle = title || `Voice Note - ${new Date().toLocaleDateString()}`;
-    
-    // Generate file path
     const relativePath = getFilePath(type, memoryTitle);
-    const fullPath = join(BRAIN_DATA_PATH, relativePath);
     
-    // Ensure directory exists
-    const dir = dirname(fullPath);
-    if (!existsSync(dir)) {
-      mkdirSync(dir, { recursive: true });
-    }
-
-    // Generate content
     const frontmatter = generateFrontmatter(memoryTitle, type, tags);
     const fullContent = frontmatter + transcription;
     
-    // Write file
-    writeFileSync(fullPath, fullContent, 'utf-8');
+    const success = await createFileInGitHub(
+      relativePath,
+      fullContent,
+      `[voice] ${memoryTitle}`
+    );
     
-    // Git commit
-    try {
-      execSync('git add -A', { cwd: BRAIN_DATA_PATH });
-      execSync(`git commit -m "[voice] ${memoryTitle}"`, { cwd: BRAIN_DATA_PATH });
-      execSync('git push origin main', { cwd: BRAIN_DATA_PATH });
-    } catch (e) {
-      console.log('Git commit optional');
+    if (!success) {
+      return res.status(500).json({ error: 'Failed to save voice note' });
     }
     
     res.status(200).json({
