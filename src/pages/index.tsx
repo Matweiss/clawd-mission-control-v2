@@ -16,6 +16,7 @@ import { PetTrackerPanel } from '../components/PetTrackerPanel';
 import { LifestyleHealthPanel } from '../components/LifestyleHealthPanel';
 import { QuickActionsPalette } from '../components/QuickActionsPalette';
 import { TokenUsagePanel } from '../components/TokenUsagePanel';
+import { BrainDataPanel } from '../components/BrainDataPanel';
 import { useRealtimeData } from '../hooks/useMissionControl';
 
 // Dashboard Overview (original layout simplified)
@@ -113,6 +114,8 @@ function DashboardView({ calendarEvents }: { calendarEvents?: any[] }) {
           </div>
 
           <TokenUsagePanel />
+          
+          <BrainDataPanel />
         </div>
       </div>
     </div>
