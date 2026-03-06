@@ -30,7 +30,8 @@ async function transcribeWithGroq(audioBuffer: Buffer, mimeType: string): Promis
   
   // Create form data
   const formData = new FormData();
-  const blob = new Blob([audioBuffer], { type: mimeType });
+  const uint8Array = new Uint8Array(audioBuffer);
+  const blob = new Blob([uint8Array], { type: mimeType });
   formData.append('file', blob, `audio.${ext}`);
   formData.append('model', 'whisper-large-v3');
   formData.append('response_format', 'text');
