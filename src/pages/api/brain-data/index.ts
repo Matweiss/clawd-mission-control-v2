@@ -1,9 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { execSync } from 'child_process';
-import { readFileSync, readdirSync, statSync } from 'fs';
-import { join } from 'path';
 
-const BRAIN_DATA_PATH = '/root/.openclaw/workspace/clawd-brain-data';
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+const REPO_OWNER = 'Matweiss';
+const REPO_NAME = 'clawd-brain-data';
 
 interface MemoryFile {
   path: string;
@@ -14,6 +13,90 @@ interface MemoryFile {
   tags: string[];
   preview: string;
   lastModified: string;
+  content?: string;
+}
+
+// Fetch file content from GitHub
+async function fetchFileContent(path: string): Promise<string | null> {
+  try {
+    const response = await fetch(
+      `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${path}`,
+      {
+        headers: {
+          'Authorization': `Bearer ${GITHUB_TOKEN}`,
+          'Accept': 'application/vnd.github.v3+json'
+        }
+      }
+    );
+    
+    if (!response.ok) return null;
+    
+    const data = await response.json();
+    if (data.content) {
+      return Buffer.from(data.content, 'base64').toString('utf-8');
+    }
+    return null;
+  } catch (error) {
+    console.error('Error fetching file:', error);
+    return null;
+  }
+}
+
+// Fetch directory contents from GitHub
+async function fetchDirectoryContents(path: string = ''): Promise<any[]> {
+  try {
+    const response = await fetch(
+      `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${path}?ref=main`,
+      {
+        headers: {
+          'Authorization': `Bearer ${GITHUB_TOKEN}`,
+          'Accept': 'application/vnd.github.v3+json'
+        }
+      }
+    );
+    
+    if (!response.ok) return [];
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching directory:', error);
+    return [];
+  }
+}
+
+// Recursively get all markdown files
+async function getAllMarkdownFiles(dir: string = ''): Promise<MemoryFile[]> {
+  const files: MemoryFile[] = [];
+  const contents = await fetchDirectoryContents(dir);
+  
+  for (const item of contents) {
+    if (item.type === 'dir') {
+      const subFiles = await getAllMarkdownFiles(item.path);
+      files.push(...subFiles);
+    } else if (item.type === 'file' && item.name.endsWith('.md') && item.name !== 'README.md') {
+      const content = await fetchFileContent(item.path);
+      if (content) {
+        const metadata = parseFrontmatter(content);
+        const preview = content
+          .replace(/^---\n[\s\S]*?\n---/, '')
+          .replace(/#+ /g, '')
+          .slice(0, 200) + '...';
+        
+        files.push({
+          path: item.path,
+          filename: item.name,
+          title: metadata.title,
+          date: metadata.date,
+          type: metadata.type,
+          tags: metadata.tags,
+          preview: preview,
+          lastModified: item.sha // Using sha as proxy for modification
+        });
+      }
+    }
+  }
+  
+  return files.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
 
 // Parse markdown frontmatter
@@ -60,51 +143,6 @@ function parseFrontmatter(content: string) {
   };
 }
 
-// Recursively get all markdown files
-function getMarkdownFiles(dir: string, basePath: string = ''): MemoryFile[] {
-  const files: MemoryFile[] = [];
-  
-  try {
-    const items = readdirSync(dir);
-    
-    for (const item of items) {
-      const fullPath = join(dir, item);
-      const relativePath = join(basePath, item);
-      const stat = statSync(fullPath);
-      
-      if (stat.isDirectory()) {
-        files.push(...getMarkdownFiles(fullPath, relativePath));
-      } else if (item.endsWith('.md') && item !== 'README.md') {
-        try {
-          const content = readFileSync(fullPath, 'utf-8');
-          const metadata = parseFrontmatter(content);
-          const preview = content
-            .replace(/^---\n[\s\S]*?\n---/, '')
-            .replace(/#+ /g, '')
-            .slice(0, 200) + '...';
-          
-          files.push({
-            path: relativePath,
-            filename: item,
-            title: metadata.title,
-            date: metadata.date,
-            type: metadata.type,
-            tags: metadata.tags,
-            preview: preview,
-            lastModified: stat.mtime.toISOString()
-          });
-        } catch (e) {
-          console.error(`Error reading ${fullPath}:`, e);
-        }
-      }
-    }
-  } catch (e) {
-    console.error(`Error reading directory ${dir}:`, e);
-  }
-  
-  return files.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-}
-
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -114,39 +152,41 @@ export default async function handler(
     
     // Get specific file content
     if (path) {
-      const filePath = join(BRAIN_DATA_PATH, path as string);
-      const content = readFileSync(filePath, 'utf-8');
-      const metadata = parseFrontmatter(content);
-      
-      return res.status(200).json({
-        content,
-        ...metadata
-      });
+      const content = await fetchFileContent(path as string);
+      if (content) {
+        const metadata = parseFrontmatter(content);
+        return res.status(200).json({
+          content,
+          ...metadata
+        });
+      }
+      return res.status(404).json({ error: 'File not found' });
     }
     
-    // Get list of files
+    // Get list of files based on type
     let files: MemoryFile[] = [];
     
     if (type === 'memories') {
-      files = getMarkdownFiles(join(BRAIN_DATA_PATH, 'memories'), 'memories');
+      files = await getAllMarkdownFiles('memories');
     } else if (type === 'handoffs') {
-      files = [
-        ...getMarkdownFiles(join(BRAIN_DATA_PATH, 'handoffs/active'), 'handoffs/active'),
-        ...getMarkdownFiles(join(BRAIN_DATA_PATH, 'handoffs/archived'), 'handoffs/archived')
-      ];
+      const active = await getAllMarkdownFiles('handoffs/active');
+      const archived = await getAllMarkdownFiles('handoffs/archived');
+      files = [...active, ...archived];
     } else if (type === 'docs') {
-      files = getMarkdownFiles(join(BRAIN_DATA_PATH, 'docs'), 'docs');
+      files = await getAllMarkdownFiles('docs');
     } else if (type === 'daily') {
-      files = getMarkdownFiles(join(BRAIN_DATA_PATH, 'daily'), 'daily');
+      files = await getAllMarkdownFiles('daily');
     } else {
       // Get all
-      files = [
-        ...getMarkdownFiles(join(BRAIN_DATA_PATH, 'memories'), 'memories'),
-        ...getMarkdownFiles(join(BRAIN_DATA_PATH, 'handoffs/active'), 'handoffs/active'),
-        ...getMarkdownFiles(join(BRAIN_DATA_PATH, 'handoffs/archived'), 'handoffs/archived'),
-        ...getMarkdownFiles(join(BRAIN_DATA_PATH, 'docs'), 'docs'),
-        ...getMarkdownFiles(join(BRAIN_DATA_PATH, 'daily'), 'daily')
-      ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      const [memories, handoffsActive, handoffsArchived, docs, daily] = await Promise.all([
+        getAllMarkdownFiles('memories'),
+        getAllMarkdownFiles('handoffs/active'),
+        getAllMarkdownFiles('handoffs/archived'),
+        getAllMarkdownFiles('docs'),
+        getAllMarkdownFiles('daily')
+      ]);
+      files = [...memories, ...handoffsActive, ...handoffsArchived, ...docs, ...daily]
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     }
     
     const limitNum = parseInt(limit as string, 10);

@@ -1,9 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { writeFileSync, mkdirSync, existsSync, readFileSync } from 'fs';
-import { join, dirname } from 'path';
-import { execSync } from 'child_process';
 
-const BRAIN_DATA_PATH = '/root/.openclaw/workspace/clawd-brain-data';
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+const REPO_OWNER = 'Matweiss';
+const REPO_NAME = 'clawd-brain-data';
 
 interface MemoryData {
   title: string;
@@ -63,14 +62,37 @@ function getFilePath(type: string, title: string): string {
   }
 }
 
-function commitToGit(filePath: string, title: string) {
+async function createFileInGitHub(path: string, content: string, message: string): Promise<boolean> {
   try {
-    execSync('git add -A', { cwd: BRAIN_DATA_PATH });
-    execSync(`git commit -m "[memory] ${title}"`, { cwd: BRAIN_DATA_PATH });
-    execSync('git push origin main', { cwd: BRAIN_DATA_PATH });
+    // Encode content to base64
+    const contentBase64 = Buffer.from(content).toString('base64');
+    
+    const response = await fetch(
+      `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${path}`,
+      {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${GITHUB_TOKEN}`,
+          'Accept': 'application/vnd.github.v3+json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          message: message,
+          content: contentBase64,
+          branch: 'main'
+        })
+      }
+    );
+    
+    if (!response.ok) {
+      const error = await response.json();
+      console.error('GitHub API error:', error);
+      return false;
+    }
+    
     return true;
   } catch (error) {
-    console.error('Git commit failed:', error);
+    console.error('Error creating file:', error);
     return false;
   }
 }
@@ -93,23 +115,21 @@ export default async function handler(
 
     // Generate file path
     const relativePath = getFilePath(data.type, data.title);
-    const fullPath = join(BRAIN_DATA_PATH, relativePath);
     
-    // Ensure directory exists
-    const dir = dirname(fullPath);
-    if (!existsSync(dir)) {
-      mkdirSync(dir, { recursive: true });
-    }
-
     // Generate content
     const frontmatter = generateFrontmatter(data);
     const fullContent = frontmatter + data.content;
     
-    // Write file
-    writeFileSync(fullPath, fullContent, 'utf-8');
+    // Commit to GitHub
+    const success = await createFileInGitHub(
+      relativePath,
+      fullContent,
+      `[memory] ${data.title}`
+    );
     
-    // Commit to git (async, don't wait)
-    commitToGit(relativePath, data.title);
+    if (!success) {
+      return res.status(500).json({ error: 'Failed to create file in GitHub' });
+    }
     
     res.status(200).json({
       success: true,
