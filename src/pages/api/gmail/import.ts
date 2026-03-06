@@ -1,81 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { getValidGoogleToken } from '../auth/refresh-google';
 
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
-const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const REPO_OWNER = 'Matweiss';
 const REPO_NAME = 'clawd-brain-data';
-
-interface GoogleTokens {
-  access_token: string;
-  refresh_token: string;
-  expires_at: string;
-}
-
-async function refreshAccessToken(refreshToken: string): Promise<GoogleTokens | null> {
-  try {
-    const response = await fetch('https://oauth2.googleapis.com/token', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        client_id: GOOGLE_CLIENT_ID || '',
-        client_secret: GOOGLE_CLIENT_SECRET || '',
-        refresh_token: refreshToken,
-        grant_type: 'refresh_token'
-      })
-    });
-
-    if (!response.ok) {
-      console.error('Token refresh failed:', await response.text());
-      return null;
-    }
-
-    const data = await response.json();
-    const expiresAt = new Date();
-    expiresAt.setSeconds(expiresAt.getSeconds() + data.expires_in);
-
-    return {
-      access_token: data.access_token,
-      refresh_token: refreshToken, // Keep the same refresh token
-      expires_at: expiresAt.toISOString()
-    };
-  } catch (error) {
-    console.error('Error refreshing token:', error);
-    return null;
-  }
-}
-
-async function getValidAccessToken(): Promise<string | null> {
-  try {
-    // For serverless, we'd need to store tokens differently
-    // For now, try to use environment or fetch from a secure store
-    // This is a simplified version - in production use a proper token store
-    
-    const tokenData = JSON.parse(process.env.GOOGLE_TOKEN_JSON || '{}');
-    
-    if (!tokenData.access_token) {
-      console.error('No Google token available');
-      return null;
-    }
-
-    const expiresAt = new Date(tokenData.expires_at);
-    const now = new Date();
-
-    // If token expires in less than 5 minutes, refresh it
-    if (expiresAt.getTime() - now.getTime() < 5 * 60 * 1000) {
-      const refreshed = await refreshAccessToken(tokenData.refresh_token);
-      if (refreshed) {
-        // In production, save the new token
-        return refreshed.access_token;
-      }
-    }
-
-    return tokenData.access_token;
-  } catch (error) {
-    console.error('Error getting access token:', error);
-    return null;
-  }
-}
 
 async function fetchGmailMessages(accessToken: string, query: string = '', maxResults: number = 10) {
   const url = `https://gmail.googleapis.com/gmail/v1/users/me/messages?q=${encodeURIComponent(query)}&maxResults=${maxResults}`;
@@ -211,7 +139,7 @@ export default async function handler(
 
     // For now, we'll need the user to provide their token
     // In production, this would be stored securely
-    const accessToken = await getValidAccessToken();
+    const accessToken = await getValidGoogleToken();
     
     if (!accessToken) {
       return res.status(401).json({ 

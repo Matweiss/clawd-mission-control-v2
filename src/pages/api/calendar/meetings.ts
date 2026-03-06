@@ -1,18 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { getValidGoogleToken } from '../auth/refresh-google';
 
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const REPO_OWNER = 'Matweiss';
 const REPO_NAME = 'clawd-brain-data';
-
-// Helper to get Google token (same as gmail/import.ts)
-async function getGoogleToken(): Promise<string | null> {
-  try {
-    const tokenData = JSON.parse(process.env.GOOGLE_TOKEN_JSON || '{}');
-    return tokenData.access_token || null;
-  } catch {
-    return null;
-  }
-}
 
 interface CalendarEvent {
   id: string;
@@ -132,7 +123,7 @@ export default async function handler(
   }
 
   try {
-    const token = await getGoogleToken();
+    const token = await getValidGoogleToken();
     
     if (!token) {
       return res.status(401).json({ 
