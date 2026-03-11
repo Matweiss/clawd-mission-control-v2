@@ -1,42 +1,55 @@
+#!/usr/bin/env node
 const https = require('https');
 const readline = require('readline');
 
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
 
-// Using Google's OAuth 2.0 for installed apps
-const CLIENT_ID = '271371034887-4ua8h3cra4j7k4g9j7p5k8j6j7.apps.googleusercontent.com';
-const CLIENT_SECRET = 'GOCSPX-xxxxxxxxxxxx'; // Placeholder - need actual secret
+const CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
+const REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000/auth/callback';
 
 const SCOPES = [
   'https://www.googleapis.com/auth/calendar.readonly',
   'https://www.googleapis.com/auth/gmail.readonly',
+  'https://www.googleapis.com/auth/gmail.modify',
+  'https://www.googleapis.com/auth/spreadsheets',
 ];
 
-console.log('\n🦞 Google Calendar/Gmail Authorization\n');
-console.log('Step 1: Click this link to authorize:\n');
+if (!CLIENT_ID || !CLIENT_SECRET) {
+  console.error('❌ Missing GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET in environment.');
+  process.exit(1);
+}
+
+console.log('\n🦞 Google Authorization Helper\n');
+console.log('Open this URL in your browser and approve access:\n');
 
 const authUrl = 'https://accounts.google.com/o/oauth2/v2/auth?' + new URLSearchParams({
   client_id: CLIENT_ID,
-  redirect_uri: 'urn:ietf:wg:oauth:2.0:oob',
+  redirect_uri: REDIRECT_URI,
   response_type: 'code',
   scope: SCOPES.join(' '),
   access_type: 'offline',
   prompt: 'consent',
 }).toString();
 
-console.log('\x1b[34m%s\x1b[0m\n', authUrl);
-console.log('Step 2: After approving, Google will give you a code.');
-console.log('Step 3: Paste that code here:\n');
+console.log(authUrl + '\n');
+console.log('Paste the full redirect URL after approval.\n');
 
-rl.question('Authorization code: ', async (code) => {
-  console.log('\nExchanging code for tokens...\n');
-  
-  // Exchange code for tokens
+rl.question('Redirect URL: ', async (redirectUrl) => {
+  const match = redirectUrl.match(/[?&]code=([^&]+)/);
+  if (!match) {
+    console.error('❌ Could not find code= in the redirect URL.');
+    rl.close();
+    process.exit(1);
+  }
+
+  const code = decodeURIComponent(match[1]);
+
   const postData = new URLSearchParams({
-    code: code.trim(),
+    code,
     client_id: CLIENT_ID,
     client_secret: CLIENT_SECRET,
-    redirect_uri: 'urn:ietf:wg:oauth:2.0:oob',
+    redirect_uri: REDIRECT_URI,
     grant_type: 'authorization_code',
   }).toString();
 
@@ -55,68 +68,35 @@ rl.question('Authorization code: ', async (code) => {
       try {
         const tokens = JSON.parse(data);
         if (tokens.error) {
-          console.log('❌ Error:', tokens.error_description);
+          console.error('❌ Error:', tokens.error_description || tokens.error);
           rl.close();
-          return;
+          process.exit(1);
         }
-        
-        console.log('✅ Success! Tokens received.\n');
-        console.log('Access Token:', tokens.access_token.substring(0, 20) + '...');
-        console.log('Refresh Token:', tokens.refresh_token ? 'Yes' : 'No');
-        console.log('\nSaving to Supabase...\n');
-        
-        // Store in Supabase via curl
-        const supabaseData = JSON.stringify({
-          service: 'google',
-          token: tokens.access_token,
-          refresh_token: tokens.refresh_token,
-          expires_at: new Date(Date.now() + tokens.expires_in * 1000).toISOString(),
-        });
-        
-        const supReq = https.request({
-          hostname: 'nmhbmgtyqutbztdafzjl.supabase.co',
-          path: '/rest/v1/api_tokens',
-          method: 'POST',
-          headers: {
-            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5taGJtZ3R5cXV0Ynp0ZGFmempsIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MTY0NzgzOCwiZXhwIjoyMDg3MjIzODM4fQ.9MBfNDENHCENroVRLFgbuh9nM4DARcLr-4j8dgpHLos',
-            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5taGJtZ3R5cXV0Ynp0ZGFmempsIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MTY0NzgzOCwiZXhwIjoyMDg3MjIzODM4fQ.9MBfNDENHCENroVRLFgbuh9nM4DARcLr-4j8dgpHLos',
-            'Content-Type': 'application/json',
-            'Prefer': 'resolution=merge-duplicates',
-          },
-        }, (supRes) => {
-          let supData = '';
-          supRes.on('data', chunk => supData += chunk);
-          supRes.on('end', () => {
-            if (supRes.statusCode === 201 || supRes.statusCode === 200) {
-              console.log('✅ Tokens saved to Supabase!\n');
-              console.log('The sync service will now automatically fetch Calendar and Gmail data.\n');
-            } else {
-              console.log('❌ Failed to save:', supData);
-            }
-            rl.close();
-          });
-        });
-        
-        supReq.on('error', (err) => {
-          console.log('❌ Supabase error:', err.message);
-          rl.close();
-        });
-        
-        supReq.write(supabaseData);
-        supReq.end();
-        
-      } catch (err) {
-        console.log('❌ Parse error:', err.message);
+
+        console.log('\n✅ Token exchange succeeded.');
+        console.log('Add these to your environment (do not commit them):\n');
+        console.log(`GOOGLE_CLIENT_ID=${CLIENT_ID}`);
+        console.log(`GOOGLE_CLIENT_SECRET=${CLIENT_SECRET}`);
+        if (tokens.refresh_token) {
+          console.log(`GOOGLE_REFRESH_TOKEN=${tokens.refresh_token}`);
+        } else {
+          console.log('# No refresh token returned. Re-run with prompt=consent and a fresh approval.');
+        }
         rl.close();
+      } catch (err) {
+        console.error('❌ Parse error:', err.message);
+        rl.close();
+        process.exit(1);
       }
     });
   });
-  
+
   req.on('error', (err) => {
-    console.log('❌ Request error:', err.message);
+    console.error('❌ Request error:', err.message);
     rl.close();
+    process.exit(1);
   });
-  
+
   req.write(postData);
   req.end();
 });

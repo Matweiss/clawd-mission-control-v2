@@ -1,9 +1,8 @@
 // src/pages/api/auth/google-token.ts
-// Returns the current valid Google OAuth token
+// Returns a current valid Google OAuth access token using the configured refresh token.
 
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { readFileSync } from 'fs';
-import { join } from 'path';
+import { getValidGoogleToken } from './refresh-google';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -11,24 +10,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // Read from the token file
-    const tokenPath = join(process.cwd(), 'google_tokens.json');
-    const tokenData = JSON.parse(readFileSync(tokenPath, 'utf8'));
-    
-    // Check if token is expired
-    const expiresAt = new Date(tokenData.expires_at);
-    const now = new Date();
-    
-    if (now > expiresAt) {
-      return res.status(401).json({ error: 'Token expired', refresh_needed: true });
+    const accessToken = await getValidGoogleToken();
+
+    if (!accessToken) {
+      return res.status(401).json({
+        error: 'Google authentication not configured',
+        message: 'Set GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, and GOOGLE_REFRESH_TOKEN in environment variables.'
+      });
     }
-    
-    return res.status(200).json({ 
-      access_token: tokenData.access_token,
-      expires_at: tokenData.expires_at 
-    });
+
+    return res.status(200).json({ access_token: accessToken });
   } catch (error) {
-    console.error('Error reading token:', error);
-    return res.status(500).json({ error: 'Failed to read token' });
+    console.error('Error getting Google token:', error);
+    return res.status(500).json({ error: 'Failed to get Google token' });
   }
 }
