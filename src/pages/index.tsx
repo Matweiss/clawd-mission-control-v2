@@ -9,7 +9,6 @@ import {
 import { useCommandPalette, useRealtimeData, useAgentActions } from '../hooks/useMissionControl';
 import { CommandPalette } from '../components/CommandPalette';
 import { LifestyleHealthPanel } from '../components/LifestyleHealthPanel';
-import { PetTrackerPanel } from '../components/PetTrackerPanel';
 import { QuickActionsPalette } from '../components/QuickActionsPalette';
 import { AgentCommandCenter } from '../components/AgentCommandCenter';
 import { SalesIntelligenceHub } from '../components/SalesIntelligenceHub';
@@ -263,7 +262,7 @@ export default function MissionControl() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           
-          {/* LEFT: Agent Swarm */}
+          {/* LEFT: Operations / System */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Active Agents</h2>
@@ -283,10 +282,35 @@ export default function MissionControl() {
                 );
               })}
             </div>
+
+            <SectionLabel title="Vault & Restoration" />
+            <DocumentRepository />
+
+            <SectionLabel title="Integration Status" />
+            <ApiHealthPanel />
+
+            <SectionLabel title="Schedule of Operations" />
+            <CronPanel />
           </div>
 
-          {/* CENTER: Operations */}
+          {/* CENTER: Life / Presence */}
           <div className="space-y-4">
+            <SectionLabel title="Recent Events" />
+            <ActivityPanel activities={[]} />
+
+            <HomeAssistantCard />
+
+            <LifestyleGoalTrackerCard />
+
+            <MovieTrackerCard />
+
+            <LifestyleHealthPanel />
+          </div>
+
+          {/* RIGHT: Work / Execution */}
+          <div className="space-y-4">
+            <CalendarPanel events={calendarEvents || []} />
+
             <EmailPanel 
               urgent={urgentEmails}
               replyNeeded={replyNeededEmails}
@@ -297,16 +321,6 @@ export default function MissionControl() {
               isLoading={loading}
             />
 
-            <TaskPanel 
-              tasks={tasks}
-              onViewDetails={() => setShowTaskModal(true)}
-            />
-
-            <CronPanel />
-          </div>
-
-          {/* RIGHT: Intelligence */}
-          <div className="space-y-4">
             <PipelinePanel 
               pipeline={pipeline}
               closingThisWeek={closingThisWeek}
@@ -315,23 +329,10 @@ export default function MissionControl() {
 
             <LucraCommissionCard />
 
-            <ApiHealthPanel />
-
-            <HomeAssistantCard />
-
-            <LifestyleGoalTrackerCard />
-
-            <MovieTrackerCard />
-
-            <ActivityPanel activities={[]} />
-            
-            <PetTrackerPanel />
-
-            <LifestyleHealthPanel />
-
-            <CalendarPanel events={calendarEvents || []} />
-
-            <DocumentRepository />
+            <TaskPanel 
+              tasks={tasks}
+              onViewDetails={() => setShowTaskModal(true)}
+            />
           </div>
         </div>
       </main>
@@ -377,6 +378,14 @@ export default function MissionControl() {
           </button>
         </div>
       </nav>
+    </div>
+  );
+}
+
+function SectionLabel({ title }: { title: string }) {
+  return (
+    <div className="flex items-center justify-between">
+      <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">{title}</h2>
     </div>
   );
 }
