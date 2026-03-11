@@ -57,24 +57,45 @@ export function HomeAssistantCard() {
   const load = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/ha/pets');
-      if (response.ok) {
-        const pets = await response.json();
-        const diggy = pets.find((p: any) => (p.name || '').toLowerCase().includes('diggy'));
-        const theo = pets.find((p: any) => (p.name || '').toLowerCase().includes('theo'));
+      const [presenceResponse, petsResponse] = await Promise.all([
+        fetch('/api/ha/presence'),
+        fetch('/api/ha/pets'),
+      ]);
+
+      const pets = petsResponse.ok ? await petsResponse.json() : [];
+      const diggy = pets.find((p: any) => (p.name || '').toLowerCase().includes('diggy'));
+      const theo = pets.find((p: any) => (p.name || '').toLowerCase().includes('theo'));
+
+      if (presenceResponse.ok) {
+        const presence = await presenceResponse.json();
+        setState((current) => ({
+          ...current,
+          iphoneBattery: presence.iphoneBattery ?? current.iphoneBattery,
+          iphoneCharging: presence.iphoneCharging ?? current.iphoneCharging,
+          zone: presence.zone || current.zone,
+          focusMode: presence.focusMode || current.focusMode,
+          steps: presence.steps ?? current.steps,
+          watchBattery: presence.watchBattery ?? current.watchBattery,
+          watchCharging: presence.watchCharging ?? current.watchCharging,
+          diggyLocation: diggy?.location || current.diggyLocation,
+          theoLocation: theo?.location || current.theoLocation,
+          lastUpdated: presence.lastUpdated || new Date().toISOString(),
+        }));
+        setStatus(presence.status || 'live');
+        setSource(presence.source || 'Home Assistant');
+      } else {
         setState((current) => ({
           ...current,
           diggyLocation: diggy?.location || current.diggyLocation,
           theoLocation: theo?.location || current.theoLocation,
           lastUpdated: new Date().toISOString(),
         }));
-        setStatus('live');
-        setSource('Home Assistant + placeholders');
-      } else {
         setStatus('stale');
+        setSource('Home Assistant pets + fallback device data');
       }
     } catch {
       setStatus('stale');
+      setSource('Fallback data');
     } finally {
       setLoading(false);
     }
@@ -118,7 +139,7 @@ export function HomeAssistantCard() {
       <div className="grid grid-cols-2 gap-3 mb-3">
         <InfoTile icon={<Smartphone className="w-4 h-4 text-cyan-400" />} label="iPhone Battery" value={`${state.iphoneBattery}%`} sub={state.iphoneCharging ? 'Charging' : 'On battery'} />
         <InfoTile icon={<Watch className="w-4 h-4 text-indigo-400" />} label="Watch Battery" value={`${state.watchBattery}%`} sub={state.watchCharging ? 'Charging' : state.watchOnWrist ? 'On wrist' : 'Off wrist'} />
-        <InfoTile icon={<MapPin className="w-4 h-4 text-emerald-400" />} label="Zone" value={state.zone} sub="Current location" />
+        <InfoTile icon={<MapPin className="w-4 h-4 text-emerald-400" />} label="Zone" value={state.zone} sub="Current location / zone" />
         <InfoTile icon={<Moon className="w-4 h-4 text-violet-400" />} label="Focus" value={state.focusMode} sub="Current mode" />
         <InfoTile icon={<Footprints className="w-4 h-4 text-orange-400" />} label="Steps" value={state.steps.toLocaleString()} sub="Today" />
         <InfoTile icon={state.iphoneCharging ? <PlugZap className="w-4 h-4 text-green-400" /> : <Battery className="w-4 h-4 text-gray-300" />} label="Phone Power" value={state.iphoneCharging ? 'Charging' : 'Unplugged'} sub="Power state" />
