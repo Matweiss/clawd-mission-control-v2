@@ -28,8 +28,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
     }
 
-    // Fetch data from Google Sheets
-    const response = await fetch(
+    // Fetch data from Google Sheets - try first sheet if 'Deals' doesn't exist
+    let response = await fetch(
       `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/Deals!A:Z`,
       {
         headers: {
@@ -38,6 +38,36 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
       }
     );
+
+    // If 'Deals' tab doesn't exist, try 'Sheet1' or get sheet metadata
+    if (response.status === 400) {
+      // Try to get sheet metadata first
+      const metaRes = await fetch(
+        `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}?fields=sheets.properties.title`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
+          }
+        }
+      );
+      
+      if (metaRes.ok) {
+        const meta = await metaRes.json();
+        const firstSheet = meta.sheets?.[0]?.properties?.title;
+        if (firstSheet) {
+          response = await fetch(
+            `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/'${firstSheet}'!A:Z`,
+            {
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json'
+              }
+            }
+          );
+        }
+      }
+    }
 
     if (!response.ok) {
       throw new Error(`Sheets API error: ${response.status}`);
