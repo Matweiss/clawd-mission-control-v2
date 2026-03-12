@@ -18,6 +18,7 @@ import { EmailDetailModal } from '../components/EmailDetailModal';
 import { CalendarPanel } from '../components/CalendarPanel';
 import { TaskDetailModal } from '../components/TaskDetailModal';
 import { HomeAssistantCard } from '../components/HomeAssistantCard';
+import { PipelineSheetCard } from '../components/PipelineSheetCard';
 import { LucraCommissionCard } from '../components/LucraCommissionCard';
 import { LifestyleGoalTrackerCard } from '../components/LifestyleGoalTrackerCard';
 import { MovieTrackerCard } from '../components/MovieTrackerCard';
@@ -321,11 +322,7 @@ export default function MissionControl() {
               isLoading={loading}
             />
 
-            <PipelinePanel 
-              pipeline={pipeline}
-              closingThisWeek={closingThisWeek}
-              onViewDetails={() => setShowPipelineModal(true)}
-            />
+            <PipelineSheetCard />
 
             <LucraCommissionCard />
 
