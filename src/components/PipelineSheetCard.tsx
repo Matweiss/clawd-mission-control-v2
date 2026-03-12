@@ -57,17 +57,20 @@ export function PipelineSheetCard() {
 
   const formatCurrency = (val: number) => `$${(val / 1000).toFixed(0)}K`;
 
-  if (error) {
+  if (error || data?.error) {
     return (
-      <div className="bg-surface border border-red-500/30 rounded-xl p-4">
-        <div className="flex items-center gap-2 text-red-400 mb-2">
+      <div className="bg-surface border border-yellow-500/30 rounded-xl p-4">
+        <div className="flex items-center gap-2 text-yellow-400 mb-2">
           <AlertCircle className="w-4 h-4" />
-          <span className="text-sm font-medium">Pipeline Error</span>
+          <span className="text-sm font-medium">Pipeline Setup Needed</span>
         </div>
-        <p className="text-xs text-gray-400">{error}</p>
+        <p className="text-xs text-gray-400 mb-2">{data?.help || error}</p>
+        <p className="text-xs text-yellow-200/70 mb-3">
+          The sheet API needs proper Google Sheets scope. This requires re-authenticating with Sheets permission.
+        </p>
         <button 
           onClick={fetchPipeline}
-          className="mt-2 text-xs bg-surface-light hover:bg-border px-3 py-1 rounded transition-colors"
+          className="text-xs bg-surface-light hover:bg-border px-3 py-1 rounded transition-colors"
         >
           Retry
         </button>

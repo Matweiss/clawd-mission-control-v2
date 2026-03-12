@@ -118,9 +118,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   } catch (error) {
     console.error('Pipeline API error:', error);
-    res.status(500).json({ 
-      error: 'Failed to fetch pipeline',
-      details: error instanceof Error ? error.message : 'Unknown error'
+    // Return fallback data with error info
+    res.status(200).json({ 
+      deals: [],
+      total: 0,
+      byStage: {},
+      closingThisWeek: [],
+      count: 0,
+      lastUpdated: new Date().toISOString(),
+      source: 'Google Sheets',
+      error: error instanceof Error ? error.message : 'Unknown error',
+      help: 'Sheet may need permission or correct tab name. Check sheet ID and ensure "Deals" tab exists.'
     });
   }
 }
