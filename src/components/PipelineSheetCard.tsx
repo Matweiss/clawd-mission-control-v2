@@ -17,6 +17,8 @@ interface PipelineData {
   closingThisWeek: Deal[];
   count: number;
   lastUpdated: string;
+  error?: string;
+  help?: string;
 }
 
 const STAGE_COLORS: Record<string, string> = {
