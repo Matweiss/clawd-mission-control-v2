@@ -51,9 +51,10 @@ function normalizeSteps(value: string | undefined): number | null {
 
 function batteryStateLabel(value?: string): string {
   if (!value) return 'Unknown';
-  const normalized = value.toLowerCase();
-  if (normalized.includes('charging') || normalized.includes('full')) return 'Charging';
-  if (normalized.includes('not charging')) return 'Not charging';
+  const normalized = value.toLowerCase().trim();
+  // Check "not charging" first to avoid matching it as "charging"
+  if (normalized === 'not charging' || normalized.includes('not')) return 'Not charging';
+  if (normalized === 'charging' || normalized === 'full' || normalized.includes('charging')) return 'Charging';
   return value;
 }
 
@@ -123,7 +124,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   ]);
 
   const zone = normalizeZone(iphoneTracker?.state || iphoneGeocodedLocation?.state || 'unknown');
-  const away = (iphoneTracker?.state || '').toLowerCase() !== 'home';
+  // "home" or "house" both mean you're home
+  const trackerState = (iphoneTracker?.state || '').toLowerCase();
+  const away = trackerState !== 'home' && trackerState !== 'house';
 
   const locks = [
     { name: 'Den Door', state: lockLabel(denDoorLock?.state), entityId: ENTITY_IDS.denDoorLock },
@@ -162,7 +165,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     source: 'Home Assistant',
     lastUpdated: new Date().toISOString(),
     iphoneBattery: normalizeBattery(iphoneBattery?.state) ?? 0,
-    iphoneCharging: /charging|full/i.test(iphoneBatteryState?.state || ''),
+    iphoneCharging: batteryStateLabel(iphoneBatteryState?.state) === 'Charging',
     iphoneBatteryLabel: batteryStateLabel(iphoneBatteryState?.state),
     zone,
     geocodedLocation: iphoneGeocodedLocation?.state || 'Unknown location',
