@@ -19,6 +19,7 @@ import { CalendarPanel } from '../components/CalendarPanel';
 import { TaskDetailModal } from '../components/TaskDetailModal';
 import { HomeAssistantCard } from '../components/HomeAssistantCard';
 import { PipelineSheetCard } from '../components/PipelineSheetCard';
+import { EmailCard } from '../components/EmailCard';
 import { LucraCommissionCard } from '../components/LucraCommissionCard';
 import { LifestyleGoalTrackerCard } from '../components/LifestyleGoalTrackerCard';
 import { MovieTrackerCard } from '../components/MovieTrackerCard';
@@ -312,15 +313,7 @@ export default function MissionControl() {
           <div className="space-y-4">
             <CalendarPanel events={calendarEvents || []} />
 
-            <EmailPanel 
-              urgent={urgentEmails}
-              replyNeeded={replyNeededEmails}
-              fyiCount={fyiEmails.length}
-              totalCount={emails.length}
-              onViewDetails={() => setShowEmailModal(true)}
-              onRefresh={refresh}
-              isLoading={loading}
-            />
+            <EmailCard />
 
             <PipelineSheetCard />
 
