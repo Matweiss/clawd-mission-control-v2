@@ -11,9 +11,12 @@ const ENTITY_IDS = {
   iphoneFocus: 'binary_sensor.mat_s_iphone_focus',
   iphoneSteps: 'sensor.mat_s_iphone_steps',
   watchArea: 'sensor.mat_s_ultra_watch_area',
-  frontDoorLock: 'lock.front_door',
-  backDoorLock: 'lock.back_door',
+  denDoorLock: 'lock.den_door',
+  frontDoorLock: 'lock.front_door_2',
+  livingRoomDoorLock: 'lock.living_room_3',
+  hallwayLock: 'lock.hallway_lock',
   dogDoorLock: 'lock.d017695baf16',
+  smartGarageDoor: 'cover.smart_garage_door_2111034444328436105448e1e97b5dfe_garage',
 };
 
 async function getEntityState(entityId: string) {
@@ -73,6 +76,13 @@ function lockLabel(state?: string) {
   return state;
 }
 
+function lockStatusCategory(state?: string) {
+  const normalized = state?.toLowerCase();
+  if (normalized === 'locked') return 'locked';
+  if (normalized === 'unlocked') return 'unlocked';
+  return 'unknown_or_unavailable';
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -90,9 +100,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     iphoneFocus,
     iphoneSteps,
     watchArea,
+    denDoorLock,
     frontDoorLock,
-    backDoorLock,
+    livingRoomDoorLock,
+    hallwayLock,
     dogDoorLock,
+    smartGarageDoor,
   ] = await Promise.all([
     getEntityState(ENTITY_IDS.iphoneTracker),
     getEntityState(ENTITY_IDS.iphoneBattery),
@@ -101,23 +114,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     getEntityState(ENTITY_IDS.iphoneFocus),
     getEntityState(ENTITY_IDS.iphoneSteps),
     getEntityState(ENTITY_IDS.watchArea),
+    getEntityState(ENTITY_IDS.denDoorLock),
     getEntityState(ENTITY_IDS.frontDoorLock),
-    getEntityState(ENTITY_IDS.backDoorLock),
+    getEntityState(ENTITY_IDS.livingRoomDoorLock),
+    getEntityState(ENTITY_IDS.hallwayLock),
     getEntityState(ENTITY_IDS.dogDoorLock),
+    getEntityState(ENTITY_IDS.smartGarageDoor),
   ]);
 
   const zone = normalizeZone(iphoneTracker?.state || iphoneGeocodedLocation?.state || 'unknown');
-  const away = !['home', 'sherman oaks', 'unknown', 'not_home'].includes(zone.toLowerCase())
-    ? false
-    : (iphoneTracker?.state || '').toLowerCase() === 'not_home';
+  const away = (iphoneTracker?.state || '').toLowerCase() !== 'home';
 
   const locks = [
+    { name: 'Den Door', state: lockLabel(denDoorLock?.state), entityId: ENTITY_IDS.denDoorLock },
     { name: 'Front Door', state: lockLabel(frontDoorLock?.state), entityId: ENTITY_IDS.frontDoorLock },
-    { name: 'Back Door', state: lockLabel(backDoorLock?.state), entityId: ENTITY_IDS.backDoorLock },
+    { name: 'Living Room Door', state: lockLabel(livingRoomDoorLock?.state), entityId: ENTITY_IDS.livingRoomDoorLock },
+    { name: 'Hallway Lock', state: lockLabel(hallwayLock?.state), entityId: ENTITY_IDS.hallwayLock },
     { name: 'Dog Door', state: lockLabel(dogDoorLock?.state), entityId: ENTITY_IDS.dogDoorLock },
-  ];
+  ].map(lock => ({
+    ...lock,
+    statusCategory: lockStatusCategory(lock.state),
+  }));
 
-  const unlocked = locks.filter(lock => lock.state.toLowerCase() !== 'locked');
+  const unlocked = locks.filter(lock => lock.statusCategory === 'unlocked');
+  const unknownOrUnavailable = locks.filter(lock => lock.statusCategory === 'unknown_or_unavailable');
   const availableFields = {
     iphoneBattery: !!iphoneBattery,
     iphonePower: !!iphoneBatteryState,
@@ -126,9 +146,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     focus: !!iphoneFocus,
     steps: !!iphoneSteps,
     watchArea: !!watchArea,
+    denDoor: !!denDoorLock,
     frontDoor: !!frontDoorLock,
-    backDoor: !!backDoorLock,
+    livingRoomDoor: !!livingRoomDoorLock,
+    hallwayLock: !!hallwayLock,
     dogDoor: !!dogDoorLock,
+    smartGarageDoor: !!smartGarageDoor,
   };
 
   const liveCount = Object.values(availableFields).filter(Boolean).length;
@@ -148,7 +171,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     steps: normalizeSteps(iphoneSteps?.state) ?? 0,
     watchArea: watchArea?.state || 'Unknown',
     locks,
+    garageDoor: {
+      name: 'Smart Garage Door',
+      state: smartGarageDoor?.state || 'Unknown',
+      entityId: ENTITY_IDS.smartGarageDoor,
+    },
     unlockedLocks: unlocked,
+    unknownOrUnavailableLocks: unknownOrUnavailable,
     allDoorsLocked: unlocked.length === 0,
     entities: ENTITY_IDS,
     availableFields,

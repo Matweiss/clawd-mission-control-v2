@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-);
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+// Only create client if both env vars are present
+const supabase: SupabaseClient | null = supabaseUrl && supabaseKey 
+  ? createClient(supabaseUrl, supabaseKey)
+  : null;
 
 export function useCommandPalette() {
   const [isOpen, setIsOpen] = useState(false);
@@ -40,6 +43,13 @@ export function useRealtimeData() {
   const fetchData = useCallback(async () => {
     console.log('🔍 Fetching data from Supabase...');
     setLoading(true);
+    
+    // If Supabase is not configured, skip data fetching
+    if (!supabase) {
+      console.log('⚠️ Supabase not configured, skipping data fetch');
+      setLoading(false);
+      return;
+    }
     
     try {
       // Only query tables that exist
@@ -113,6 +123,8 @@ export function useRealtimeData() {
 
   // Real-time subscriptions (only for tables that exist)
   useEffect(() => {
+    if (!supabase) return;
+    
     const channels = [
       supabase.channel('agents')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'agent_status' }, fetchData)

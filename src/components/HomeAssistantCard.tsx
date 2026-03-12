@@ -22,6 +22,7 @@ interface LockState {
   name: string;
   state: string;
   entityId: string;
+  statusCategory?: string;
 }
 
 interface PresenceState {
@@ -37,7 +38,13 @@ interface PresenceState {
   theoLocation: string;
   allDoorsLocked: boolean;
   unlockedLocks: LockState[];
+  unknownOrUnavailableLocks?: LockState[];
   locks: LockState[];
+  garageDoor?: {
+    name: string;
+    state: string;
+    entityId: string;
+  };
   lastUpdated: string;
 }
 
@@ -54,11 +61,19 @@ const fallbackState: PresenceState = {
   theoLocation: 'Living Room',
   allDoorsLocked: true,
   unlockedLocks: [],
+  unknownOrUnavailableLocks: [],
   locks: [
-    { name: 'Front Door', state: 'Locked', entityId: 'lock.front_door' },
-    { name: 'Back Door', state: 'Locked', entityId: 'lock.back_door' },
-    { name: 'Dog Door', state: 'Locked', entityId: 'lock.d017695baf16' },
+    { name: 'Den Door', state: 'Unknown (HA not connected)', entityId: 'lock.den_door', statusCategory: 'unknown_or_unavailable' },
+    { name: 'Front Door', state: 'Unknown (HA not connected)', entityId: 'lock.front_door_2', statusCategory: 'unknown_or_unavailable' },
+    { name: 'Living Room Door', state: 'Unknown (HA not connected)', entityId: 'lock.living_room_3', statusCategory: 'unknown_or_unavailable' },
+    { name: 'Hallway Lock', state: 'Unknown (HA not connected)', entityId: 'lock.hallway_lock', statusCategory: 'unknown_or_unavailable' },
+    { name: 'Dog Door', state: 'Unknown (HA not connected)', entityId: 'lock.d017695baf16', statusCategory: 'unknown_or_unavailable' },
   ],
+  garageDoor: {
+    name: 'Smart Garage Door',
+    state: 'Unknown (HA not connected)',
+    entityId: 'cover.smart_garage_door_2111034444328436105448e1e97b5dfe_garage',
+  },
   lastUpdated: new Date().toISOString(),
 };
 
@@ -67,6 +82,7 @@ export function HomeAssistantCard() {
   const [status, setStatus] = useState<Status>('stale');
   const [source, setSource] = useState('Home Assistant');
   const [loading, setLoading] = useState(false);
+  const [haConfigured, setHaConfigured] = useState(true);
 
   const sameRoom = useMemo(() => {
     return state.diggyLocation.trim().toLowerCase() === state.theoLocation.trim().toLowerCase();
@@ -86,6 +102,7 @@ export function HomeAssistantCard() {
 
       if (presenceResponse.ok) {
         const presence = await presenceResponse.json();
+        setHaConfigured(true);
         setState((current) => ({
           ...current,
           iphoneBattery: presence.iphoneBattery ?? current.iphoneBattery,
@@ -100,20 +117,25 @@ export function HomeAssistantCard() {
           theoLocation: theo?.location || current.theoLocation,
           allDoorsLocked: presence.allDoorsLocked ?? current.allDoorsLocked,
           unlockedLocks: presence.unlockedLocks || current.unlockedLocks,
+          unknownOrUnavailableLocks: presence.unknownOrUnavailableLocks || current.unknownOrUnavailableLocks,
           locks: presence.locks || current.locks,
+          garageDoor: presence.garageDoor || current.garageDoor,
           lastUpdated: presence.lastUpdated || new Date().toISOString(),
         }));
         setStatus(presence.status || 'live');
         setSource(presence.source || 'Home Assistant');
       } else {
+        const errorBody = await presenceResponse.json().catch(() => null);
+        const haMissing = errorBody?.error === 'Missing HA_URL or HA_TOKEN';
+        setHaConfigured(!haMissing);
         setState((current) => ({
           ...current,
           diggyLocation: diggy?.location || current.diggyLocation,
           theoLocation: theo?.location || current.theoLocation,
           lastUpdated: new Date().toISOString(),
         }));
-        setStatus('stale');
-        setSource('Home Assistant pets + fallback device data');
+        setStatus(haMissing ? 'disconnected' : 'stale');
+        setSource(haMissing ? 'Home Assistant unavailable (missing HA_URL/HA_TOKEN)' : 'Home Assistant pets + fallback device data');
       }
     } catch {
       setStatus('stale');
@@ -180,10 +202,16 @@ export function HomeAssistantCard() {
 
         <div className="flex items-center justify-between text-sm mb-2">
           <span className="text-gray-400">Door security</span>
-          <span className={`font-semibold ${state.allDoorsLocked ? 'text-green-400' : 'text-red-300'}`}>
-            {state.allDoorsLocked ? 'All locked' : `${state.unlockedLocks.length} unlocked`}
+          <span className={`font-semibold ${!haConfigured ? 'text-yellow-300' : state.allDoorsLocked ? 'text-green-400' : 'text-red-300'}`}>
+            {!haConfigured ? 'HA unavailable' : state.allDoorsLocked ? 'All locked' : `${state.unlockedLocks.length} unlocked`}
           </span>
         </div>
+
+        {!haConfigured && (
+          <div className="mb-2 rounded-lg border border-yellow-500/30 bg-yellow-500/10 px-3 py-2 text-xs text-yellow-200">
+            Home Assistant is not configured in this runtime. Lock and garage states are unknown.
+          </div>
+        )}
 
         <div className="space-y-2">
           {state.locks.map((lock) => {
@@ -191,10 +219,16 @@ export function HomeAssistantCard() {
             return (
               <div key={lock.entityId} className="flex items-center justify-between rounded-lg bg-[#161616] px-3 py-2 border border-border/60 text-xs">
                 <span className="text-gray-300">{lock.name}</span>
-                <span className={locked ? 'text-green-400' : 'text-red-300'}>{lock.state}</span>
+                <span className={!haConfigured ? 'text-yellow-300' : locked ? 'text-green-400' : 'text-red-300'}>{lock.state}</span>
               </div>
             );
           })}
+          {state.garageDoor && (
+            <div className="flex items-center justify-between rounded-lg bg-[#161616] px-3 py-2 border border-border/60 text-xs">
+              <span className="text-gray-300">{state.garageDoor.name}</span>
+              <span className={!haConfigured ? 'text-yellow-300' : 'text-gray-300'}>{state.garageDoor.state}</span>
+            </div>
+          )}
         </div>
       </div>
 
