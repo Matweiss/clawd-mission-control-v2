@@ -10,36 +10,39 @@ const ENTITY_IDS = {
   iphoneGeocodedLocation: 'sensor.mat_s_iphone_geocoded_location',
   iphoneFocus: 'binary_sensor.mat_s_iphone_focus',
   iphoneSteps: 'sensor.mat_s_iphone_steps',
-  watchBattery: 'sensor.mat_s_iphone_watch_battery',
-  watchBatteryState: 'sensor.mat_s_iphone_watch_battery_state',
+  watchArea: 'sensor.mat_s_ultra_watch_area',
+  frontDoorLock: 'lock.front_door',
+  backDoorLock: 'lock.back_door',
+  dogDoorLock: 'lock.d017695baf16',
 };
 
 async function getEntityState(entityId: string) {
   if (!HA_URL || !HA_TOKEN) return null;
 
-  const response = await fetch(`${HA_URL}/api/states/${entityId}`, {
-    headers: {
-      Authorization: `Bearer ${HA_TOKEN}`,
-      'Content-Type': 'application/json',
-    },
-  });
+  try {
+    const response = await fetch(`${HA_URL}/api/states/${entityId}`, {
+      headers: {
+        Authorization: `Bearer ${HA_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+    });
 
-  if (!response.ok) {
+    if (!response.ok) return null;
+    return response.json();
+  } catch {
     return null;
   }
-
-  return response.json();
 }
 
 function normalizeBattery(value: string | undefined): number | null {
   if (!value) return null;
-  const parsed = parseInt(value, 10);
+  const parsed = parseInt(value.replace(/[^\d-]/g, ''), 10);
   return Number.isFinite(parsed) ? parsed : null;
 }
 
 function normalizeSteps(value: string | undefined): number | null {
   if (!value) return null;
-  const parsed = parseInt(value.replace(/,/g, ''), 10);
+  const parsed = parseInt(value.replace(/[^\d]/g, ''), 10);
   return Number.isFinite(parsed) ? parsed : null;
 }
 
@@ -51,6 +54,25 @@ function batteryStateLabel(value?: string): string {
   return value;
 }
 
+function normalizeFocus(value?: string) {
+  if (!value) return 'Unknown';
+  if (value.toLowerCase() === 'off') return 'Off';
+  if (value.toLowerCase() === 'on') return 'On';
+  return value;
+}
+
+function normalizeZone(value?: string) {
+  if (!value) return 'unknown';
+  return value.replace(/_/g, ' ');
+}
+
+function lockLabel(state?: string) {
+  if (!state) return 'Unknown';
+  if (state.toLowerCase() === 'locked') return 'Locked';
+  if (state.toLowerCase() === 'unlocked') return 'Unlocked';
+  return state;
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -60,45 +82,75 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(500).json({ error: 'Missing HA_URL or HA_TOKEN' });
   }
 
-  try {
-    const [
-      iphoneTracker,
-      iphoneBattery,
-      iphoneBatteryState,
-      iphoneGeocodedLocation,
-      iphoneFocus,
-      iphoneSteps,
-      watchBattery,
-      watchBatteryState,
-    ] = await Promise.all([
-      getEntityState(ENTITY_IDS.iphoneTracker),
-      getEntityState(ENTITY_IDS.iphoneBattery),
-      getEntityState(ENTITY_IDS.iphoneBatteryState),
-      getEntityState(ENTITY_IDS.iphoneGeocodedLocation),
-      getEntityState(ENTITY_IDS.iphoneFocus),
-      getEntityState(ENTITY_IDS.iphoneSteps),
-      getEntityState(ENTITY_IDS.watchBattery),
-      getEntityState(ENTITY_IDS.watchBatteryState),
-    ]);
+  const [
+    iphoneTracker,
+    iphoneBattery,
+    iphoneBatteryState,
+    iphoneGeocodedLocation,
+    iphoneFocus,
+    iphoneSteps,
+    watchArea,
+    frontDoorLock,
+    backDoorLock,
+    dogDoorLock,
+  ] = await Promise.all([
+    getEntityState(ENTITY_IDS.iphoneTracker),
+    getEntityState(ENTITY_IDS.iphoneBattery),
+    getEntityState(ENTITY_IDS.iphoneBatteryState),
+    getEntityState(ENTITY_IDS.iphoneGeocodedLocation),
+    getEntityState(ENTITY_IDS.iphoneFocus),
+    getEntityState(ENTITY_IDS.iphoneSteps),
+    getEntityState(ENTITY_IDS.watchArea),
+    getEntityState(ENTITY_IDS.frontDoorLock),
+    getEntityState(ENTITY_IDS.backDoorLock),
+    getEntityState(ENTITY_IDS.dogDoorLock),
+  ]);
 
-    return res.status(200).json({
-      status: 'live',
-      source: 'Home Assistant',
-      lastUpdated: new Date().toISOString(),
-      iphoneBattery: normalizeBattery(iphoneBattery?.state) ?? 0,
-      iphoneCharging: /charging|full/i.test(iphoneBatteryState?.state || ''),
-      iphoneBatteryLabel: batteryStateLabel(iphoneBatteryState?.state),
-      zone: iphoneTracker?.state || 'unknown',
-      geocodedLocation: iphoneGeocodedLocation?.state || 'Unknown location',
-      focusMode: iphoneFocus?.state === 'on' ? 'Focus On' : 'Focus Off',
-      steps: normalizeSteps(iphoneSteps?.state) ?? 0,
-      watchBattery: normalizeBattery(watchBattery?.state) ?? 0,
-      watchCharging: /charging|full/i.test(watchBatteryState?.state || ''),
-      watchBatteryLabel: batteryStateLabel(watchBatteryState?.state),
-      entities: ENTITY_IDS,
-    });
-  } catch (error) {
-    console.error('HA presence API error:', error);
-    return res.status(500).json({ error: 'Failed to fetch Home Assistant presence data' });
-  }
+  const zone = normalizeZone(iphoneTracker?.state || iphoneGeocodedLocation?.state || 'unknown');
+  const away = !['home', 'sherman oaks', 'unknown', 'not_home'].includes(zone.toLowerCase())
+    ? false
+    : (iphoneTracker?.state || '').toLowerCase() === 'not_home';
+
+  const locks = [
+    { name: 'Front Door', state: lockLabel(frontDoorLock?.state), entityId: ENTITY_IDS.frontDoorLock },
+    { name: 'Back Door', state: lockLabel(backDoorLock?.state), entityId: ENTITY_IDS.backDoorLock },
+    { name: 'Dog Door', state: lockLabel(dogDoorLock?.state), entityId: ENTITY_IDS.dogDoorLock },
+  ];
+
+  const unlocked = locks.filter(lock => lock.state.toLowerCase() !== 'locked');
+  const availableFields = {
+    iphoneBattery: !!iphoneBattery,
+    iphonePower: !!iphoneBatteryState,
+    zone: !!iphoneTracker,
+    geocodedLocation: !!iphoneGeocodedLocation,
+    focus: !!iphoneFocus,
+    steps: !!iphoneSteps,
+    watchArea: !!watchArea,
+    frontDoor: !!frontDoorLock,
+    backDoor: !!backDoorLock,
+    dogDoor: !!dogDoorLock,
+  };
+
+  const liveCount = Object.values(availableFields).filter(Boolean).length;
+  const status = liveCount >= 7 ? 'live' : liveCount >= 4 ? 'stale' : 'disconnected';
+
+  return res.status(200).json({
+    status,
+    source: 'Home Assistant',
+    lastUpdated: new Date().toISOString(),
+    iphoneBattery: normalizeBattery(iphoneBattery?.state) ?? 0,
+    iphoneCharging: /charging|full/i.test(iphoneBatteryState?.state || ''),
+    iphoneBatteryLabel: batteryStateLabel(iphoneBatteryState?.state),
+    zone,
+    geocodedLocation: iphoneGeocodedLocation?.state || 'Unknown location',
+    away,
+    focusMode: normalizeFocus(iphoneFocus?.state),
+    steps: normalizeSteps(iphoneSteps?.state) ?? 0,
+    watchArea: watchArea?.state || 'Unknown',
+    locks,
+    unlockedLocks: unlocked,
+    allDoorsLocked: unlocked.length === 0,
+    entities: ENTITY_IDS,
+    availableFields,
+  });
 }
