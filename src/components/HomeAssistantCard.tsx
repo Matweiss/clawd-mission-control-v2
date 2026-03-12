@@ -13,6 +13,7 @@ import {
   Home,
   Watch,
   Lock,
+  Unlock,
   ShieldAlert,
 } from 'lucide-react';
 
@@ -83,10 +84,34 @@ export function HomeAssistantCard() {
   const [source, setSource] = useState('Home Assistant');
   const [loading, setLoading] = useState(false);
   const [haConfigured, setHaConfigured] = useState(true);
+  const [controllingLock, setControllingLock] = useState<string | null>(null);
 
   const sameRoom = useMemo(() => {
     return state.diggyLocation.trim().toLowerCase() === state.theoLocation.trim().toLowerCase();
   }, [state.diggyLocation, state.theoLocation]);
+
+  const controlLock = async (entityId: string, action: 'lock' | 'unlock') => {
+    setControllingLock(entityId);
+    try {
+      const response = await fetch('/api/ha/lock', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ entityId, action }),
+      });
+
+      if (response.ok) {
+        // Refresh data after a short delay to let HA update
+        setTimeout(() => load(), 1000);
+      } else {
+        const error = await response.json();
+        alert(`Failed to ${action} door: ${error.error || 'Unknown error'}`);
+      }
+    } catch (err) {
+      alert(`Failed to ${action} door: ${err}`);
+    } finally {
+      setControllingLock(null);
+    }
+  };
 
   const load = async () => {
     setLoading(true);
@@ -216,10 +241,35 @@ export function HomeAssistantCard() {
         <div className="space-y-2">
           {state.locks.map((lock) => {
             const locked = lock.state.toLowerCase() === 'locked';
+            const isControlling = controllingLock === lock.entityId;
             return (
               <div key={lock.entityId} className="flex items-center justify-between rounded-lg bg-[#161616] px-3 py-2 border border-border/60 text-xs">
                 <span className="text-gray-300">{lock.name}</span>
-                <span className={!haConfigured ? 'text-yellow-300' : locked ? 'text-green-400' : 'text-red-300'}>{lock.state}</span>
+                <div className="flex items-center gap-2">
+                  <span className={!haConfigured ? 'text-yellow-300' : locked ? 'text-green-400' : 'text-red-300'}>
+                    {lock.state}
+                  </span>
+                  {haConfigured && (
+                    <button
+                      onClick={() => controlLock(lock.entityId, locked ? 'unlock' : 'lock')}
+                      disabled={isControlling}
+                      className={`p-1.5 rounded transition-colors ${
+                        locked 
+                          ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30' 
+                          : 'bg-green-500/20 text-green-400 hover:bg-green-500/30'
+                      } ${isControlling ? 'opacity-50' : ''}`}
+                      title={locked ? 'Unlock' : 'Lock'}
+                    >
+                      {isControlling ? (
+                        <RefreshCw className="w-3 h-3 animate-spin" />
+                      ) : locked ? (
+                        <Unlock className="w-3 h-3" />
+                      ) : (
+                        <Lock className="w-3 h-3" />
+                      )}
+                    </button>
+                  )}
+                </div>
               </div>
             );
           })}
