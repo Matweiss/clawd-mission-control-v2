@@ -29,13 +29,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       {
         name: 'Diggy',
         entityId: 'sensor.diggy_big_beacon_area',
-        location: parseLocation(stdout, 'diggy'),
+        location: parseLocation(stdout, 'diggy') || 'Unknown',
         lastUpdated: new Date().toISOString()
       },
       {
         name: 'Theo',
         entityId: 'sensor.theo_white_ibeacon_area',
-        location: parseLocation(stdout, 'theo'),
+        location: parseLocation(stdout, 'theo') || 'Unknown',
         lastUpdated: new Date().toISOString()
       }
     ];

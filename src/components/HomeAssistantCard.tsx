@@ -15,6 +15,9 @@ import {
   Lock,
   Unlock,
   ShieldAlert,
+  Wifi,
+  Headphones,
+  Car,
 } from 'lucide-react';
 
 type Status = 'live' | 'stale' | 'disconnected';
@@ -35,6 +38,9 @@ interface PresenceState {
   focusMode: string;
   steps: number;
   watchArea: string;
+  audioOutput: string;
+  wifi: string;
+  likelyDriving: boolean;
   diggyLocation: string;
   theoLocation: string;
   allDoorsLocked: boolean;
@@ -58,6 +64,9 @@ const fallbackState: PresenceState = {
   focusMode: 'Off',
   steps: 4514,
   watchArea: 'Living Room',
+  audioOutput: 'iPhone',
+  wifi: 'Unknown',
+  likelyDriving: false,
   diggyLocation: 'Living Room',
   theoLocation: 'Living Room',
   allDoorsLocked: true,
@@ -138,6 +147,9 @@ export function HomeAssistantCard() {
           focusMode: presence.focusMode || current.focusMode,
           steps: presence.steps ?? current.steps,
           watchArea: presence.watchArea || current.watchArea,
+          audioOutput: presence.audioOutput || current.audioOutput,
+          wifi: presence.wifi || current.wifi,
+          likelyDriving: presence.likelyDriving ?? current.likelyDriving,
           diggyLocation: diggy?.location || current.diggyLocation,
           theoLocation: theo?.location || current.theoLocation,
           allDoorsLocked: presence.allDoorsLocked ?? current.allDoorsLocked,
@@ -212,7 +224,16 @@ export function HomeAssistantCard() {
         <InfoTile icon={<Moon className="w-4 h-4 text-violet-400" />} label="Focus" value={state.focusMode} sub="Current mode" />
         <InfoTile icon={<Footprints className="w-4 h-4 text-orange-400" />} label="Steps" value={state.steps.toLocaleString()} sub="Today" />
         <InfoTile icon={<Watch className="w-4 h-4 text-indigo-400" />} label="Watch Area" value={state.watchArea} sub="Current watch location" />
+        <InfoTile icon={<Headphones className="w-4 h-4 text-pink-400" />} label="Audio Output" value={state.audioOutput} sub={state.likelyDriving ? '🚗 Likely driving' : 'Audio destination'} />
+        <InfoTile icon={<Wifi className="w-4 h-4 text-blue-400" />} label="WiFi" value={state.wifi === 'Unknown' || state.wifi === 'Not Connected' ? 'Not connected' : state.wifi} sub={state.likelyDriving ? '🚗 Likely driving' : 'Network connection'} />
       </div>
+
+      {state.likelyDriving && (
+        <div className="mb-3 rounded-lg border border-orange-500/30 bg-orange-500/10 px-3 py-2 flex items-center gap-2">
+          <Car className="w-4 h-4 text-orange-400" />
+          <span className="text-xs text-orange-200">Likely driving: Not on WiFi + connected to Bluetooth audio</span>
+        </div>
+      )}
 
       <div className={`border rounded-xl p-3 mb-3 ${state.away ? 'border-red-500/40 bg-red-500/5' : 'border-border bg-surface-light/60'}`}>
         <div className="flex items-center justify-between mb-2">
