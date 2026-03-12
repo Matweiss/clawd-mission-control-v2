@@ -2,71 +2,66 @@
 // API endpoint to fetch pet locations from Home Assistant
 
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { exec } from 'child_process';
-import { promisify } from 'util';
 
-const execAsync = promisify(exec);
+const HA_URL = process.env.HA_URL;
+const HA_TOKEN = process.env.HA_TOKEN;
+
+const PET_ENTITIES = {
+  diggy: 'sensor.diggy_big_beacon_area',
+  theo: 'sensor.theo_white_ibeacon_area',
+};
+
+async function getEntityState(entityId: string) {
+  if (!HA_URL || !HA_TOKEN) return null;
+
+  try {
+    const response = await fetch(`${HA_URL}/api/states/${entityId}`, {
+      headers: {
+        Authorization: `Bearer ${HA_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) return null;
+    return response.json();
+  } catch {
+    return null;
+  }
+}
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  try {
-    // Call the HA control script to get pet locations
-    const { stdout } = await execAsync(
-      'bash /root/.config/clawd/homeassistant/ha_control.sh pets',
-      { 
-        env: { 
-          ...process.env,
-          HOME: '/root'
-        }
-      }
-    );
+  if (!HA_URL || !HA_TOKEN) {
+    return res.status(500).json({ error: 'Missing HA_URL or HA_TOKEN' });
+  }
 
-    // Parse the output or return raw data
+  try {
+    const [diggyState, theoState] = await Promise.all([
+      getEntityState(PET_ENTITIES.diggy),
+      getEntityState(PET_ENTITIES.theo),
+    ]);
+
     const pets = [
       {
         name: 'Diggy',
-        entityId: 'sensor.diggy_big_beacon_area',
-        location: parseLocation(stdout, 'diggy') || 'Unknown',
-        lastUpdated: new Date().toISOString()
+        entityId: PET_ENTITIES.diggy,
+        location: diggyState?.state || 'Unknown',
+        lastUpdated: diggyState?.last_updated || new Date().toISOString(),
       },
       {
         name: 'Theo',
-        entityId: 'sensor.theo_white_ibeacon_area',
-        location: parseLocation(stdout, 'theo') || 'Unknown',
-        lastUpdated: new Date().toISOString()
-      }
+        entityId: PET_ENTITIES.theo,
+        location: theoState?.state || 'Unknown',
+        lastUpdated: theoState?.last_updated || new Date().toISOString(),
+      },
     ];
 
     res.status(200).json(pets);
   } catch (error) {
     console.error('Pet tracker API error:', error);
-    
-    // Return fallback data if HA is unavailable
-    res.status(200).json([
-      {
-        name: 'Diggy',
-        entityId: 'sensor.diggy_big_beacon_area',
-        location: 'Living Room',
-        lastUpdated: new Date().toISOString()
-      },
-      {
-        name: 'Theo',
-        entityId: 'sensor.theo_white_ibeacon_area',
-        location: 'Kitchen',
-        lastUpdated: new Date().toISOString()
-      }
-    ]);
+    res.status(500).json({ error: 'Failed to fetch pet locations' });
   }
-}
-
-function parseLocation(output: string, petName: string): string {
-  // Simple parsing - in production, parse actual HA API response
-  // For now, return sample data or parse from script output
-  if (petName === 'diggy') {
-    return output.includes('diggy') ? output.split('diggy')[1].split('\n')[0].trim() : 'Living Room';
-  }
-  return output.includes('theo') ? output.split('theo')[1].split('\n')[0].trim() : 'Kitchen';
 }
