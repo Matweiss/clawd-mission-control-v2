@@ -20,6 +20,7 @@ import { TaskDetailModal } from '../components/TaskDetailModal';
 import { HomeAssistantCard } from '../components/HomeAssistantCard';
 import { PipelineSheetCard } from '../components/PipelineSheetCard';
 import { EmailCard } from '../components/EmailCard';
+import { IntegrationStatusPanel } from '../components/IntegrationStatusPanel';
 import { LucraCommissionCard } from '../components/LucraCommissionCard';
 import { LifestyleGoalTrackerCard } from '../components/LifestyleGoalTrackerCard';
 import { MovieTrackerCard } from '../components/MovieTrackerCard';
@@ -289,7 +290,7 @@ export default function MissionControl() {
             <DocumentRepository />
 
             <SectionLabel title="Integration Status" />
-            <ApiHealthPanel />
+            <IntegrationStatusPanel />
 
             <SectionLabel title="Schedule of Operations" />
             <CronPanel />
