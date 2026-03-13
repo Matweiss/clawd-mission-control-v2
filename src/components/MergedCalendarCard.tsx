@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Calendar, ExternalLink, MapPin, Video, Plane, Users, Heart } from 'lucide-react';
+import { Calendar, ExternalLink, MapPin, Video, Plane, Users, Heart, Trash2, Plus } from 'lucide-react';
 
 interface CalendarEvent {
   id: string;
@@ -16,6 +16,15 @@ interface CalendarEvent {
 export function MergedCalendarCard() {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(false);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newEvent, setNewEvent] = useState({
+    summary: '',
+    start: '',
+    end: '',
+    location: '',
+    description: ''
+  });
 
   const fetchEvents = async () => {
     setLoading(true);
@@ -67,6 +76,57 @@ export function MergedCalendarCard() {
   useEffect(() => {
     fetchEvents();
   }, []);
+
+  const handleDeleteEvent = async (eventId: string, type: string) => {
+    // Only allow deleting work events (personal events are hardcoded)
+    if (type !== 'work') {
+      alert('Can only delete work events from Google Calendar. Personal events are managed in memory.');
+      return;
+    }
+
+    setActionLoading(eventId);
+    try {
+      const response = await fetch(`/api/calendar/action?eventId=${eventId}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        fetchEvents();
+      } else {
+        const error = await response.json();
+        alert(`Failed to delete event: ${error.error || 'Unknown error'}`);
+      }
+    } catch (err) {
+      alert(`Failed to delete event: ${err}`);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleCreateEvent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setActionLoading('create');
+    try {
+      const response = await fetch('/api/calendar/action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newEvent)
+      });
+
+      if (response.ok) {
+        setShowAddForm(false);
+        setNewEvent({ summary: '', start: '', end: '', location: '', description: '' });
+        fetchEvents();
+      } else {
+        const error = await response.json();
+        alert(`Failed to create event: ${error.error || 'Unknown error'}`);
+      }
+    } catch (err) {
+      alert(`Failed to create event: ${err}`);
+    } finally {
+      setActionLoading(null);
+    }
+  };
 
   const formatTime = (isoString: string) => {
     const date = new Date(isoString);
@@ -130,16 +190,80 @@ export function MergedCalendarCard() {
           <Calendar className="w-4 h-4 text-blue-400" />
           <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Calendar</h2>
         </div>
-        <a 
-          href="https://calendar.google.com/calendar/u/0/r"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-xs text-blue-400 hover:underline flex items-center gap-1"
-        >
-          Open
-          <ExternalLink className="w-3 h-3" />
-        </a>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowAddForm(!showAddForm)}
+            className="p-1.5 bg-blue-500/20 text-blue-400 rounded hover:bg-blue-500/30 transition-colors"
+            title="Add Event"
+          >
+            <Plus className="w-4 h-4" />
+          </button>
+          <a 
+            href="https://calendar.google.com/calendar/u/0/r"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-blue-400 hover:underline flex items-center gap-1"
+          >
+            Open
+            <ExternalLink className="w-3 h-3" />
+          </a>
+        </div>
       </div>
+
+      {showAddForm && (
+        <div className="p-4 border-b border-border bg-surface-light">
+          <h3 className="text-sm font-medium mb-3">Add New Event</h3>
+          <form onSubmit={handleCreateEvent} className="space-y-2">
+            <input
+              type="text"
+              placeholder="Event title"
+              value={newEvent.summary}
+              onChange={(e) => setNewEvent({...newEvent, summary: e.target.value})}
+              className="w-full px-3 py-2 bg-surface border border-border rounded text-sm"
+              required
+            />
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                type="datetime-local"
+                value={newEvent.start}
+                onChange={(e) => setNewEvent({...newEvent, start: e.target.value})}
+                className="px-3 py-2 bg-surface border border-border rounded text-sm"
+                required
+              />
+              <input
+                type="datetime-local"
+                value={newEvent.end}
+                onChange={(e) => setNewEvent({...newEvent, end: e.target.value})}
+                className="px-3 py-2 bg-surface border border-border rounded text-sm"
+                required
+              />
+            </div>
+            <input
+              type="text"
+              placeholder="Location (optional)"
+              value={newEvent.location}
+              onChange={(e) => setNewEvent({...newEvent, location: e.target.value})}
+              className="w-full px-3 py-2 bg-surface border border-border rounded text-sm"
+            />
+            <div className="flex gap-2">
+              <button
+                type="submit"
+                disabled={actionLoading === 'create'}
+                className="flex-1 py-2 bg-blue-500/20 text-blue-400 rounded text-sm hover:bg-blue-500/30 transition-colors"
+              >
+                {actionLoading === 'create' ? 'Creating...' : 'Create'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowAddForm(false)}
+                className="px-4 py-2 bg-surface border border-border rounded text-sm hover:bg-border transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
 
       <div className="p-4 max-h-[400px] overflow-y-auto">
         {events.length === 0 ? (
@@ -195,6 +319,17 @@ export function MergedCalendarCard() {
                           >
                             <Video className="w-3 h-3" />
                           </a>
+                        )}
+                        
+                        {event.type === 'work' && (
+                          <button
+                            onClick={() => handleDeleteEvent(event.id, event.type)}
+                            disabled={actionLoading === event.id}
+                            className="p-1.5 text-gray-600 hover:text-red-400 rounded hover:bg-red-500/10 transition-colors"
+                            title="Delete"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
                         )}
                       </div>
                     </div>

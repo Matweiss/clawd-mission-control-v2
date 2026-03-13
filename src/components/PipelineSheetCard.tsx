@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { TrendingUp, AlertCircle, RefreshCw, MoreHorizontal } from 'lucide-react';
+import { TrendingUp, AlertCircle, RefreshCw, MoreHorizontal, Plus } from 'lucide-react';
 
 interface Deal {
   id: string;
@@ -37,6 +37,52 @@ export function PipelineSheetCard() {
   const [data, setData] = useState<PipelineData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [newDeal, setNewDeal] = useState({
+    name: '',
+    mrr: '',
+    stage: 'Qualification',
+    closeDate: '',
+    probability: '',
+    notes: ''
+  });
+
+  const handleCreateDeal = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setActionLoading(true);
+    try {
+      const mrr = parseFloat(newDeal.mrr) || 0;
+      const arr = mrr * 12;
+      
+      const response = await fetch('/api/pipeline/action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: newDeal.name,
+          mrr,
+          arr,
+          stage: newDeal.stage,
+          closeDate: newDeal.closeDate,
+          probability: newDeal.probability,
+          notes: newDeal.notes
+        })
+      });
+
+      if (response.ok) {
+        setShowAddForm(false);
+        setNewDeal({ name: '', mrr: '', stage: 'Qualification', closeDate: '', probability: '', notes: '' });
+        fetchPipeline();
+      } else {
+        const error = await response.json();
+        alert(`Failed to create deal: ${error.error || 'Unknown error'}`);
+      }
+    } catch (err) {
+      alert(`Failed to create deal: ${err}`);
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   const fetchPipeline = async () => {
     setLoading(true);
@@ -103,6 +149,13 @@ export function PipelineSheetCard() {
       <div className="px-4 py-3 border-b border-border flex items-center justify-between">
         <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Sales Pipeline</h2>
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowAddForm(!showAddForm)}
+            className="p-1.5 bg-cyan-500/20 text-cyan-400 rounded hover:bg-cyan-500/30 transition-colors"
+            title="Add Deal"
+          >
+            <Plus className="w-4 h-4" />
+          </button>
           <span className="text-xs text-gray-500">Sheet</span>
           <button 
             onClick={fetchPipeline}
@@ -112,6 +165,73 @@ export function PipelineSheetCard() {
           </button>
         </div>
       </div>
+
+      {showAddForm && (
+        <div className="p-4 border-b border-border bg-surface-light">
+          <h3 className="text-sm font-medium mb-3">Add New Deal</h3>
+          <form onSubmit={handleCreateDeal} className="space-y-2">
+            <input
+              type="text"
+              placeholder="Deal name"
+              value={newDeal.name}
+              onChange={(e) => setNewDeal({...newDeal, name: e.target.value})}
+              className="w-full px-3 py-2 bg-surface border border-border rounded text-sm"
+              required
+            />
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                type="number"
+                placeholder="MRR"
+                value={newDeal.mrr}
+                onChange={(e) => setNewDeal({...newDeal, mrr: e.target.value})}
+                className="px-3 py-2 bg-surface border border-border rounded text-sm"
+                required
+              />
+              <select
+                value={newDeal.stage}
+                onChange={(e) => setNewDeal({...newDeal, stage: e.target.value})}
+                className="px-3 py-2 bg-surface border border-border rounded text-sm"
+              >
+                <option>Qualification</option>
+                <option>Discovery</option>
+                <option>Evaluation</option>
+                <option>Confirmation</option>
+                <option>Negotiation</option>
+              </select>
+            </div>
+            <input
+              type="date"
+              placeholder="Close date"
+              value={newDeal.closeDate}
+              onChange={(e) => setNewDeal({...newDeal, closeDate: e.target.value})}
+              className="w-full px-3 py-2 bg-surface border border-border rounded text-sm"
+            />
+            <input
+              type="text"
+              placeholder="Notes"
+              value={newDeal.notes}
+              onChange={(e) => setNewDeal({...newDeal, notes: e.target.value})}
+              className="w-full px-3 py-2 bg-surface border border-border rounded text-sm"
+            />
+            <div className="flex gap-2">
+              <button
+                type="submit"
+                disabled={actionLoading}
+                className="flex-1 py-2 bg-cyan-500/20 text-cyan-400 rounded text-sm hover:bg-cyan-500/30 transition-colors"
+              >
+                {actionLoading ? 'Adding...' : 'Add Deal'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowAddForm(false)}
+                className="px-4 py-2 bg-surface border border-border rounded text-sm hover:bg-border transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
       
       <div className="p-4">
         {/* Stats */}
