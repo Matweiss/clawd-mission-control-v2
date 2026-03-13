@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Head from 'next/head';
 import { motion, AnimatePresence, useAnimation } from 'framer-motion';
 import { 
-  Home, Film, Dumbbell, Briefcase, MoreHorizontal,
+  Home, Film, Dumbbell, Briefcase, MoreHorizontal, CheckSquare,
   Bell, Loader2
 } from 'lucide-react';
 import { MobileHomeTab } from '../components/mobile/MobileHomeTab';
@@ -10,6 +10,7 @@ import { MobileMoviesTab } from '../components/mobile/MobileMoviesTab';
 import { MobileYogaTab } from '../components/mobile/MobileYogaTab';
 import { MobileWorkTab } from '../components/mobile/MobileWorkTab';
 import { MobileMoreTab } from '../components/mobile/MobileMoreTab';
+import { MobileTasksTab } from '../components/mobile/MobileTasksTab';
 import { hapticFeedback, isIOSPWA, requestIOSNotifications } from '../lib/ios-utils';
 import { handleShortcutAction, executeShortcutAction } from '../lib/siri-shortcuts';
 
@@ -27,7 +28,7 @@ const registerServiceWorker = async () => {
 };
 
 export default function MobileMissionControl() {
-  const [activeTab, setActiveTab] = useState<'home' | 'movies' | 'yoga' | 'work' | 'more'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'movies' | 'yoga' | 'work' | 'tasks' | 'more'>('home');
   const [isInstalled, setIsInstalled] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -128,7 +129,7 @@ export default function MobileMissionControl() {
     { id: 'home', icon: Home, label: 'Home' },
     { id: 'movies', icon: Film, label: 'Movies' },
     { id: 'yoga', icon: Dumbbell, label: 'Yoga' },
-    { id: 'work', icon: Briefcase, label: 'Work' },
+    { id: 'tasks', icon: CheckSquare, label: 'Tasks' },
     { id: 'more', icon: MoreHorizontal, label: 'More' },
   ];
 
@@ -137,7 +138,7 @@ export default function MobileMissionControl() {
       case 'home': return <MobileHomeTab />;
       case 'movies': return <MobileMoviesTab />;
       case 'yoga': return <MobileYogaTab />;
-      case 'work': return <MobileWorkTab />;
+      case 'tasks': return <MobileTasksTab />;
       case 'more': return <MobileMoreTab onInstall={handleInstall} isInstalled={isInstalled} />;
       default: return <MobileHomeTab />;
     }
