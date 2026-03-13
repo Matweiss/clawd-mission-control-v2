@@ -21,6 +21,7 @@ interface YogaData {
   date: string;
   studios: Studio[];
   classTypes: Record<string, { name: string; description: string; level: string }>;
+  preferredClasses: string[];
   totalClasses: number;
   lastUpdated: string;
 }
@@ -154,12 +155,16 @@ export function YogaCard() {
           <div className="mt-4 pt-3 border-t border-border">
             <p className="text-xs text-gray-500 mb-2">Class Types:</p>
             <div className="flex flex-wrap gap-2">
-              {Object.entries(data.classTypes).slice(0, 4).map(([code, info]) => (
-                <div key={code} className="flex items-center gap-1">
-                  <span className={`px-1.5 py-0.5 text-xs rounded ${getClassColor(code)}`}>{code}</span>
-                  <span className="text-xs text-gray-600">{info.name}</span>
-                </div>
-              ))}
+              {data.preferredClasses?.map((code) => {
+                const info = data.classTypes[code];
+                if (!info) return null;
+                return (
+                  <div key={code} className="flex items-center gap-1">
+                    <span className={`px-1.5 py-0.5 text-xs rounded ${getClassColor(code)}`}>{code}</span>
+                    <span className="text-xs text-gray-600">{info.name}</span>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}

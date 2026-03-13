@@ -4,6 +4,9 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 // Update by running: python3 scripts/scrape_corepower_yoga.py
 // Last updated: 2026-03-13
 
+// Classes Mat cares about
+const PREFERRED_CLASSES = ['C2', 'C3', 'YS', 'CSX'];
+
 const YOGA_DATA = {
   source: 'CorePower Yoga',
   date: '2026-03-13',
@@ -12,11 +15,9 @@ const YOGA_DATA = {
       name: 'Sherman Oaks',
       url: 'https://www.corepoweryoga.com/yoga-schedules',
       classes: [
-        { time: '4:30 PM', name: 'HPF - Hot Power Fusion', instructor: 'Aliza P', duration: '60 min', type: 'HPF' },
         { time: '6:00 PM', name: 'C2 - CorePower Yoga 2', instructor: 'Aliza P', duration: '60 min', type: 'C2' },
         { time: '7:30 PM', name: 'YS - Yoga Sculpt', instructor: 'Bridget A', duration: '60 min', type: 'YS' },
-        { time: '9:00 PM', name: 'C2 - CorePower Yoga 2', instructor: 'Madison M', duration: '60 min', type: 'C2' },
-        { time: '10:30 PM', name: 'C1 - CorePower Yoga 1', instructor: 'Jennifer F', duration: '60 min', type: 'C1' }
+        { time: '9:00 PM', name: 'C2 - CorePower Yoga 2', instructor: 'Madison M', duration: '60 min', type: 'C2' }
       ]
     },
     {
@@ -24,19 +25,17 @@ const YOGA_DATA = {
       url: 'https://www.corepoweryoga.com/yoga-schedules',
       classes: [
         { time: '5:00 PM', name: 'C2 - CorePower Yoga 2', instructor: 'TBD', duration: '60 min', type: 'C2' },
-        { time: '6:30 PM', name: 'YS - Yoga Sculpt', instructor: 'TBD', duration: '60 min', type: 'YS' },
-        { time: '8:00 PM', name: 'C1 - CorePower Yoga 1', instructor: 'TBD', duration: '60 min', type: 'C1' }
+        { time: '6:30 PM', name: 'YS - Yoga Sculpt', instructor: 'TBD', duration: '60 min', type: 'YS' }
       ]
     }
   ],
   classTypes: {
-    C1: { name: 'CorePower Yoga 1', description: 'Beginner-friendly heated yoga', level: 'Beginner' },
     C2: { name: 'CorePower Yoga 2', description: 'Intermediate heated yoga', level: 'Intermediate' },
     C3: { name: 'CorePower Yoga 3', description: 'Advanced heated yoga', level: 'Advanced' },
     YS: { name: 'Yoga Sculpt', description: 'Yoga + weights + cardio', level: 'All Levels' },
-    HPF: { name: 'Hot Power Fusion', description: 'Hot yoga + power flow', level: 'All Levels' },
     CSX: { name: 'CorePower Strength X', description: 'Strength training', level: 'Intermediate' }
   },
+  preferredClasses: PREFERRED_CLASSES,
   lastUpdated: '2026-03-13T20:00:00Z'
 };
 
