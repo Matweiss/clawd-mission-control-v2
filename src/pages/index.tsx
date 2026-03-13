@@ -20,6 +20,7 @@ import { TaskDetailModal } from '../components/TaskDetailModal';
 import { HomeAssistantCard } from '../components/HomeAssistantCard';
 import { PipelineSheetCard } from '../components/PipelineSheetCard';
 import { EmailCard } from '../components/EmailCard';
+import { MergedCalendarCard } from '../components/MergedCalendarCard';
 import { IntegrationStatusPanel } from '../components/IntegrationStatusPanel';
 import { LucraCommissionCard } from '../components/LucraCommissionCard';
 import { LifestyleGoalTrackerCard } from '../components/LifestyleGoalTrackerCard';
@@ -312,7 +313,7 @@ export default function MissionControl() {
 
           {/* RIGHT: Work / Execution */}
           <div className="space-y-4">
-            <CalendarPanel events={calendarEvents || []} />
+            <MergedCalendarCard />
 
             <EmailCard />
 

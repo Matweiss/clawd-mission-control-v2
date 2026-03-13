@@ -108,7 +108,8 @@ export function EmailCard() {
                     {new Date(email.receivedAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
                   </span>
                 </div>
-                <p className="text-xs text-gray-300 truncate">{email.subject}</p>
+                <p className="text-xs text-gray-200 font-medium truncate">{email.subject}</p>
+                <p className="text-[10px] text-gray-400 truncate mt-0.5">{email.snippet}</p>
               </div>
             ))}
           </div>
@@ -128,7 +129,8 @@ export function EmailCard() {
                     {new Date(email.receivedAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
                   </span>
                 </div>
-                <p className="text-xs text-gray-400 truncate">{email.subject}</p>
+                <p className="text-xs text-gray-200 truncate">{email.subject}</p>
+                <p className="text-[10px] text-gray-400 truncate mt-0.5">{email.snippet}</p>
               </div>
             ))}
           </div>

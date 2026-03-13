@@ -77,15 +77,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const rows = data.values || [];
     
     // Skip header row, parse deals
+    // Column D (index 3) = MRR value, Column F (index 5) = Stage
     const deals: Deal[] = rows.slice(1).map((row: string[], index: number) => ({
       id: `sheet-${index}`,
       name: row[0] || 'Unnamed Deal',
-      amount: parseFloat(row[1]?.replace(/[^0-9.]/g, '')) || 0,
-      stage: row[2] || 'Unknown',
-      closeDate: row[3] || undefined,
-      probability: parseInt(row[4]) || 0,
-      notes: row[5] || '',
-    })).filter((d: Deal) => d.name && d.name !== 'Unnamed Deal');
+      amount: parseFloat(row[3]?.replace(/[^0-9.]/g, '')) || 0, // Column D = MRR
+      stage: row[5] || 'Unknown', // Column F = Stage
+      closeDate: row[6] || undefined, // Column G = Close Date (if exists)
+      probability: parseInt(row[4]) || 0, // Column E = Probability
+      notes: row[7] || '', // Column H = Notes
+    })).filter((d: Deal) => d.name && d.name !== 'Unnamed Deal' && d.name !== 'TOTALS:');
 
     // Calculate totals by stage
     const total = deals.reduce((sum: number, d: Deal) => sum + d.amount, 0);
