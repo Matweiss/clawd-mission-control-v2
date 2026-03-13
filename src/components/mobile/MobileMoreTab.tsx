@@ -1,5 +1,8 @@
 import React from 'react';
-import { Settings, User, Bell, Download, LogOut, Info } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Settings, User, Bell, Download, LogOut, Info, Mic, ChevronRight } from 'lucide-react';
+import { SIRI_SHORTCUTS, isShortcutsAvailable, openShortcutsApp } from '../../lib/siri-shortcuts';
+import { hapticFeedback } from '../../lib/ios-utils';
 
 interface MobileMoreTabProps {
   onInstall: () => void;
@@ -14,11 +17,20 @@ export function MobileMoreTab({ onInstall, isInstalled }: MobileMoreTabProps) {
     { icon: Info, label: 'About', color: 'text-purple-400' },
   ];
 
+  const handleShortcutPress = (shortcut: typeof SIRI_SHORTCUTS[0]) => {
+    hapticFeedback('medium');
+    openShortcutsApp(shortcut);
+  };
+
   return (
     <div className="space-y-4">
       {/* Install App Card */}
       {!isInstalled && (
-        <div className="bg-work/10 border border-work/30 rounded-2xl p-4">
+        <motion.div 
+          className="bg-work/10 border border-work/30 rounded-2xl p-4"
+          whileTap={{ scale: 0.98 }}
+          onClick={onInstall}
+        >
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 bg-work/20 rounded-xl flex items-center justify-center">
               <span className="text-2xl">🦞</span>
@@ -28,12 +40,40 @@ export function MobileMoreTab({ onInstall, isInstalled }: MobileMoreTabProps) {
               <p className="text-sm text-gray-400">Add to home screen for quick access</p>
             </div>
           </div>
-          <button
-            onClick={onInstall}
-            className="w-full mt-4 py-3 bg-work text-white rounded-xl font-medium"
-          >
+          <button className="w-full mt-4 py-3 bg-work text-white rounded-xl font-medium">
             Install App
           </button>
+        </motion.div>
+      )}
+
+      {/* Siri Shortcuts */}
+      {isShortcutsAvailable() && (
+        <div className="bg-surface-light rounded-2xl border border-border overflow-hidden">
+          <div className="p-4 border-b border-border">
+            <div className="flex items-center gap-2">
+              <Mic className="w-5 h-5 text-purple-400" />
+              <span className="font-medium">Siri Shortcuts</span>
+            </div>
+            <p className="text-sm text-gray-500 mt-1">Tap to add voice commands</p>
+          </div>
+          
+          <div className="divide-y divide-border">
+            {SIRI_SHORTCUTS.map((shortcut, index) => (
+              <motion.button
+                key={shortcut.name}
+                className="w-full flex items-center gap-3 p-4"
+                whileTap={{ scale: 0.98, backgroundColor: 'rgba(255,255,255,0.05)' }}
+                onClick={() => handleShortcutPress(shortcut)}
+              >
+                <span className="text-2xl">{shortcut.icon}</span>
+                <div className="flex-1 text-left">
+                  <p className="font-medium">{shortcut.name}</p>
+                  <p className="text-xs text-gray-500">"{shortcut.phrase}""</p>
+                </div>
+                <ChevronRight className="w-5 h-5 text-gray-500" />
+              </motion.button>
+            ))}
+          </div>
         </div>
       )}
 
@@ -42,18 +82,18 @@ export function MobileMoreTab({ onInstall, isInstalled }: MobileMoreTabProps) {
         {menuItems.map((item, index) => {
           const Icon = item.icon;
           return (
-            <button
+            <motion.button
               key={item.label}
               className={`w-full flex items-center gap-3 p-4 ${
                 index !== menuItems.length - 1 ? 'border-b border-border' : ''
               }`}
+              whileTap={{ scale: 0.98, backgroundColor: 'rgba(255,255,255,0.05)' }}
+              onClick={() => hapticFeedback('light')}
             >
               <Icon className={`w-5 h-5 ${item.color}`} />
               <span className="flex-1 text-left">{item.label}</span>
-              <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
+              <ChevronRight className="w-5 h-5 text-gray-500" />
+            </motion.button>
           );
         })}
       </div>
@@ -67,10 +107,14 @@ export function MobileMoreTab({ onInstall, isInstalled }: MobileMoreTabProps) {
       </div>
 
       {/* Logout */}
-      <button className="w-full flex items-center justify-center gap-2 p-4 text-red-400">
+      <motion.button 
+        className="w-full flex items-center justify-center gap-2 p-4 text-red-400"
+        whileTap={{ scale: 0.95 }}
+        onClick={() => hapticFeedback('error')}
+      >
         <LogOut className="w-5 h-5" />
         <span>Sign Out</span>
-      </button>
+      </motion.button>
     </div>
   );
 }

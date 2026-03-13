@@ -11,6 +11,7 @@ import { MobileYogaTab } from '../components/mobile/MobileYogaTab';
 import { MobileWorkTab } from '../components/mobile/MobileWorkTab';
 import { MobileMoreTab } from '../components/mobile/MobileMoreTab';
 import { hapticFeedback, isIOSPWA, requestIOSNotifications } from '../lib/ios-utils';
+import { handleShortcutAction, executeShortcutAction } from '../lib/siri-shortcuts';
 
 // Register service worker for PWA
 const registerServiceWorker = async () => {
@@ -48,6 +49,21 @@ export default function MobileMissionControl() {
       e.preventDefault();
       setDeferredPrompt(e);
     });
+
+    // Handle Siri Shortcuts actions
+    const shortcut = handleShortcutAction();
+    if (shortcut) {
+      const result = executeShortcutAction(shortcut.action);
+      if (result.tab) {
+        setActiveTab(result.tab as typeof activeTab);
+      }
+      if (result.message) {
+        // Show toast notification
+        console.log(result.message);
+      }
+      // Clear the URL params
+      window.history.replaceState({}, '', '/mobile');
+    }
 
     // iOS-specific: Handle pull-to-refresh
     const handleTouchStart = (e: TouchEvent) => {
