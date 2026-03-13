@@ -26,6 +26,7 @@ import { LucraCommissionCard } from '../components/LucraCommissionCard';
 import { LifestyleGoalTrackerCard } from '../components/LifestyleGoalTrackerCard';
 import { MovieTrackerCard } from '../components/MovieTrackerCard';
 import { MovieCard } from '../components/MovieCard';
+import { RegalCard } from '../components/RegalCard';
 
 // Agent configuration - 3-Tier Architecture
 const AGENTS = [
@@ -310,6 +311,8 @@ export default function MissionControl() {
             <MovieTrackerCard />
 
             <MovieCard />
+
+            <RegalCard />
 
             <LifestyleHealthPanel />
           </div>
