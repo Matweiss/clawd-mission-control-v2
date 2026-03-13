@@ -4,7 +4,8 @@ import { TrendingUp, AlertCircle, RefreshCw, MoreHorizontal } from 'lucide-react
 interface Deal {
   id: string;
   name: string;
-  amount: number;
+  mrr: number;
+  arr: number;
   stage: string;
   closeDate?: string;
   probability?: number;
@@ -12,8 +13,9 @@ interface Deal {
 
 interface PipelineData {
   deals: Deal[];
-  total: number;
-  byStage: Record<string, { count: number; value: number }>;
+  totalMRR: number;
+  totalARR: number;
+  byStage: Record<string, { count: number; mrr: number; arr: number }>;
   closingThisWeek: Deal[];
   count: number;
   lastUpdated: string;
@@ -58,6 +60,7 @@ export function PipelineSheetCard() {
   }, []);
 
   const formatCurrency = (val: number) => `$${(val / 1000).toFixed(0)}K`;
+  const formatDollars = (val: number) => `$${val.toLocaleString()}`;
 
   if (error || data?.error) {
     return (
@@ -112,18 +115,26 @@ export function PipelineSheetCard() {
       
       <div className="p-4">
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-4 mb-4">
+        <div className="grid grid-cols-2 gap-4 mb-4">
           <div className="text-center">
             <div className="text-2xl font-bold font-mono">{data.count}</div>
             <div className="text-xs text-gray-500">Deals</div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold font-mono text-cyan-400">{formatCurrency(data.total)}</div>
-            <div className="text-xs text-gray-500">Pipeline</div>
-          </div>
-          <div className="text-center">
             <div className="text-2xl font-bold font-mono text-green-400">{data.closingThisWeek.length}</div>
             <div className="text-xs text-gray-500">This Week</div>
+          </div>
+        </div>
+
+        {/* MRR / ARR Totals */}
+        <div className="grid grid-cols-2 gap-4 mb-4 p-3 bg-surface-light rounded-lg">
+          <div className="text-center border-r border-border">
+            <div className="text-xl font-bold font-mono text-cyan-400">{formatDollars(data.totalMRR)}</div>
+            <div className="text-xs text-gray-500">Total MRR</div>
+          </div>
+          <div className="text-center">
+            <div className="text-xl font-bold font-mono text-purple-400">{formatDollars(data.totalARR)}</div>
+            <div className="text-xs text-gray-500">Total ARR</div>
           </div>
         </div>
 
@@ -135,7 +146,8 @@ export function PipelineSheetCard() {
                 <span className={`${STAGE_COLORS[stage] || 'text-gray-400'}`}>{stage}</span>
                 <div className="flex items-center gap-3">
                   <span className="text-gray-500">{stageData.count} deals</span>
-                  <span className="font-mono text-gray-300">{formatCurrency(stageData.value)}</span>
+                  <span className="font-mono text-cyan-400">{formatDollars(stageData.mrr)} MRR</span>
+                  <span className="font-mono text-purple-400">{formatDollars(stageData.arr)} ARR</span>
                 </div>
               </div>
             ))}
@@ -153,7 +165,10 @@ export function PipelineSheetCard() {
               <div key={i} className="bg-red-500/10 border border-red-500/30 rounded-lg p-2 mb-1">
                 <div className="flex items-center justify-between">
                   <span className="text-sm">{deal.name}</span>
-                  <span className="text-sm font-mono font-bold">{formatCurrency(deal.amount)}</span>
+                  <div className="text-right">
+                    <span className="text-sm font-mono font-bold text-cyan-400">{formatDollars(deal.mrr)} MRR</span>
+                    <span className="text-sm font-mono font-bold text-purple-400 ml-2">{formatDollars(deal.arr)} ARR</span>
+                  </div>
                 </div>
                 {deal.closeDate && (
                   <div className="text-xs text-red-400 mt-1">

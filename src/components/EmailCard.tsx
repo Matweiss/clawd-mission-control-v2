@@ -137,8 +137,26 @@ export function EmailCard() {
         )}
 
         {fyi.length > 0 && (
-          <div className="pt-2 border-t border-border">
-            <span className="text-xs text-gray-500">{fyi.length} FYI emails</span>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-gray-400 text-xs font-medium">
+              <Mail className="w-3 h-3" />
+              <span>Recent ({fyi.length})</span>
+            </div>
+            {fyi.slice(0, 3).map((email: Email) => (
+              <div key={email.id} className="bg-surface-light border border-border rounded-lg p-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs truncate">{email.from}</span>
+                  <span className="text-[10px] text-gray-500">
+                    {new Date(email.receivedAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                  </span>
+                </div>
+                <p className="text-xs text-gray-200 truncate">{email.subject}</p>
+                <p className="text-[10px] text-gray-400 truncate mt-0.5">{email.snippet}</p>
+              </div>
+            ))}
+            {fyi.length > 3 && (
+              <div className="text-xs text-gray-500 text-center">+{fyi.length - 3} more</div>
+            )}
           </div>
         )}
 

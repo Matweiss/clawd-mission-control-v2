@@ -6,7 +6,8 @@ const SHEET_ID = '1pJJ7dP5hw1un18g0yprfw4sc__ITvdzdsfSFFVqhepQ';
 interface Deal {
   id: string;
   name: string;
-  amount: number;
+  mrr: number;
+  arr: number;
   stage: string;
   closeDate?: string;
   probability?: number;
@@ -77,24 +78,31 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const rows = data.values || [];
     
     // Skip header row, parse deals
-    // Column D (index 3) = MRR value, Column F (index 5) = Stage
-    const deals: Deal[] = rows.slice(1).map((row: string[], index: number) => ({
-      id: `sheet-${index}`,
-      name: row[0] || 'Unnamed Deal',
-      amount: parseFloat(row[3]?.replace(/[^0-9.]/g, '')) || 0, // Column D = MRR
-      stage: row[5] || 'Unknown', // Column F = Stage
-      closeDate: row[6] || undefined, // Column G = Close Date (if exists)
-      probability: parseInt(row[4]) || 0, // Column E = Probability
-      notes: row[7] || '', // Column H = Notes
-    })).filter((d: Deal) => d.name && d.name !== 'Unnamed Deal' && d.name !== 'TOTALS:');
+    // Column D (index 3) = MRR value, Column E (index 4) = ARR value (MRR * 12), Column F (index 5) = Stage
+    const deals: Deal[] = rows.slice(1).map((row: string[], index: number) => {
+      const mrr = parseFloat(row[3]?.replace(/[^0-9.]/g, '')) || 0;
+      const arr = parseFloat(row[4]?.replace(/[^0-9.]/g, '')) || (mrr * 12);
+      return {
+        id: `sheet-${index}`,
+        name: row[0] || 'Unnamed Deal',
+        mrr,
+        arr,
+        stage: row[5] || 'Unknown', // Column F = Stage
+        closeDate: row[6] || undefined, // Column G = Close Date
+        probability: parseInt(row[7]) || 0, // Column H = Probability
+        notes: row[8] || '', // Column I = Notes
+      };
+    }).filter((d: Deal) => d.name && d.name !== 'Unnamed Deal' && d.name !== 'TOTALS:');
 
     // Calculate totals by stage
-    const total = deals.reduce((sum: number, d: Deal) => sum + d.amount, 0);
+    const totalMRR = deals.reduce((sum: number, d: Deal) => sum + d.mrr, 0);
+    const totalARR = deals.reduce((sum: number, d: Deal) => sum + d.arr, 0);
     const byStage = deals.reduce((acc: any, deal: Deal) => {
       const stage = deal.stage || 'Unknown';
-      if (!acc[stage]) acc[stage] = { count: 0, value: 0 };
+      if (!acc[stage]) acc[stage] = { count: 0, mrr: 0, arr: 0 };
       acc[stage].count++;
-      acc[stage].value += deal.amount;
+      acc[stage].mrr += deal.mrr;
+      acc[stage].arr += deal.arr;
       return acc;
     }, {});
 
@@ -109,7 +117,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     return res.status(200).json({
       deals,
-      total,
+      totalMRR,
+      totalARR,
       byStage,
       closingThisWeek,
       count: deals.length,
