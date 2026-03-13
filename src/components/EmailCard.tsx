@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Mail, AlertCircle, Clock, RefreshCw } from 'lucide-react';
+import { Mail, AlertCircle, Clock, RefreshCw, Trash2, Star } from 'lucide-react';
 
 interface Email {
   id: string;
@@ -8,6 +8,7 @@ interface Email {
   snippet: string;
   receivedAt: string;
   category: 'URGENT' | 'REPLY_NEEDED' | 'FYI';
+  isStarred?: boolean;
 }
 
 interface EmailData {
@@ -23,6 +24,7 @@ export function EmailCard() {
   const [data, setData] = useState<EmailData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   const fetchEmails = async () => {
     setLoading(true);
@@ -48,6 +50,29 @@ export function EmailCard() {
   const urgent = data?.emails.filter((e: Email) => e.category === 'URGENT') || [];
   const replyNeeded = data?.emails.filter((e: Email) => e.category === 'REPLY_NEEDED') || [];
   const fyi = data?.emails.filter((e: Email) => e.category === 'FYI') || [];
+
+  const handleEmailAction = async (messageId: string, action: 'delete' | 'star' | 'unstar') => {
+    setActionLoading(messageId);
+    try {
+      const response = await fetch('/api/emails/action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messageId, action }),
+      });
+
+      if (response.ok) {
+        // Refresh email list after action
+        fetchEmails();
+      } else {
+        const error = await response.json();
+        alert(`Failed to ${action} email: ${error.error || 'Unknown error'}`);
+      }
+    } catch (err) {
+      alert(`Failed to ${action} email: ${err}`);
+    } finally {
+      setActionLoading(null);
+    }
+  };
 
   if (error) {
     return (
@@ -143,12 +168,30 @@ export function EmailCard() {
               <span>Recent ({fyi.length})</span>
             </div>
             {fyi.slice(0, 3).map((email: Email) => (
-              <div key={email.id} className="bg-surface-light border border-border rounded-lg p-2">
+              <div key={email.id} className="bg-surface-light border border-border rounded-lg p-2 group">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs truncate">{email.from}</span>
-                  <span className="text-[10px] text-gray-500">
-                    {new Date(email.receivedAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
-                  </span>
+                  <span className="text-xs truncate flex-1">{email.from}</span>
+                  <div className="flex items-center gap-1">
+                    <span className="text-[10px] text-gray-500">
+                      {new Date(email.receivedAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                    </span>
+                    <button
+                      onClick={() => handleEmailAction(email.id, email.isStarred ? 'unstar' : 'star')}
+                      disabled={actionLoading === email.id}
+                      className={`p-1 rounded transition-colors ${email.isStarred ? 'text-yellow-400' : 'text-gray-600 hover:text-yellow-400'}`}
+                      title={email.isStarred ? 'Unstar' : 'Star'}
+                    >
+                      <Star className={`w-3 h-3 ${email.isStarred ? 'fill-current' : ''}`} />
+                    </button>
+                    <button
+                      onClick={() => handleEmailAction(email.id, 'delete')}
+                      disabled={actionLoading === email.id}
+                      className="p-1 rounded text-gray-600 hover:text-red-400 transition-colors"
+                      title="Delete"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  </div>
                 </div>
                 <p className="text-xs text-gray-200 truncate">{email.subject}</p>
                 <p className="text-[10px] text-gray-400 truncate mt-0.5">{email.snippet}</p>
