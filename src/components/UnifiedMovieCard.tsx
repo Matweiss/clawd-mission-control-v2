@@ -44,8 +44,10 @@ interface TrackerData {
 
 export function UnifiedMovieCard() {
   const [data, setData] = useState<MovieData | null>(null);
+  const [regalData, setRegalData] = useState<any>(null);
   const [watchlistData, setWatchlistData] = useState<WatchlistData | null>(null);
   const [loading, setLoading] = useState(false);
+  const [regalLoading, setRegalLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'now-playing' | 'regal' | 'watchlist' | 'seen' | 'tracker'>('now-playing');
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
   const [rating, setRating] = useState(0);
@@ -78,6 +80,21 @@ export function UnifiedMovieCard() {
       console.error('Error fetching data:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchRegalData = async () => {
+    setRegalLoading(true);
+    try {
+      const response = await fetch('/api/movies/regal-sherman-oaks');
+      if (response.ok) {
+        const data = await response.json();
+        setRegalData(data);
+      }
+    } catch (err) {
+      console.error('Error fetching Regal data:', err);
+    } finally {
+      setRegalLoading(false);
     }
   };
 
@@ -158,6 +175,7 @@ export function UnifiedMovieCard() {
 
   useEffect(() => {
     fetchData();
+    fetchRegalData();
   }, []);
 
   const isInWatchlist = (movieId: number) =>
@@ -246,24 +264,57 @@ export function UnifiedMovieCard() {
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-1 text-xs text-gray-500">
                 <MapPin className="w-3 h-3" />
-                <span>Regal Sherman Oaks Galleria</span>
+                <span>Regal Sherman Oaks Galleria (via Fandango)</span>
               </div>
-              <a
-                href="https://www.regmovies.com/theatres/regal-sherman-oaks-galleria/0628"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs text-red-400 hover:underline flex items-center gap-1"
-              >
-                Book
-                <ExternalLink className="w-3 h-3" />
-              </a>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={fetchRegalData}
+                  className="p-1 hover:bg-surface-light rounded"
+                >
+                  <RefreshCw className={`w-3 h-3 text-gray-500 ${regalLoading ? 'animate-spin' : ''}`} />
+                </button>
+                <a
+                  href="https://www.regmovies.com/theatres/regal-sherman-oaks-galleria-1483"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-red-400 hover:underline flex items-center gap-1"
+                >
+                  Book
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
             </div>
 
-            <div className="text-center py-8 text-gray-500">
-              <Film className="w-8 h-8 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">Regal showtimes coming soon</p>
-              <p className="text-xs text-gray-600 mt-1">Scraping Fandango/Google/Regal for live times</p>
-            </div>
+            {regalLoading ? (
+              <div className="text-center py-8 text-gray-500">
+                <Film className="w-8 h-8 mx-auto mb-2 opacity-50 animate-pulse" />
+                <p className="text-sm">Loading showtimes...</p>
+              </div>
+            ) : !regalData?.movies?.length ? (
+              <div className="text-center py-8 text-gray-500">
+                <Film className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                <p className="text-sm">No showtimes available</p>
+                <p className="text-xs text-gray-600 mt-1">Try refreshing</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {regalData.movies.map((movie: any, index: number) => (
+                  <div key={index} className="p-3 bg-surface-light rounded-lg">
+                    <div className="flex items-start justify-between mb-2">
+                      <h3 className="font-medium text-sm">{movie.title}</h3>
+                      <span className="text-xs text-gray-500">{movie.format}</span>
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {movie.showtimes.map((time: string, i: number) => (
+                        <span key={i} className="px-2 py-1 bg-red-500/10 text-red-400 text-xs rounded">
+                          {time}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
