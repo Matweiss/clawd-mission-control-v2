@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Film, Star, Clock, RefreshCw, MapPin, Plus, Check, Eye, Trash2, ExternalLink, Clapperboard, Ticket, CalendarDays, ListTodo, RotateCcw } from 'lucide-react';
+import { Film, Star, Clock, RefreshCw, MapPin, Plus, Check, Eye, Trash2, ExternalLink, Clapperboard } from 'lucide-react';
 
 interface Movie {
   id: number;
@@ -48,7 +48,8 @@ export function UnifiedMovieCard() {
   const [watchlistData, setWatchlistData] = useState<WatchlistData | null>(null);
   const [loading, setLoading] = useState(false);
   const [regalLoading, setRegalLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'now-playing' | 'regal' | 'watchlist' | 'seen' | 'tracker'>('now-playing');
+  const [activeTab, setActiveTab] = useState<'regal' | 'now-playing' | 'watchlist' | 'seen'>('regal');
+  const [editingTracker, setEditingTracker] = useState(false);
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
   const [rating, setRating] = useState(0);
   const [notes, setNotes] = useState('');
@@ -195,7 +196,41 @@ export function UnifiedMovieCard() {
             <Clapperboard className="w-5 h-5 text-rose-400" />
             <div>
               <h2 className="text-sm font-semibold text-white">Movies</h2>
-              <p className="text-xs text-gray-500">Regal Unlimited ${trackerData.monthlyCost}/mo • {trackerData.seenThisMonth} this month</p>
+              {editingTracker ? (
+                <div className="flex items-center gap-1 text-xs">
+                  <span className="text-gray-500">Regal Unlimited ${trackerData.monthlyCost}/mo •</span>
+                  <input
+                    type="number"
+                    value={trackerData.seenThisMonth}
+                    onChange={(e) => setTrackerData(prev => ({ ...prev, seenThisMonth: parseInt(e.target.value) || 0 }))}
+                    className="w-8 px-1 py-0.5 bg-surface-light rounded text-center text-xs"
+                    min={0}
+                  />
+                  <span className="text-gray-500">this month •</span>
+                  <input
+                    type="number"
+                    value={trackerData.seenThisYear}
+                    onChange={(e) => setTrackerData(prev => ({ ...prev, seenThisYear: parseInt(e.target.value) || 0 }))}
+                    className="w-10 px-1 py-0.5 bg-surface-light rounded text-center text-xs"
+                    min={0}
+                  />
+                  <span className="text-gray-500">this year</span>
+                  <button
+                    onClick={() => setEditingTracker(false)}
+                    className="ml-1 text-rose-400 hover:text-rose-300"
+                  >
+                    <Check className="w-3 h-3" />
+                  </button>
+                </div>
+              ) : (
+                <p 
+                  className="text-xs text-gray-500 cursor-pointer hover:text-gray-400"
+                  onClick={() => setEditingTracker(true)}
+                  title="Click to edit"
+                >
+                  Regal Unlimited ${trackerData.monthlyCost}/mo • {trackerData.seenThisMonth} this month • {trackerData.seenThisYear} this year
+                </p>
+              )}
             </div>
           </div>
           <button
@@ -209,11 +244,10 @@ export function UnifiedMovieCard() {
         {/* Tabs */}
         <div className="flex flex-wrap gap-2">
           {[
+            { id: 'regal', label: `Regal Showtimes (${regalData?.movies?.length || 0})`, color: 'red' },
             { id: 'now-playing', label: `Now Playing (${data?.count || 0})`, color: 'pink' },
-            { id: 'regal', label: 'Regal Showtimes', color: 'red' },
             { id: 'watchlist', label: `Watchlist (${watchlistData?.watchlistCount || 0})`, color: 'blue' },
-            { id: 'seen', label: `Seen (${watchlistData?.seenCount || 0})`, color: 'green' },
-            { id: 'tracker', label: 'Tracker', color: 'rose' }
+            { id: 'seen', label: `Seen (${watchlistData?.seenCount || 0})`, color: 'green' }
           ].map((tab) => (
             <button
               key={tab.id}
@@ -231,33 +265,6 @@ export function UnifiedMovieCard() {
       </div>
 
       <div className="p-4">
-        {/* Now Playing Tab */}
-        {activeTab === 'now-playing' && (
-          <div className="space-y-3 max-h-[400px] overflow-y-auto">
-            {!data ? (
-              <div className="text-center py-8 text-gray-500">
-                <Film className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                <p className="text-sm">{loading ? 'Loading movies...' : 'No movie data'}</p>
-              </div>
-            ) : (
-              data.movies.map((movie) => (
-                <MovieRow
-                  key={movie.id}
-                  movie={movie}
-                  isInWatchlist={isInWatchlist(movie.id)}
-                  isInSeen={isInSeen(movie.id)}
-                  onAddToWatchlist={() => addToWatchlist(movie, 'tmdb')}
-                  onMarkAsSeen={() => setSelectedMovie(movie)}
-                  poster_path={movie.poster_path}
-                  vote_average={movie.vote_average}
-                  release_date={movie.release_date}
-                  overview={movie.overview}
-                />
-              ))
-            )}
-          </div>
-        )}
-
         {/* Regal Showtimes Tab */}
         {activeTab === 'regal' && (
           <div className="space-y-3 max-h-[400px] overflow-y-auto">
@@ -314,6 +321,33 @@ export function UnifiedMovieCard() {
                   </div>
                 ))}
               </div>
+            )}
+          </div>
+        )}
+
+        {/* Now Playing Tab */}
+        {activeTab === 'now-playing' && (
+          <div className="space-y-3 max-h-[400px] overflow-y-auto">
+            {!data ? (
+              <div className="text-center py-8 text-gray-500">
+                <Film className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                <p className="text-sm">{loading ? 'Loading movies...' : 'No movie data'}</p>
+              </div>
+            ) : (
+              data.movies.map((movie) => (
+                <MovieRow
+                  key={movie.id}
+                  movie={movie}
+                  isInWatchlist={isInWatchlist(movie.id)}
+                  isInSeen={isInSeen(movie.id)}
+                  onAddToWatchlist={() => addToWatchlist(movie, 'tmdb')}
+                  onMarkAsSeen={() => setSelectedMovie(movie)}
+                  poster_path={movie.poster_path}
+                  vote_average={movie.vote_average}
+                  release_date={movie.release_date}
+                  overview={movie.overview}
+                />
+              ))
             )}
           </div>
         )}
@@ -414,60 +448,6 @@ export function UnifiedMovieCard() {
                 </div>
               ))
             )}
-          </div>
-        )}
-
-        {/* Tracker Tab */}
-        {activeTab === 'tracker' && (
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
-              <TrackerMetric
-                icon={<Ticket className="w-4 h-4 text-rose-400" />}
-                label="Seen This Month"
-                value={String(trackerData.seenThisMonth)}
-                sub={`≈ $${costPerMovie.toFixed(2)} / movie`}
-              />
-              <TrackerMetric
-                icon={<Clapperboard className="w-4 h-4 text-pink-400" />}
-                label="Seen This Year"
-                value={String(trackerData.seenThisYear)}
-                sub="Running yearly total"
-              />
-              <TrackerMetric
-                icon={<CalendarDays className="w-4 h-4 text-orange-400" />}
-                label="Next Billing"
-                value={trackerData.nextBilling}
-                sub="Recurring on the 15th"
-              />
-              <TrackerMetric
-                icon={<ListTodo className="w-4 h-4 text-cyan-400" />}
-                label="Watchlist"
-                value={String(watchlistData?.watchlistCount || 0)}
-                sub="Ready to watch"
-              />
-            </div>
-
-            <div className="grid grid-cols-3 gap-2">
-              <button
-                onClick={() => setActiveTab('now-playing')}
-                className="flex items-center justify-center gap-1 rounded-lg bg-surface-light hover:bg-border transition-colors px-3 py-2 text-xs text-gray-300"
-              >
-                <Plus className="w-3 h-3" /> Add Seen
-              </button>
-              <button
-                onClick={undoLastSeen}
-                disabled={!watchlistData?.seenList.length}
-                className="flex items-center justify-center gap-1 rounded-lg bg-surface-light hover:bg-border transition-colors px-3 py-2 text-xs text-gray-300 disabled:opacity-50"
-              >
-                <RotateCcw className="w-3 h-3" /> Undo
-              </button>
-              <button
-                onClick={() => setActiveTab('watchlist')}
-                className="flex items-center justify-center gap-1 rounded-lg bg-surface-light hover:bg-border transition-colors px-3 py-2 text-xs text-gray-300"
-              >
-                <ListTodo className="w-3 h-3" /> Watchlist
-              </button>
-            </div>
           </div>
         )}
       </div>
@@ -605,19 +585,6 @@ function MovieRow({
 
         {overview && <p className="text-xs text-gray-400 mt-1 line-clamp-2">{overview}</p>}
       </div>
-    </div>
-  );
-}
-
-function TrackerMetric({ icon, label, value, sub }: { icon: React.ReactNode; label: string; value: string; sub: string }) {
-  return (
-    <div className="rounded-xl bg-surface-light p-3 border border-border/60">
-      <div className="flex items-center gap-2 mb-2">
-        {icon}
-        <span className="text-xs text-gray-400">{label}</span>
-      </div>
-      <div className="text-sm font-semibold text-white">{value}</div>
-      <div className="text-xs text-gray-500 mt-1">{sub}</div>
     </div>
   );
 }
