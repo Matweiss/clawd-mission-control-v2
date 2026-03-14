@@ -27,7 +27,7 @@ export function MobileChatTab() {
 
   const checkConnection = async () => {
     try {
-      const response = await fetch('http://localhost:8765/', { method: 'GET' });
+      const response = await fetch('https://gemini.thematweiss.com/', { method: 'GET' });
       setIsConnected(response.ok);
     } catch {
       setIsConnected(false);
@@ -59,7 +59,7 @@ export function MobileChatTab() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:8765/gemini', {
+      const response = await fetch('https://gemini.thematweiss.com/gemini', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt: userMessage.content })
@@ -200,7 +200,7 @@ export function MobileChatTab() {
       {/* Connection hint */}
       {!isConnected && (
         <p className="text-xs text-center text-gray-500 mt-2">
-          Run: cd ~/Openclaw_Free && node http-server.js
+          Cloudflare tunnel connecting...
         </p>
       )}
     </div>
