@@ -81,7 +81,7 @@ export function YogaCard() {
             </div>
           </div>
           <button
-            onClick={fetchData}
+            onClick={() => fetchData()}
             className="p-1 hover:bg-surface-light rounded transition-colors"
           >
             <RefreshCw className={`w-4 h-4 text-gray-500 ${loading ? 'animate-spin' : ''}`} />
