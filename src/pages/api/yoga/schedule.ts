@@ -4,7 +4,7 @@ const PREFERRED_CLASSES = ['C2', 'C3', 'YS', 'CSX'];
 
 type YogaClass = { time: string; name: string; instructor: string; duration: string; type: string };
 type StudioDay = { name: string; url: string; classes: YogaClass[] };
-type DaySchedule = { key: 'sun' | 'mon'; label: string; date: string; studios: StudioDay[] };
+type DaySchedule = { key: 'sun' | 'mon'; label: string; date: string; studios: StudioDay[]; reportedTotalClasses?: number };
 
 const YOGA_DATA: {
   source: string;
@@ -32,11 +32,17 @@ const YOGA_DATA: {
       key: 'sun',
       label: 'Sun',
       date: '2026-03-15',
+      reportedTotalClasses: 10,
       studios: [
         {
           name: 'Sherman Oaks',
           url: 'https://www.corepoweryoga.com/yoga-schedules',
-          classes: []
+          classes: [
+            { time: '10:00 AM', name: 'C3 - CorePower Yoga 3 (75)', instructor: 'Megan M', duration: '75 min', type: 'C3' },
+            { time: '12:30 PM', name: 'C2 - CorePower Yoga 2', instructor: 'Aliza P', duration: '60 min', type: 'C2' },
+            { time: '3:00 PM', name: 'Free Community Flow Class (heated)', instructor: 'Joshua S', duration: '60 min', type: 'C2' },
+            { time: '6:00 PM', name: 'C2 - CorePower Yoga 2', instructor: 'Erin H', duration: '60 min', type: 'C2' }
+          ]
         },
         {
           name: 'Encino',
@@ -59,11 +65,18 @@ const YOGA_DATA: {
       key: 'mon',
       label: 'Mon',
       date: '2026-03-16',
+      reportedTotalClasses: 21,
       studios: [
         {
           name: 'Sherman Oaks',
           url: 'https://www.corepoweryoga.com/yoga-schedules',
-          classes: []
+          classes: [
+            { time: '7:00 AM', name: 'YS - Yoga Sculpt', instructor: 'Mara C', duration: '60 min', type: 'YS' },
+            { time: '7:30 AM', name: 'C2 - CorePower Yoga 2', instructor: 'Madison M', duration: '60 min', type: 'C2' },
+            { time: '9:00 AM', name: 'YS - Yoga Sculpt', instructor: 'Laura F', duration: '60 min', type: 'YS' },
+            { time: '10:00 AM', name: 'C2 - CorePower Yoga 2', instructor: 'Jennifer R', duration: '60 min', type: 'C2' },
+            { time: '12:30 PM', name: 'C2 - CorePower Yoga 2', instructor: 'Madison M', duration: '60 min', type: 'C2' }
+          ]
         },
         {
           name: 'Encino',
@@ -88,8 +101,8 @@ const YOGA_DATA: {
       ]
     }
   ],
-  lastUpdated: '2026-03-15T05:30:00Z',
-  sourceNote: 'Pulled from live logged-in CorePower browser tab (filtered Encino view), Sunday + Monday.'
+  lastUpdated: '2026-03-15T17:50:00Z',
+  sourceNote: 'Pulled from live logged-in CorePower browser tab using favorited filter "Main" (Filter 2), Sunday + Monday.'
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -109,7 +122,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       key: d.key,
       label: d.label,
       date: d.date,
-      totalClasses: d.studios.reduce((acc, s) => acc + s.classes.length, 0)
+      totalClasses: d.reportedTotalClasses ?? d.studios.reduce((acc, s) => acc + s.classes.length, 0)
     }));
 
     return res.status(200).json({
@@ -120,7 +133,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       studios,
       classTypes: YOGA_DATA.classTypes,
       preferredClasses: YOGA_DATA.preferredClasses,
-      totalClasses: studios.reduce((acc, s) => acc + s.classes.length, 0),
+      totalClasses: activeDay.reportedTotalClasses ?? studios.reduce((acc, s) => acc + s.classes.length, 0),
       lastUpdated: YOGA_DATA.lastUpdated,
       sourceNote: YOGA_DATA.sourceNote
     });
