@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Home, Dog, Navigation, Lock, Unlock, Thermometer } from 'lucide-react';
+import { Home, Dog, Navigation, Lock, Unlock, Eye } from 'lucide-react';
 import { hapticFeedback } from '../../lib/ios-utils';
 
 interface HAEntity {
@@ -88,12 +88,34 @@ export function MobileHomeTab() {
     }
   };
 
-  const frontDoorState = entities['lock.front_door_2']?.state || entities['lock.front_door']?.state || 'unknown';
+  const runEntityAction = async (entity_id: string, action: string, actionKey: string) => {
+    hapticFeedback('medium');
+    setRunningAction(actionKey);
+    try {
+      await fetch('/api/ha/action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ entity_id, action }),
+      });
+      setTimeout(fetchHomeData, 700);
+    } catch (err) {
+      console.error('Error running HA entity action:', err);
+    } finally {
+      setRunningAction(null);
+    }
+  };
+
+  const frontDoorEntity = entities['lock.front_door_2'] ? 'lock.front_door_2' : 'lock.front_door';
+  const frontDoorState = entities[frontDoorEntity]?.state || 'unknown';
+
+  const dogDoorEntity = 'lock.dog_door';
+  const dogDoorState = entities[dogDoorEntity]?.state || 'unknown';
+
+  const garageCoverEntity = entities['cover.garage_door'] ? 'cover.garage_door' : '';
+  const garageLockEntity = entities['lock.garage_door'] ? 'lock.garage_door' : '';
   const garageState = entities['cover.garage_door']?.state || entities['lock.garage_door']?.state || 'unknown';
-  const temp =
-    entities['climate.living_room']?.attributes?.current_temperature ??
-    entities['sensor.living_room_temperature']?.state ??
-    '--';
+
+  const watchArea = entities['sensor.watch_area']?.state || 'Unknown';
 
   return (
     <div className="space-y-4">
@@ -118,41 +140,96 @@ export function MobileHomeTab() {
             <div className="h-4 bg-surface rounded w-1/2" />
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-3">
             <div className="bg-surface rounded-xl p-3">
-              <div className="flex items-center gap-2 mb-1">
-                {frontDoorState === 'locked' ? (
-                  <Lock className="w-4 h-4 text-green-400" />
-                ) : (
-                  <Unlock className="w-4 h-4 text-red-400" />
-                )}
-                <span className="text-xs text-gray-500">Front Door</span>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  {frontDoorState === 'locked' ? <Lock className="w-4 h-4 text-green-400" /> : <Unlock className="w-4 h-4 text-red-400" />}
+                  <span className="text-xs text-gray-500">Front Door</span>
+                </div>
+                <span className={`text-sm font-semibold ${frontDoorState === 'locked' ? 'text-green-400' : 'text-red-400'}`}>{frontDoorState}</span>
               </div>
-              <p className={`text-lg font-semibold ${frontDoorState === 'locked' ? 'text-green-400' : 'text-red-400'}`}>
-                {frontDoorState === 'locked' ? 'Locked' : frontDoorState}
-              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => runEntityAction(frontDoorEntity, 'lock', 'front_lock')}
+                  disabled={runningAction === 'front_lock'}
+                  className="flex-1 px-3 py-2 rounded-lg bg-green-500/20 text-green-300 text-xs disabled:opacity-50"
+                >Lock</button>
+                <button
+                  onClick={() => runEntityAction(frontDoorEntity, 'unlock', 'front_unlock')}
+                  disabled={runningAction === 'front_unlock'}
+                  className="flex-1 px-3 py-2 rounded-lg bg-red-500/20 text-red-300 text-xs disabled:opacity-50"
+                >Unlock</button>
+              </div>
             </div>
 
             <div className="bg-surface rounded-xl p-3">
-              <div className="flex items-center gap-2 mb-1">
-                {garageState === 'closed' || garageState === 'locked' ? (
-                  <Lock className="w-4 h-4 text-green-400" />
-                ) : (
-                  <Unlock className="w-4 h-4 text-yellow-400" />
-                )}
-                <span className="text-xs text-gray-500">Garage</span>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  {dogDoorState === 'locked' ? <Lock className="w-4 h-4 text-green-400" /> : <Unlock className="w-4 h-4 text-yellow-400" />}
+                  <span className="text-xs text-gray-500">Dog Door</span>
+                </div>
+                <span className={`text-sm font-semibold ${dogDoorState === 'locked' ? 'text-green-400' : 'text-yellow-400'}`}>{dogDoorState}</span>
               </div>
-              <p className={`text-lg font-semibold ${(garageState === 'closed' || garageState === 'locked') ? 'text-green-400' : 'text-yellow-400'}`}>
-                {garageState}
-              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => runEntityAction(dogDoorEntity, 'lock', 'dog_lock')}
+                  disabled={runningAction === 'dog_lock'}
+                  className="flex-1 px-3 py-2 rounded-lg bg-green-500/20 text-green-300 text-xs disabled:opacity-50"
+                >Lock</button>
+                <button
+                  onClick={() => runEntityAction(dogDoorEntity, 'unlock', 'dog_unlock')}
+                  disabled={runningAction === 'dog_unlock'}
+                  className="flex-1 px-3 py-2 rounded-lg bg-red-500/20 text-red-300 text-xs disabled:opacity-50"
+                >Unlock</button>
+              </div>
             </div>
 
-            <div className="bg-surface rounded-xl p-3 col-span-2">
-              <div className="flex items-center gap-2 mb-1">
-                <Thermometer className="w-4 h-4 text-blue-400" />
-                <span className="text-xs text-gray-500">Living Room Temperature</span>
+            <div className="bg-surface rounded-xl p-3">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  {(garageState === 'closed' || garageState === 'locked') ? <Lock className="w-4 h-4 text-green-400" /> : <Unlock className="w-4 h-4 text-yellow-400" />}
+                  <span className="text-xs text-gray-500">Smart Garage Door</span>
+                </div>
+                <span className={`text-sm font-semibold ${(garageState === 'closed' || garageState === 'locked') ? 'text-green-400' : 'text-yellow-400'}`}>{garageState}</span>
               </div>
-              <p className="text-lg font-semibold text-blue-400">{temp}°F</p>
+              <div className="flex gap-2">
+                {garageCoverEntity ? (
+                  <>
+                    <button
+                      onClick={() => runEntityAction(garageCoverEntity, 'open_cover', 'garage_open')}
+                      disabled={runningAction === 'garage_open'}
+                      className="flex-1 px-3 py-2 rounded-lg bg-yellow-500/20 text-yellow-300 text-xs disabled:opacity-50"
+                    >Open</button>
+                    <button
+                      onClick={() => runEntityAction(garageCoverEntity, 'close_cover', 'garage_close')}
+                      disabled={runningAction === 'garage_close'}
+                      className="flex-1 px-3 py-2 rounded-lg bg-green-500/20 text-green-300 text-xs disabled:opacity-50"
+                    >Close</button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => runEntityAction(garageLockEntity, 'unlock', 'garage_open')}
+                      disabled={runningAction === 'garage_open'}
+                      className="flex-1 px-3 py-2 rounded-lg bg-yellow-500/20 text-yellow-300 text-xs disabled:opacity-50"
+                    >Open</button>
+                    <button
+                      onClick={() => runEntityAction(garageLockEntity, 'lock', 'garage_close')}
+                      disabled={runningAction === 'garage_close'}
+                      className="flex-1 px-3 py-2 rounded-lg bg-green-500/20 text-green-300 text-xs disabled:opacity-50"
+                    >Close</button>
+                  </>
+                )}
+              </div>
+            </div>
+
+            <div className="bg-surface rounded-xl p-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Eye className="w-4 h-4 text-cyan-400" />
+                <span className="text-xs text-gray-500">Watch Area</span>
+              </div>
+              <span className="text-sm text-cyan-300">{watchArea}</span>
             </div>
           </div>
         )}
