@@ -5,6 +5,8 @@ const HA_TOKEN = process.env.HA_TOKEN;
 
 const ENTITY_IDS = {
   iphoneTracker: 'device_tracker.mat_s_iphone',
+  sarahTracker: 'device_tracker.sarah_s_iphone2',
+  sarahGeocodedLocation: 'sensor.sarah_s_iphone2_geocoded_location',
   iphoneBattery: 'sensor.mat_s_iphone_battery_level',
   iphoneBatteryState: 'sensor.mat_s_iphone_battery_state',
   iphoneGeocodedLocation: 'sensor.mat_s_iphone_geocoded_location',
@@ -105,6 +107,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     iphoneAudioOutput,
     iphoneWifi,
     watchArea,
+    sarahTracker,
+    sarahGeocodedLocation,
     denDoorLock,
     frontDoorLock,
     livingRoomDoorLock,
@@ -121,6 +125,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     getEntityState(ENTITY_IDS.iphoneAudioOutput),
     getEntityState(ENTITY_IDS.iphoneWifi),
     getEntityState(ENTITY_IDS.watchArea),
+    getEntityState(ENTITY_IDS.sarahTracker),
+    getEntityState(ENTITY_IDS.sarahGeocodedLocation),
     getEntityState(ENTITY_IDS.denDoorLock),
     getEntityState(ENTITY_IDS.frontDoorLock),
     getEntityState(ENTITY_IDS.livingRoomDoorLock),
@@ -157,6 +163,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     audioOutput: !!iphoneAudioOutput,
     wifi: !!iphoneWifi,
     watchArea: !!watchArea,
+    sarahTracker: !!sarahTracker,
+    sarahLocation: !!sarahGeocodedLocation,
     denDoor: !!denDoorLock,
     frontDoor: !!frontDoorLock,
     livingRoomDoor: !!livingRoomDoorLock,
@@ -186,6 +194,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Inferred state: not on WiFi but connected to Bluetooth audio = likely driving
     likelyDriving: (iphoneWifi?.state === 'Unknown' || iphoneWifi?.state === 'Not Connected') && 
                    (iphoneAudioOutput?.state && iphoneAudioOutput?.state !== 'iPhone' && iphoneAudioOutput?.state !== 'Unknown'),
+    sarah: {
+      entityId: ENTITY_IDS.sarahTracker,
+      geocodedEntityId: ENTITY_IDS.sarahGeocodedLocation,
+      status: sarahTracker?.state || 'unknown',
+      isHome: ['home', 'house'].includes(String(sarahTracker?.state || '').toLowerCase()),
+      location: sarahGeocodedLocation?.state || 'Unknown location',
+    },
     locks,
     garageDoor: {
       name: 'Smart Garage Door',
