@@ -277,7 +277,7 @@ export function UnifiedMovieCard() {
               </div>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={fetchRegalData}
+                  onClick={() => fetchRegalData()}
                   className="p-1 hover:bg-surface-light rounded"
                 >
                   <RefreshCw className={`w-3 h-3 text-gray-500 ${regalLoading ? 'animate-spin' : ''}`} />
