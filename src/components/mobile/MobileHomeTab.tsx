@@ -362,8 +362,8 @@ export function MobileHomeTab() {
         <div className="grid grid-cols-4 gap-3">
           {[
             { icon: Dog, label: runningAction === 'feed_theo' ? 'Feeding…' : 'Feed Theo', color: 'text-emerald-400', bg: 'bg-emerald-400/10', action: () => runCommand('feed theo', 'feed_theo') },
-            { icon: Lock, label: runningAction === 'lock_it_down' ? 'Locking…' : 'Lock Down', color: 'text-red-400', bg: 'bg-red-400/10', action: () => runCommand('lock it down', 'lock_it_down') },
             { icon: Calendar, label: 'Calendar', color: 'text-blue-400', bg: 'bg-blue-400/10', action: () => setQuickView('calendar') },
+            { icon: Mail, label: 'Emails', color: 'text-pink-400', bg: 'bg-pink-400/10', action: () => setQuickView('emails') },
             { icon: Zap, label: 'All Off', color: 'text-yellow-400', bg: 'bg-yellow-400/10', action: () => turnAllLightsOff() },
           ].map((action) => {
             const Icon = action.icon;
