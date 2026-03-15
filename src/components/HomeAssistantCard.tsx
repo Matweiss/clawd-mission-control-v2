@@ -41,6 +41,11 @@ interface PresenceState {
   audioOutput: string;
   wifi: string;
   likelyDriving: boolean;
+  sarah?: {
+    status: string;
+    isHome: boolean;
+    location: string;
+  };
   diggyLocation: string;
   theoLocation: string;
   allDoorsLocked: boolean;
@@ -94,10 +99,32 @@ export function HomeAssistantCard() {
   const [loading, setLoading] = useState(false);
   const [haConfigured, setHaConfigured] = useState(true);
   const [controllingLock, setControllingLock] = useState<string | null>(null);
+  const [runningAction, setRunningAction] = useState<string | null>(null);
 
   const sameRoom = useMemo(() => {
     return state.diggyLocation.trim().toLowerCase() === state.theoLocation.trim().toLowerCase();
   }, [state.diggyLocation, state.theoLocation]);
+
+  const runCommand = async (command: string, actionKey: string) => {
+    setRunningAction(actionKey);
+    try {
+      const response = await fetch('/api/ha/command', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command }),
+      });
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+        alert(`Command failed: ${error.error || 'Unknown error'}`);
+      } else {
+        setTimeout(() => load(), 800);
+      }
+    } catch (err) {
+      alert(`Command failed: ${err}`);
+    } finally {
+      setRunningAction(null);
+    }
+  };
 
   const controlLock = async (entityId: string, action: 'lock' | 'unlock') => {
     setControllingLock(entityId);
@@ -150,6 +177,7 @@ export function HomeAssistantCard() {
           audioOutput: presence.audioOutput || current.audioOutput,
           wifi: presence.wifi || current.wifi,
           likelyDriving: presence.likelyDriving ?? current.likelyDriving,
+          sarah: presence.sarah || current.sarah,
           diggyLocation: diggy?.location || current.diggyLocation,
           theoLocation: theo?.location || current.theoLocation,
           allDoorsLocked: presence.allDoorsLocked ?? current.allDoorsLocked,
@@ -234,6 +262,35 @@ export function HomeAssistantCard() {
           <span className="text-xs text-orange-200">Likely driving: Not on WiFi + connected to Bluetooth audio</span>
         </div>
       )}
+
+      {state.sarah && (
+        <div className="mb-3 rounded-lg border border-fuchsia-500/30 bg-fuchsia-500/10 px-3 py-2">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-xs text-fuchsia-200 font-medium">Sarah</span>
+            <span className={`text-xs px-2 py-0.5 rounded-full ${state.sarah.isHome ? 'bg-green-500/20 text-green-300' : 'bg-yellow-500/20 text-yellow-300'}`}>
+              {state.sarah.isHome ? 'Home' : 'Away'}
+            </span>
+          </div>
+          <div className="text-xs text-fuchsia-100">{state.sarah.location}</div>
+        </div>
+      )}
+
+      <div className="mb-3 grid grid-cols-2 gap-2">
+        <button
+          onClick={() => runCommand('feed theo', 'feed_theo')}
+          disabled={runningAction === 'feed_theo'}
+          className="px-3 py-2 rounded-lg bg-emerald-500/20 text-emerald-300 text-xs hover:bg-emerald-500/30 disabled:opacity-50"
+        >
+          {runningAction === 'feed_theo' ? 'Feeding…' : 'Feed Theo'}
+        </button>
+        <button
+          onClick={() => runCommand('lock it down', 'lock_it_down')}
+          disabled={runningAction === 'lock_it_down'}
+          className="px-3 py-2 rounded-lg bg-red-500/20 text-red-300 text-xs hover:bg-red-500/30 disabled:opacity-50"
+        >
+          {runningAction === 'lock_it_down' ? 'Locking…' : 'Lock it down'}
+        </button>
+      </div>
 
       <div className={`border rounded-xl p-3 mb-3 ${state.away ? 'border-red-500/40 bg-red-500/5' : 'border-border bg-surface-light/60'}`}>
         <div className="flex items-center justify-between mb-2">

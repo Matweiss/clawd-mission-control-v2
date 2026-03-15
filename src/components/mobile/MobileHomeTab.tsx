@@ -18,8 +18,15 @@ interface HAEntity {
 interface PetLocation {
   name: string;
   location: string;
-  last_seen: string;
+  last_seen?: string;
+  lastUpdated?: string;
   battery?: number;
+}
+
+interface SarahState {
+  isHome: boolean;
+  status: string;
+  location: string;
 }
 
 export function MobileHomeTab() {
@@ -31,6 +38,8 @@ export function MobileHomeTab() {
   const [showHidden, setShowHidden] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [quickView, setQuickView] = useState<'calendar' | 'emails' | 'pipeline' | null>(null);
+  const [sarah, setSarah] = useState<SarahState | null>(null);
+  const [runningAction, setRunningAction] = useState<string | null>(null);
 
   // Load hidden entities from localStorage
   useEffect(() => {
@@ -51,6 +60,23 @@ export function MobileHomeTab() {
     return () => clearInterval(interval);
   }, []);
 
+  const runCommand = async (command: string, actionKey: string) => {
+    hapticFeedback('medium');
+    setRunningAction(actionKey);
+    try {
+      await fetch('/api/ha/command', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command }),
+      });
+      setTimeout(fetchHomeData, 600);
+    } catch (err) {
+      console.error('Error running command:', err);
+    } finally {
+      setRunningAction(null);
+    }
+  };
+
   const fetchHomeData = async () => {
     try {
       // Fetch all entities
@@ -68,7 +94,18 @@ export function MobileHomeTab() {
       const petsRes = await fetch('/api/ha/pets');
       if (petsRes.ok) {
         const petsData = await petsRes.json();
-        setPets(petsData.pets || []);
+        setPets(Array.isArray(petsData) ? petsData : (petsData.pets || []));
+      }
+
+      // Fetch Sarah location
+      const sarahRes = await fetch('/api/ha/sarah');
+      if (sarahRes.ok) {
+        const sarahData = await sarahRes.json();
+        setSarah({
+          isHome: !!sarahData.isHome,
+          status: sarahData.status || 'unknown',
+          location: sarahData.location || 'Unknown location',
+        });
       }
     } catch (err) {
       console.error('Error fetching home data:', err);
@@ -243,6 +280,26 @@ export function MobileHomeTab() {
         )}
       </motion.div>
 
+      {sarah && (
+        <motion.div
+          className="bg-surface-light rounded-2xl p-4 border border-border"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.08 }}
+        >
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <Navigation className="w-5 h-5 text-fuchsia-400" />
+              <span className="font-medium">Sarah</span>
+            </div>
+            <span className={`text-xs px-2 py-1 rounded-full ${sarah.isHome ? 'bg-green-500/20 text-green-300' : 'bg-yellow-500/20 text-yellow-300'}`}>
+              {sarah.isHome ? 'Home' : 'Away'}
+            </span>
+          </div>
+          <p className="text-sm text-gray-300">{sarah.location}</p>
+        </motion.div>
+      )}
+
       {/* Pet Tracker */}
       {pets.length > 0 && (
         <motion.div
@@ -304,9 +361,9 @@ export function MobileHomeTab() {
         <h3 className="font-medium mb-3">Quick Actions</h3>
         <div className="grid grid-cols-4 gap-3">
           {[
+            { icon: Dog, label: runningAction === 'feed_theo' ? 'Feeding…' : 'Feed Theo', color: 'text-emerald-400', bg: 'bg-emerald-400/10', action: () => runCommand('feed theo', 'feed_theo') },
+            { icon: Lock, label: runningAction === 'lock_it_down' ? 'Locking…' : 'Lock Down', color: 'text-red-400', bg: 'bg-red-400/10', action: () => runCommand('lock it down', 'lock_it_down') },
             { icon: Calendar, label: 'Calendar', color: 'text-blue-400', bg: 'bg-blue-400/10', action: () => setQuickView('calendar') },
-            { icon: Mail, label: 'Emails', color: 'text-pink-400', bg: 'bg-pink-400/10', action: () => setQuickView('emails') },
-            { icon: TrendingUp, label: 'Pipeline', color: 'text-cyan-400', bg: 'bg-cyan-400/10', action: () => setQuickView('pipeline') },
             { icon: Zap, label: 'All Off', color: 'text-yellow-400', bg: 'bg-yellow-400/10', action: () => turnAllLightsOff() },
           ].map((action) => {
             const Icon = action.icon;
