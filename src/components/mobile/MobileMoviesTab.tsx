@@ -11,17 +11,19 @@ export function MobileMoviesTab() {
   const [movies, setMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
   const [watchlist, setWatchlist] = useState<string[]>([]);
+  const [activeDay, setActiveDay] = useState<'sun' | 'mon'>('sun');
 
   useEffect(() => {
     fetchMovies();
   }, []);
 
-  const fetchMovies = async () => {
+  const fetchMovies = async (day: 'sun' | 'mon' = activeDay) => {
     try {
-      const response = await fetch('/api/movies/regal-sherman-oaks');
+      const response = await fetch(`/api/movies/regal-sherman-oaks?day=${day}`);
       if (response.ok) {
         const data = await response.json();
         setMovies(data.movies || []);
+        if (data?.activeDay) setActiveDay(data.activeDay);
       }
     } catch (err) {
       console.error('Error fetching movies:', err);
@@ -62,6 +64,23 @@ export function MobileMoviesTab() {
         >
           <ExternalLink className="w-4 h-4" />
         </a>
+      </div>
+
+      <div className="flex gap-2">
+        {[{ key: 'sun', label: 'Sunday' }, { key: 'mon', label: 'Monday' }].map((day) => (
+          <button
+            key={day.key}
+            onClick={() => {
+              setActiveDay(day.key as 'sun' | 'mon');
+              fetchMovies(day.key as 'sun' | 'mon');
+            }}
+            className={`flex-1 py-2 px-3 rounded-xl text-sm font-medium ${
+              activeDay === day.key ? 'bg-rose-500 text-white' : 'bg-surface-light text-gray-400'
+            }`}
+          >
+            {day.label}
+          </button>
+        ))}
       </div>
 
       {/* Movies List */}

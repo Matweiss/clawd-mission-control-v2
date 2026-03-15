@@ -49,6 +49,7 @@ export function UnifiedMovieCard() {
   const [loading, setLoading] = useState(false);
   const [regalLoading, setRegalLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'regal' | 'now-playing' | 'watchlist' | 'seen'>('regal');
+  const [regalDay, setRegalDay] = useState<'sun' | 'mon'>('sun');
   const [editingTracker, setEditingTracker] = useState(false);
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
   const [rating, setRating] = useState(0);
@@ -84,13 +85,14 @@ export function UnifiedMovieCard() {
     }
   };
 
-  const fetchRegalData = async () => {
+  const fetchRegalData = async (day: 'sun' | 'mon' = regalDay) => {
     setRegalLoading(true);
     try {
-      const response = await fetch('/api/movies/regal-sherman-oaks');
+      const response = await fetch(`/api/movies/regal-sherman-oaks?day=${day}`);
       if (response.ok) {
         const data = await response.json();
         setRegalData(data);
+        if (data?.activeDay) setRegalDay(data.activeDay);
       }
     } catch (err) {
       console.error('Error fetching Regal data:', err);
@@ -271,7 +273,7 @@ export function UnifiedMovieCard() {
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-1 text-xs text-gray-500">
                 <MapPin className="w-3 h-3" />
-                <span>Regal Sherman Oaks Galleria (via Fandango)</span>
+                <span>Regal Sherman Oaks • {regalDay === 'sun' ? 'Sunday' : 'Monday'}</span>
               </div>
               <div className="flex items-center gap-2">
                 <button
@@ -290,6 +292,23 @@ export function UnifiedMovieCard() {
                   <ExternalLink className="w-3 h-3" />
                 </a>
               </div>
+            </div>
+
+            <div className="flex gap-2 mb-2">
+              {[{ key: 'sun', label: 'Sunday' }, { key: 'mon', label: 'Monday' }].map((day) => (
+                <button
+                  key={day.key}
+                  onClick={() => {
+                    setRegalDay(day.key as 'sun' | 'mon');
+                    fetchRegalData(day.key as 'sun' | 'mon');
+                  }}
+                  className={`px-2 py-1 text-xs rounded ${
+                    regalDay === day.key ? 'bg-rose-500/20 text-rose-300' : 'bg-surface-light text-gray-400'
+                  }`}
+                >
+                  {day.label}
+                </button>
+              ))}
             </div>
 
             {regalLoading ? (

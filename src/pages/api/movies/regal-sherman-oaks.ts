@@ -1,92 +1,89 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-// Static data from Fandango scrape - updated manually via local scraper
-// Run: python3 scripts/showtimes_sherman_oaks_browserless.py
-// Last updated: 2026-03-13
+type RegalMovie = {
+  title: string;
+  format: string;
+  showtimes: string[];
+};
 
-const REGAL_DATA = {
+type DayBlock = {
+  key: 'sun' | 'mon';
+  label: string;
+  date: string;
+  movies: RegalMovie[];
+};
+
+const REGAL_DATA: {
+  theater: string;
+  officialUrl: string;
+  source: string;
+  days: DayBlock[];
+  lastUpdated: string;
+  sourceNote: string;
+} = {
   theater: 'Regal Sherman Oaks Galleria',
   officialUrl: 'https://www.regmovies.com/theatres/regal-sherman-oaks-galleria-1483',
-  source: 'Fandango',
-  date: '2026-03-13',
-  movies: [
+  source: 'Regal Live Browser Tab',
+  days: [
     {
-      title: "Kiki's Delivery Service 4K (2026)",
-      format: 'Standard',
-      showtimes: ['2:15 PM']
+      key: 'sun',
+      label: 'Sun',
+      date: '2026-03-15',
+      movies: [
+        { title: 'Hoppers', format: 'Mixed (4DX 3D / IMAX / RPX / Standard)', showtimes: ['10:00am', '10:30am', '12:00pm', '12:30pm', '1:15pm', '1:45pm', '3:00pm', '3:30pm', '4:10pm', '4:40pm', '5:10pm', '6:30pm', '7:15pm', '8:00pm', '9:30pm'] },
+        { title: 'Scream 7', format: '4DX / RPX / Standard', showtimes: ['10:00am', '1:00pm', '4:00pm', '7:30pm', '8:00pm', '10:15pm', '11:00pm'] },
+        { title: 'GOAT', format: 'Standard', showtimes: ['10:20am', '1:40pm', '4:50pm', '7:50pm', '10:10pm'] },
+        { title: 'Reminders of Him', format: 'RPX + Standard', showtimes: ['10:30am', '11:00am', '11:30am', '1:00pm', '2:00pm', '2:30pm', '4:00pm', '5:00pm', '5:30pm', '7:00pm', '8:00pm', '8:30pm', '10:00pm', '11:00pm'] },
+        { title: 'Slanted', format: 'Standard', showtimes: ['10:50am', '1:50pm', '4:30pm', '7:40pm', '10:30pm'] },
+        { title: "Kiki's Delivery Service 4K", format: 'IMAX (JP sub)', showtimes: ['11:00am'] },
+        { title: 'Wuthering Heights', format: 'Standard', showtimes: ['11:20am', '4:20pm', '6:20pm', '9:50pm'] },
+        { title: 'Send Help', format: 'Standard', showtimes: ['11:40am', '2:50pm', '7:10pm', '10:50pm'] },
+        { title: 'The Revenant (10th Anniversary)', format: 'Standard', showtimes: ['11:50am', '2:50pm', '6:40pm', '9:30pm'] },
+        { title: 'The Bride!', format: 'IMAX + Standard', showtimes: ['12:00pm', '3:15pm', '6:50pm', '10:15pm', '11:00pm'] },
+        { title: 'Undertone', format: 'RPX + Standard', showtimes: ['1:45pm', '4:40pm', '7:20pm', '10:10pm', '10:40pm'] },
+        { title: 'Crime 101', format: 'Standard', showtimes: ['6:00pm', '10:20pm'] }
+      ]
     },
     {
-      title: 'Reminders of Him (2026)',
-      format: 'Standard',
-      showtimes: ['10:30 AM', '11:00 AM', '11:30 AM', '1:00 PM', '2:00 PM', '2:30 PM', '4:00 PM', '5:00 PM', '5:30 PM', '7:00 PM', '8:00 PM', '8:30 PM', '10:00 PM', '11:00 PM']
-    },
-    {
-      title: 'Slanted (2026)',
-      format: 'Standard',
-      showtimes: ['10:50 AM', '1:40 PM', '4:40 PM', '7:40 PM', '10:30 PM']
-    },
-    {
-      title: 'Undertone (2026)',
-      format: 'Standard',
-      showtimes: ['1:45 PM', '4:30 PM', '7:20 PM', '10:10 PM', '10:40 PM']
-    },
-    {
-      title: 'Hoppers (2026)',
-      format: 'Standard',
-      showtimes: ['10:30 AM', '12:00 PM', '12:30 PM', '1:15 PM', '1:45 PM', '3:00 PM', '3:30 PM', '4:10 PM', '4:40 PM', '5:10 PM', '6:30 PM', '7:15 PM', '8:00 PM', '9:30 PM']
-    },
-    {
-      title: 'THE BRIDE! (2026)',
-      format: 'Standard',
-      showtimes: ['12:00 PM', '3:15 PM', '6:50 PM', '10:15 PM', '11:00 PM']
-    },
-    {
-      title: 'The Revenant 10th Anniversary Re-Release (2026)',
-      format: 'Standard',
-      showtimes: ['11:50 AM', '2:50 PM', '6:40 PM', '9:40 PM']
-    },
-    {
-      title: 'Crime 101 (2026)',
-      format: 'Standard',
-      showtimes: ['6:00 PM', '10:20 PM']
-    },
-    {
-      title: 'GOAT (2026)',
-      format: 'Standard',
-      showtimes: ['1:40 PM', '4:50 PM', '7:50 PM', '10:10 PM']
-    },
-    {
-      title: 'Wuthering Heights (2026)',
-      format: 'Standard',
-      showtimes: ['11:20 AM', '4:20 PM', '6:20 PM', '9:50 PM']
-    },
-    {
-      title: 'Send Help (2026)',
-      format: 'Standard',
-      showtimes: ['11:40 AM', '2:50 PM', '7:10 PM', '10:50 PM']
+      key: 'mon',
+      label: 'Mon',
+      date: '2026-03-16',
+      movies: [
+        { title: 'Hoppers', format: 'Mixed (4DX 3D / IMAX / RPX / Standard)', showtimes: ['11:30am', '12:00pm', '12:30pm', '1:40pm', '2:15pm', '3:15pm', '3:45pm', '4:00pm', '4:40pm', '5:10pm', '6:15pm', '9:00pm'] },
+        { title: 'Send Help', format: 'Standard', showtimes: ['11:40am', '3:05pm', '10:40pm'] },
+        { title: 'The Bride!', format: 'IMAX + Standard', showtimes: ['11:45am', '3:10pm', '6:50pm', '10:00pm', '10:45pm'] },
+        { title: 'Reminders of Him', format: 'RPX + Standard', showtimes: ['11:50am', '12:30pm', '1:15pm', '3:00pm', '3:30pm', '4:15pm', '6:00pm', '6:30pm', '7:15pm', '9:00pm', '9:30pm', '10:15pm'] },
+        { title: 'Monday Mystery Movie (3/16)', format: 'Pre-order', showtimes: ['Mon Mar 16'] },
+        { title: 'Project Hail Mary - Early Access', format: 'Pre-order', showtimes: ['Mon Mar 16'] }
+      ]
     }
   ],
-  lastUpdated: '2026-03-13T19:50:00Z'
+  lastUpdated: '2026-03-15T05:31:00Z',
+  sourceNote: 'Pulled from live logged-in Regal tab. Sunday + Monday focused payload for Mission Control.'
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'GET') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
+  if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    return res.status(200).json({
-      ...REGAL_DATA,
-      count: REGAL_DATA.movies.length,
-      cached: true,
-      note: 'Data updated manually via local scraper. Run: python3 scripts/showtimes_sherman_oaks_browserless.py'
-    });
+    const dayParam = String(req.query.day || '').toLowerCase();
+    const requestedDay = dayParam.startsWith('mon') ? 'mon' : 'sun';
+    const activeDay = REGAL_DATA.days.find((d) => d.key === requestedDay) || REGAL_DATA.days[0];
 
+    return res.status(200).json({
+      theater: REGAL_DATA.theater,
+      officialUrl: REGAL_DATA.officialUrl,
+      source: REGAL_DATA.source,
+      activeDay: activeDay.key,
+      date: activeDay.date,
+      days: REGAL_DATA.days.map((d) => ({ key: d.key, label: d.label, date: d.date, count: d.movies.length })),
+      movies: activeDay.movies,
+      count: activeDay.movies.length,
+      lastUpdated: REGAL_DATA.lastUpdated,
+      sourceNote: REGAL_DATA.sourceNote
+    });
   } catch (error) {
     console.error('API Error:', error);
-    return res.status(500).json({
-      error: 'Failed to fetch showtimes',
-      details: (error as Error).message
-    });
+    return res.status(500).json({ error: 'Failed to fetch showtimes', details: (error as Error).message });
   }
 }

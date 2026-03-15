@@ -16,19 +16,21 @@ interface Studio {
 
 export function MobileYogaTab() {
   const [studios, setStudios] = useState<Studio[]>([]);
-  const [activeStudio, setActiveStudio] = useState('Sherman Oaks');
+  const [activeStudio, setActiveStudio] = useState('Encino');
+  const [activeDay, setActiveDay] = useState<'sun' | 'mon'>('sun');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchYoga();
   }, []);
 
-  const fetchYoga = async () => {
+  const fetchYoga = async (day: 'sun' | 'mon' = activeDay) => {
     try {
-      const response = await fetch('/api/yoga/schedule');
+      const response = await fetch(`/api/yoga/schedule?day=${day}`);
       if (response.ok) {
         const data = await response.json();
         setStudios(data.studios || []);
+        if (data?.activeDay) setActiveDay(data.activeDay);
       }
     } catch (err) {
       console.error('Error fetching yoga:', err);
@@ -59,6 +61,26 @@ export function MobileYogaTab() {
 
   return (
     <div className="space-y-4">
+      {/* Day Selector */}
+      <div className="flex gap-2">
+        {[{ key: 'sun', label: 'Sunday' }, { key: 'mon', label: 'Monday' }].map((day) => (
+          <button
+            key={day.key}
+            onClick={() => {
+              setActiveDay(day.key as 'sun' | 'mon');
+              fetchYoga(day.key as 'sun' | 'mon');
+            }}
+            className={`flex-1 py-2 px-4 rounded-xl text-sm font-medium transition-colors ${
+              activeDay === day.key
+                ? 'bg-cyan-500 text-white'
+                : 'bg-surface-light text-gray-400'
+            }`}
+          >
+            {day.label}
+          </button>
+        ))}
+      </div>
+
       {/* Studio Selector */}
       <div className="flex gap-2">
         {['Sherman Oaks', 'Encino'].map((studio) => (

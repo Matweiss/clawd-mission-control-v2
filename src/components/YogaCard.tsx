@@ -19,6 +19,8 @@ interface Studio {
 interface YogaData {
   source: string;
   date: string;
+  activeDay: 'sun' | 'mon';
+  days?: Array<{ key: 'sun' | 'mon'; label: string; date: string; totalClasses: number }>;
   studios: Studio[];
   classTypes: Record<string, { name: string; description: string; level: string }>;
   preferredClasses: string[];
@@ -29,15 +31,17 @@ interface YogaData {
 export function YogaCard() {
   const [data, setData] = useState<YogaData | null>(null);
   const [loading, setLoading] = useState(false);
-  const [activeStudio, setActiveStudio] = useState<'Sherman Oaks' | 'Encino'>('Sherman Oaks');
+  const [activeStudio, setActiveStudio] = useState<'Sherman Oaks' | 'Encino'>('Encino');
+  const [activeDay, setActiveDay] = useState<'sun' | 'mon'>('sun');
 
-  const fetchData = async () => {
+  const fetchData = async (day: 'sun' | 'mon' = activeDay) => {
     setLoading(true);
     try {
-      const response = await fetch('/api/yoga/schedule');
+      const response = await fetch(`/api/yoga/schedule?day=${day}`);
       if (response.ok) {
         const yogaData = await response.json();
         setData(yogaData);
+        if (yogaData?.activeDay) setActiveDay(yogaData.activeDay);
       }
     } catch (err) {
       console.error('Error fetching yoga data:', err);
@@ -73,7 +77,7 @@ export function YogaCard() {
             <Dumbbell className="w-5 h-5 text-orange-400" />
             <div>
               <h2 className="text-sm font-semibold text-white">Yoga</h2>
-              <p className="text-xs text-gray-500">CorePower • {data?.totalClasses || 0} classes today</p>
+              <p className="text-xs text-gray-500">CorePower • {data?.totalClasses || 0} classes • {activeDay === 'sun' ? 'Sunday' : 'Monday'}</p>
             </div>
           </div>
           <button
@@ -82,6 +86,26 @@ export function YogaCard() {
           >
             <RefreshCw className={`w-4 h-4 text-gray-500 ${loading ? 'animate-spin' : ''}`} />
           </button>
+        </div>
+
+        {/* Day Tabs */}
+        <div className="flex gap-2 mb-2">
+          {[{ key: 'sun', label: 'Sunday' }, { key: 'mon', label: 'Monday' }].map((day) => (
+            <button
+              key={day.key}
+              onClick={() => {
+                setActiveDay(day.key as 'sun' | 'mon');
+                fetchData(day.key as 'sun' | 'mon');
+              }}
+              className={`px-3 py-1.5 text-xs rounded-lg transition-colors ${
+                activeDay === day.key
+                  ? 'bg-cyan-500/20 text-cyan-300'
+                  : 'bg-surface-light text-gray-400 hover:text-gray-300'
+              }`}
+            >
+              {day.label}
+            </button>
+          ))}
         </div>
 
         {/* Studio Tabs */}
