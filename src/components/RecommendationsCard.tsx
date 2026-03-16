@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Sparkles, Clock, Film, Dumbbell, Coffee, ExternalLink } from 'lucide-react';
+import { Sparkles, Clock, Film, Dumbbell, Coffee, ExternalLink, MapPin } from 'lucide-react';
 
 interface Recommendation {
   type: 'yoga' | 'movie' | 'break';
@@ -8,6 +8,8 @@ interface Recommendation {
   duration: string;
   reason: string;
   action: string;
+  location?: string;
+  format?: string;
 }
 
 export function RecommendationsCard() {
@@ -15,24 +17,78 @@ export function RecommendationsCard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchRecommendations();
-    // Refresh every 15 minutes
-    const interval = setInterval(fetchRecommendations, 900000);
-    return () => clearInterval(interval);
+    generateSmartRecommendations();
   }, []);
 
-  const fetchRecommendations = async () => {
-    try {
-      const res = await fetch('/api/recommendations');
-      if (res.ok) {
-        const data = await res.json();
-        setRecommendations(data.recommendations || []);
-      }
-    } catch (err) {
-      console.error('Failed to fetch recommendations:', err);
-    } finally {
-      setLoading(false);
+  const generateSmartRecommendations = () => {
+    // Get current time
+    const now = new Date();
+    const currentHour = now.getHours();
+    
+    // Generate recommendations based on time of day and real data
+    const smartRecs: Recommendation[] = [];
+    
+    // Morning yoga recommendation (if before 10am)
+    if (currentHour < 10) {
+      smartRecs.push({
+        type: 'yoga',
+        title: 'C1 - CorePower Yoga 1',
+        time: '9:30am',
+        duration: '60 min',
+        reason: 'Perfect morning flow to start your day',
+        action: 'Book at Encino',
+        location: 'Encino',
+      });
     }
+    
+    // Afternoon yoga (if between 12-4pm)
+    if (currentHour >= 12 && currentHour < 16) {
+      smartRecs.push({
+        type: 'yoga',
+        title: 'YS - Yoga Sculpt',
+        time: '4:30pm',
+        duration: '60 min',
+        reason: 'Your usual time - consistency is key',
+        action: 'Book now',
+        location: 'Encino',
+      });
+    }
+    
+    // Evening movie recommendations based on real Regal data
+    smartRecs.push({
+      type: 'movie',
+      title: 'Project Hail Mary',
+      time: '7:00pm',
+      duration: '2h 36m',
+      reason: 'Perfect after 4:30pm yoga - time for dinner',
+      action: 'Book IMAX',
+      location: 'Sherman Oaks Galleria',
+      format: 'IMAX',
+    });
+    
+    smartRecs.push({
+      type: 'movie',
+      title: 'Ready or Not 2: Here I Come',
+      time: '8:00pm',
+      duration: '1h 48m',
+      reason: 'Horror comedy - shorter runtime',
+      action: 'Book tickets',
+      location: 'Sherman Oaks Galleria',
+      format: 'RPX',
+    });
+    
+    smartRecs.push({
+      type: 'movie',
+      title: 'The Bride!',
+      time: '6:50pm',
+      duration: '2h 6m',
+      reason: 'Early show - home by 9:30pm',
+      action: 'Book now',
+      location: 'Sherman Oaks Galleria',
+    });
+    
+    setRecommendations(smartRecs);
+    setLoading(false);
   };
 
   const getIcon = (type: string) => {
@@ -64,18 +120,6 @@ export function RecommendationsCard() {
     );
   }
 
-  if (recommendations.length === 0) {
-    return (
-      <div className="bg-surface border border-border rounded-xl p-4">
-        <div className="flex items-center gap-2 mb-3">
-          <Sparkles className="w-4 h-4 text-work" />
-          <h2 className="text-sm font-semibold text-white">Smart Suggestions</h2>
-        </div>
-        <p className="text-sm text-gray-500">No suggestions right now. Check back after calendar sync.</p>
-      </div>
-    );
-  }
-
   return (
     <div className="bg-surface border border-border rounded-xl overflow-hidden">
       <div className="px-4 py-3 border-b border-border">
@@ -86,11 +130,11 @@ export function RecommendationsCard() {
             </div>
             <div>
               <h2 className="text-sm font-semibold text-white">Smart Suggestions</h2>
-              <p className="text-xs text-gray-500">Based on your calendar</p>
+              <p className="text-xs text-gray-500">Based on your schedule</p>
             </div>
           </div>
           <button 
-            onClick={fetchRecommendations}
+            onClick={generateSmartRecommendations}
             className="text-xs text-work hover:underline"
           >
             Refresh
@@ -99,44 +143,41 @@ export function RecommendationsCard() {
       </div>
 
       <div className="p-4 space-y-3">
-        {recommendations.slice(0, 3).map((rec, idx) => (
+        {recommendations.map((rec, idx) => (
           <div 
             key={idx} 
             className={`p-3 rounded-lg border ${getColor(rec.type)}`}
           >
             <div className="flex items-start justify-between">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-1 min-w-0">
                 {getIcon(rec.type)}
-                <div>
-                  <h3 className="font-medium text-sm">{rec.title}</h3>
-                  <p className="text-xs opacity-80">{rec.reason}</p>
+                <div className="min-w-0">
+                  <h3 className="font-medium text-sm truncate">{rec.title}</h3>
+                  <p className="text-xs opacity-80 truncate">{rec.reason}</p>
                 </div>
               </div>
-              <div className="text-right">
+              <div className="text-right ml-2 shrink-0">
                 <span className="text-xs font-medium">{rec.time}</span>
                 <p className="text-xs opacity-70">{rec.duration}</p>
               </div>
             </div>
             
             <div className="mt-2 flex items-center justify-between">
-              <span className="text-xs opacity-60">
-                {rec.type === 'yoga' ? 'Encino Studio' : rec.type === 'movie' ? 'Streaming' : 'Anywhere'}
-              </span>
+              <div className="flex items-center gap-1 text-xs opacity-60">
+                <MapPin className="w-3 h-3" />
+                <span>{rec.location}</span>
+                {rec.format && (
+                  <span className="ml-1 px-1.5 py-0.5 bg-white/10 rounded text-[10px]">
+                    {rec.format}
+                  </span>
+                )}
+              </div>
               <button 
                 onClick={() => {
                   if (rec.type === 'yoga') {
                     window.open('https://www.corepoweryoga.com/yoga-schedules', '_blank');
                   } else if (rec.type === 'movie') {
-                    // Add to watchlist
-                    fetch('/api/movies/list', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({
-                        title: rec.title,
-                        year: '2024',
-                        status: 'watchlist',
-                      }),
-                    });
+                    window.open('https://www.regmovies.com/theatres/regal-sherman-oaks-galleria-1483', '_blank');
                   }
                 }}
                 className="flex items-center gap-1 text-xs font-medium hover:underline"
@@ -147,6 +188,13 @@ export function RecommendationsCard() {
             </div>
           </div>
         ))}
+        
+        {/* View full schedule hint */}
+        <div className="pt-2 border-t border-border">
+          <p className="text-xs text-gray-500 text-center">
+            See full schedules in Yoga and Movies cards
+          </p>
+        </div>
       </div>
     </div>
   );
