@@ -1,195 +1,173 @@
-import React, { useEffect, useState } from 'react';
-import { Dumbbell, Clock, MapPin, RefreshCw, ExternalLink, Flame } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Dumbbell, Calendar, TrendingUp, Award, Clock, MapPin } from 'lucide-react';
 
 interface YogaClass {
-  time: string;
-  name: string;
-  instructor: string;
-  duration: string;
-  type: string;
-}
-
-interface Studio {
-  name: string;
-  url: string;
-  classes: YogaClass[];
-  count: number;
-}
-
-interface YogaData {
-  source: string;
   date: string;
-  activeDay: 'sun' | 'mon';
-  days?: Array<{ key: 'sun' | 'mon'; label: string; date: string; totalClasses: number }>;
-  studios: Studio[];
-  classTypes: Record<string, { name: string; description: string; level: string }>;
-  preferredClasses: string[];
+  classType: string;
+  teacher: string;
+  time: string;
+  location: string;
+}
+
+interface YogaStats {
   totalClasses: number;
-  lastUpdated: string;
+  studioClasses: number;
+  liveClasses: number;
+  recentClasses: YogaClass[];
+  buddyPasses: number;
+  buddyPassExpiry: string;
+  completedChallenge: string | null;
 }
 
 export function YogaCard() {
-  const [data, setData] = useState<YogaData | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [activeStudio, setActiveStudio] = useState<'Sherman Oaks' | 'Encino'>('Encino');
-  const [activeDay, setActiveDay] = useState<'sun' | 'mon'>('sun');
+  const [stats, setStats] = useState<YogaStats | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const fetchData = async (day: 'sun' | 'mon' = activeDay) => {
-    setLoading(true);
+  useEffect(() => {
+    fetchYogaData();
+    // Refresh every 5 minutes
+    const interval = setInterval(fetchYogaData, 300000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const fetchYogaData = async () => {
     try {
-      const response = await fetch(`/api/yoga/schedule?day=${day}`);
-      if (response.ok) {
-        const yogaData = await response.json();
-        setData(yogaData);
-        if (yogaData?.activeDay) setActiveDay(yogaData.activeDay);
+      const res = await fetch('/api/yoga/stats');
+      if (res.ok) {
+        const data = await res.json();
+        setStats(data);
       }
     } catch (err) {
-      console.error('Error fetching yoga data:', err);
+      console.error('Failed to fetch yoga data:', err);
+      // Fallback to static data
+      setStats({
+        totalClasses: 51,
+        studioClasses: 50,
+        liveClasses: 1,
+        recentClasses: [
+          { date: 'Mar 16', classType: 'YS - Yoga Sculpt', teacher: 'Linnie S', time: '4:15pm', location: 'Encino' },
+          { date: 'Mar 15', classType: 'YS - Yoga Sculpt', teacher: 'Danielle S', time: '4:15pm', location: 'Encino' },
+          { date: 'Mar 14', classType: 'C2 - CorePower Yoga 2', teacher: 'Kylie B', time: '4:15pm', location: 'Encino' },
+          { date: 'Mar 13', classType: 'YS - Yoga Sculpt', teacher: 'Danielle S', time: '4:15pm', location: 'Encino' },
+          { date: 'Mar 10', classType: 'YS - Yoga Sculpt', teacher: 'Jacqueline M', time: '4:15pm', location: 'Encino' },
+        ],
+        buddyPasses: 2,
+        buddyPassExpiry: '2026-04-01',
+        completedChallenge: 'Live Your Power Challenge (Jan 2026)',
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  const daysUntilExpiry = stats?.buddyPassExpiry
+    ? Math.ceil((new Date(stats.buddyPassExpiry).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+    : 0;
 
-  const currentStudio = data?.studios.find(s => s.name === activeStudio);
+  if (loading) {
+    return (
+      <div className="bg-surface border border-border rounded-xl p-4">
+        <div className="animate-pulse space-y-3">
+          <div className="h-4 bg-surface-light rounded w-1/3" />
+          <div className="h-8 bg-surface-light rounded w-1/2" />
+        </div>
+      </div>
+    );
+  }
 
-  const getClassColor = (type: string) => {
-    switch (type) {
-      case 'C1': return 'bg-green-500/10 text-green-400';
-      case 'C2': return 'bg-blue-500/10 text-blue-400';
-      case 'C3': return 'bg-purple-500/10 text-purple-400';
-      case 'YS': return 'bg-orange-500/10 text-orange-400';
-      case 'HPF': return 'bg-red-500/10 text-red-400';
-      case 'CSX': return 'bg-pink-500/10 text-pink-400';
-      default: return 'bg-gray-500/10 text-gray-400';
-    }
-  };
+  if (!stats) {
+    return (
+      <div className="bg-surface border border-border rounded-xl p-4">
+        <p className="text-sm text-gray-500">Yoga data not available</p>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-surface border border-border rounded-xl overflow-hidden">
-      {/* Header */}
       <div className="px-4 py-3 border-b border-border">
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Dumbbell className="w-5 h-5 text-orange-400" />
+            <div className="w-8 h-8 rounded-full bg-orange-500/20 flex items-center justify-center">
+              <Dumbbell className="w-4 h-4 text-orange-400" />
+            </div>
             <div>
-              <h2 className="text-sm font-semibold text-white">Yoga</h2>
-              <p className="text-xs text-gray-500">CorePower • {data?.totalClasses || 0} classes • {activeDay === 'sun' ? 'Sunday' : 'Monday'}</p>
+              <h2 className="text-sm font-semibold text-white">CorePower Yoga</h2>
+              <p className="text-xs text-gray-500">All Access Member</p>
             </div>
           </div>
           <button
-            onClick={() => fetchData()}
-            className="p-1 hover:bg-surface-light rounded transition-colors"
+            onClick={() => window.open('https://www.corepoweryoga.com', '_blank')}
+            className="text-xs text-orange-400 hover:underline"
           >
-            <RefreshCw className={`w-4 h-4 text-gray-500 ${loading ? 'animate-spin' : ''}`} />
+            Open App
           </button>
-        </div>
-
-        {/* Day Tabs */}
-        <div className="flex gap-2 mb-2">
-          {[{ key: 'sun', label: 'Sunday' }, { key: 'mon', label: 'Monday' }].map((day) => (
-            <button
-              key={day.key}
-              onClick={() => {
-                setActiveDay(day.key as 'sun' | 'mon');
-                fetchData(day.key as 'sun' | 'mon');
-              }}
-              className={`px-3 py-1.5 text-xs rounded-lg transition-colors ${
-                activeDay === day.key
-                  ? 'bg-cyan-500/20 text-cyan-300'
-                  : 'bg-surface-light text-gray-400 hover:text-gray-300'
-              }`}
-            >
-              {day.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Studio Tabs */}
-        <div className="flex flex-wrap gap-2">
-          {['Sherman Oaks', 'Encino'].map((studio) => (
-            <button
-              key={studio}
-              onClick={() => setActiveStudio(studio as any)}
-              className={`px-3 py-1.5 text-xs rounded-lg transition-colors ${
-                activeStudio === studio
-                  ? 'bg-orange-500/20 text-orange-400'
-                  : 'bg-surface-light text-gray-400 hover:text-gray-300'
-              }`}
-            >
-              {studio} ({data?.studios.find(s => s.name === studio)?.count || 0})
-            </button>
-          ))}
         </div>
       </div>
 
-      <div className="p-4">
-        {/* Class Schedule */}
-        <div className="space-y-3 max-h-[400px] overflow-y-auto">
-          {!currentStudio ? (
-            <div className="text-center py-8 text-gray-500">
-              <Flame className="w-8 h-8 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">{loading ? 'Loading classes...' : 'No classes available'}</p>
-            </div>
-          ) : currentStudio.classes.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <Flame className="w-8 h-8 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">No classes today</p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {currentStudio.classes.map((cls, index) => (
-                <div key={index} className="p-3 bg-surface-light rounded-lg">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className={`px-2 py-0.5 text-xs rounded ${getClassColor(cls.type)}`}>
-                          {cls.type}
-                        </span>
-                        <span className="text-xs text-gray-500">{cls.duration}</span>
-                      </div>
-                      <h3 className="font-medium text-sm">{cls.name}</h3>
-                      <div className="flex items-center gap-2 mt-1 text-xs text-gray-500">
-                        <Clock className="w-3 h-3" />
-                        <span>{cls.time}</span>
-                        <span className="text-gray-600">•</span>
-                        <span>{cls.instructor}</span>
-                      </div>
-                    </div>
-                    <a
-                      href={currentStudio.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-2 text-orange-400 hover:bg-orange-500/10 rounded"
-                    >
-                      <ExternalLink className="w-4 h-4" />
-                    </a>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+      <div className="p-4 space-y-4">
+        {/* Stats Row */}
+        <div className="grid grid-cols-3 gap-3">
+          <div className="text-center p-3 bg-surface-light rounded-lg">
+            <div className="text-2xl font-bold text-orange-400">{stats.totalClasses}</div>
+            <div className="text-xs text-gray-500">Total Classes</div>
+          </div>
+          <div className="text-center p-3 bg-surface-light rounded-lg">
+            <div className="text-2xl font-bold text-blue-400">{stats.studioClasses}</div>
+            <div className="text-xs text-gray-500">Studio</div>
+          </div>
+          <div className="text-center p-3 bg-surface-light rounded-lg">
+            <div className="text-2xl font-bold text-purple-400">{stats.liveClasses}</div>
+            <div className="text-xs text-gray-500">Live</div>
+          </div>
         </div>
 
-        {/* Legend */}
-        {data && (
-          <div className="mt-4 pt-3 border-t border-border">
-            <p className="text-xs text-gray-500 mb-2">Class Types:</p>
-            <div className="flex flex-wrap gap-2">
-              {data.preferredClasses?.map((code) => {
-                const info = data.classTypes[code];
-                if (!info) return null;
-                return (
-                  <div key={code} className="flex items-center gap-1">
-                    <span className={`px-1.5 py-0.5 text-xs rounded ${getClassColor(code)}`}>{code}</span>
-                    <span className="text-xs text-gray-600">{info.name}</span>
+        {/* Recent Classes */}
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-xs font-medium text-gray-400 uppercase">Recent Classes</h3>
+            <span className="text-xs text-gray-500">Last 5</span>
+          </div>
+          <div className="space-y-2">
+            {stats.recentClasses.map((cls, idx) => (
+              <div key={idx} className="flex items-center justify-between p-2 bg-surface-light rounded-lg">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-3 h-3 text-gray-500" />
+                  <div>
+                    <p className="text-sm font-medium">{cls.classType}</p>
+                    <p className="text-xs text-gray-500">
+                      {cls.teacher} • {cls.time}
+                    </p>
                   </div>
-                );
-              })}
+                </div>
+                <span className="text-xs text-gray-400">{cls.date}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Buddy Pass Alert */}
+        {stats.buddyPasses > 0 && (
+          <div className={`p-3 rounded-lg ${daysUntilExpiry <= 14 ? 'bg-red-500/10 border border-red-500/30' : 'bg-surface-light'}`}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Award className={`w-4 h-4 ${daysUntilExpiry <= 14 ? 'text-red-400' : 'text-yellow-400'}`} />
+                <span className="text-sm font-medium">
+                  {stats.buddyPasses} Buddy Pass{stats.buddyPasses !== 1 ? 'es' : ''}
+                </span>
+              </div>
+              <span className={`text-xs ${daysUntilExpiry <= 14 ? 'text-red-400 font-medium' : 'text-gray-500'}`}>
+                Expires in {daysUntilExpiry} days
+              </span>
             </div>
+          </div>
+        )}
+
+        {/* Completed Challenge */}
+        {stats.completedChallenge && (
+          <div className="flex items-center gap-2 p-2 bg-green-500/10 rounded-lg">
+            <TrendingUp className="w-4 h-4 text-green-400" />
+            <span className="text-xs text-green-400">{stats.completedChallenge}</span>
           </div>
         )}
       </div>
