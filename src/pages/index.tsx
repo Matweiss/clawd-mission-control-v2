@@ -32,6 +32,7 @@ import { RecommendationsCard } from '../components/RecommendationsCard';
 import { HeroSection } from '../components/HeroSection';
 import { QuickStatsBar } from '../components/QuickStatsBar';
 import { SmartRecommendationsV2 } from '../components/SmartRecommendationsV2';
+import { NotificationCenter } from '../components/NotificationCenter';
 
 // Agent configuration - 3-Tier Architecture
 const AGENTS = [
@@ -257,12 +258,7 @@ export default function MissionControl() {
               <RefreshCw className="w-5 h-5" />
             </button>
 
-            <button className="p-2 hover:bg-surface-light rounded-lg transition-colors relative">
-              <Bell className="w-5 h-5" />
-              {urgentEmails.length > 0 && (
-                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-              )}
-            </button>
+            <NotificationCenter />
 
             {/* Priority Mode Toggle */}
             <button
