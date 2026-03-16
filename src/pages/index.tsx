@@ -28,6 +28,7 @@ import { LucraCommissionCard } from '../components/LucraCommissionCard';
 import { LifestyleGoalTrackerCard } from '../components/LifestyleGoalTrackerCard';
 import { UnifiedMovieCard } from '../components/UnifiedMovieCard';
 import { YogaCard } from '../components/YogaCard';
+import { RecommendationsCard } from '../components/RecommendationsCard';
 
 // Agent configuration - 3-Tier Architecture
 const AGENTS = [
@@ -311,6 +312,8 @@ export default function MissionControl() {
           <div className="space-y-4">
             <SectionLabel title="Recent Events" />
             <ActivityPanel activities={[]} />
+
+            <RecommendationsCard />
 
             <HomeAssistantCard />
 

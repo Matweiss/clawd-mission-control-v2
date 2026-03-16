@@ -1,608 +1,243 @@
-import React, { useEffect, useState } from 'react';
-import { Film, Star, Clock, RefreshCw, MapPin, Plus, Check, Eye, Trash2, ExternalLink, Clapperboard } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Film, Plus, Check, Clock, Star, TrendingUp, Calendar } from 'lucide-react';
 
 interface Movie {
-  id: number;
+  id: string;
   title: string;
-  poster_path: string | null;
-  release_date?: string;
-  vote_average?: number;
-  overview?: string;
-  showtimes?: string[];
-  theater?: 'tmdb' | 'regal';
-}
-
-interface MovieEntry extends Movie {
+  year: string;
+  rating?: string;
+  duration?: string;
+  genre?: string[];
+  poster?: string;
+  status: 'watchlist' | 'watched' | 'recommended';
   addedAt: string;
-  userRating?: number;
-  notes?: string;
-  theater: 'tmdb' | 'regal';
-}
-
-interface WatchlistData {
-  watchlist: MovieEntry[];
-  seenList: MovieEntry[];
-  watchlistCount: number;
-  seenCount: number;
-}
-
-interface MovieData {
-  theater: string;
-  location: { lat: number; lon: number };
-  movies: Movie[];
-  count: number;
-  lastUpdated: string;
-}
-
-// Regal Unlimited Tracker Data
-interface TrackerData {
-  seenThisMonth: number;
-  seenThisYear: number;
-  monthlyCost: number;
-  nextBilling: string;
+  recommendedReason?: string;
 }
 
 export function UnifiedMovieCard() {
-  const [data, setData] = useState<MovieData | null>(null);
-  const [regalData, setRegalData] = useState<any>(null);
-  const [watchlistData, setWatchlistData] = useState<WatchlistData | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [regalLoading, setRegalLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'regal' | 'now-playing' | 'watchlist' | 'seen'>('regal');
-  const [regalDay, setRegalDay] = useState<'sun' | 'mon'>('sun');
-  const [editingTracker, setEditingTracker] = useState(false);
-  const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
-  const [rating, setRating] = useState(0);
-  const [notes, setNotes] = useState('');
-  const [trackerData, setTrackerData] = useState<TrackerData>({
-    seenThisMonth: 4,
-    seenThisYear: 11,
-    monthlyCost: 26.95,
-    nextBilling: 'Mar 15'
-  });
+  const [movies, setMovies] = useState<Movie[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [viewMode, setViewMode] = useState<'schedule' | 'watchlist' | 'recommendations'>('schedule');
 
-  const fetchData = async () => {
-    setLoading(true);
+  useEffect(() => {
+    fetchMovies();
+  }, []);
+
+  const fetchMovies = async () => {
     try {
-      const [moviesRes, watchlistRes] = await Promise.all([
-        fetch('/api/movies/showtimes'),
-        fetch('/api/movies/watchlist')
-      ]);
-
-      if (moviesRes.ok) {
-        const moviesData = await moviesRes.json();
-        setData(moviesData);
-      }
-
-      if (watchlistRes.ok) {
-        const watchData = await watchlistRes.json();
-        setWatchlistData(watchData);
+      const res = await fetch('/api/movies/list');
+      if (res.ok) {
+        const data = await res.json();
+        setMovies(data.movies || []);
       }
     } catch (err) {
-      console.error('Error fetching data:', err);
+      console.error('Failed to fetch movies:', err);
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchRegalData = async (day: 'sun' | 'mon' = regalDay) => {
-    setRegalLoading(true);
+  const addToWatchlist = async (movie: Omit<Movie, 'id' | 'status' | 'addedAt'>) => {
     try {
-      const response = await fetch(`/api/movies/regal-sherman-oaks?day=${day}`);
-      if (response.ok) {
-        const data = await response.json();
-        setRegalData(data);
-        if (data?.activeDay) setRegalDay(data.activeDay);
-      }
-    } catch (err) {
-      console.error('Error fetching Regal data:', err);
-    } finally {
-      setRegalLoading(false);
-    }
-  };
-
-  const addToWatchlist = async (movie: Movie, theater: 'tmdb' | 'regal') => {
-    try {
-      const response = await fetch('/api/movies/watchlist', {
+      const res = await fetch('/api/movies/add', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'addToWatchlist', movie: { ...movie, theater } })
+        body: JSON.stringify({ ...movie, status: 'watchlist' }),
       });
-      if (response.ok) {
-        const result = await response.json();
-        setWatchlistData(result);
+      if (res.ok) {
+        fetchMovies();
       }
     } catch (err) {
-      console.error('Error adding to watchlist:', err);
+      console.error('Failed to add movie:', err);
     }
   };
 
-  const markAsSeen = async (movie: Movie, userRating?: number, userNotes?: string) => {
+  const markAsWatched = async (id: string) => {
     try {
-      const response = await fetch('/api/movies/watchlist', {
+      const res = await fetch('/api/movies/update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'markAsSeen',
-          movie: { ...movie, rating: userRating, notes: userNotes }
-        })
+        body: JSON.stringify({ id, status: 'watched' }),
       });
-      if (response.ok) {
-        const result = await response.json();
-        setWatchlistData(result);
-        // Update tracker
-        setTrackerData(prev => ({
-          ...prev,
-          seenThisMonth: prev.seenThisMonth + 1,
-          seenThisYear: prev.seenThisYear + 1
-        }));
-        setSelectedMovie(null);
-        setRating(0);
-        setNotes('');
+      if (res.ok) {
+        fetchMovies();
       }
     } catch (err) {
-      console.error('Error marking as seen:', err);
+      console.error('Failed to update movie:', err);
     }
   };
 
-  const removeFromList = async (movie: Movie, list: 'watchlist' | 'seen') => {
-    try {
-      const response = await fetch('/api/movies/watchlist', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: list === 'watchlist' ? 'removeFromWatchlist' : 'removeFromSeen',
-          movie
-        })
-      });
-      if (response.ok) {
-        const result = await response.json();
-        setWatchlistData(result);
-      }
-    } catch (err) {
-      console.error('Error removing from list:', err);
-    }
-  };
+  const watchlist = movies.filter(m => m.status === 'watchlist');
+  const recommendations = movies.filter(m => m.status === 'recommended');
+  const watched = movies.filter(m => m.status === 'watched');
 
-  const undoLastSeen = () => {
-    if (watchlistData?.seenList && watchlistData.seenList.length > 0) {
-      const lastSeen = watchlistData.seenList[watchlistData.seenList.length - 1];
-      removeFromList(lastSeen, 'seen');
-      setTrackerData(prev => ({
-        ...prev,
-        seenThisMonth: Math.max(0, prev.seenThisMonth - 1),
-        seenThisYear: Math.max(0, prev.seenThisYear - 1)
-      }));
-    }
-  };
+  // Mock schedule for now - would come from calendar API
+  const upcomingMovies = [
+    { time: 'Tonight 8pm', title: 'Dune: Part Two', channel: 'HBO', type: 'premium' },
+    { time: 'Tomorrow 9pm', title: 'The Bear S3', channel: 'FX', type: 'streaming' },
+  ];
 
-  useEffect(() => {
-    fetchData();
-    fetchRegalData();
-  }, []);
-
-  const isInWatchlist = (movieId: number) =>
-    watchlistData?.watchlist?.some(m => m.id === movieId) ?? false;
-
-  const isInSeen = (movieId: number) =>
-    watchlistData?.seenList?.some(m => m.id === movieId) ?? false;
-
-  const costPerMovie = trackerData.monthlyCost / (trackerData.seenThisMonth || 1);
+  if (loading) {
+    return (
+      <div className="bg-surface border border-border rounded-xl p-4">
+        <div className="animate-pulse space-y-3">
+          <div className="h-4 bg-surface-light rounded w-1/3" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-surface border border-border rounded-xl overflow-hidden">
       {/* Header */}
       <div className="px-4 py-3 border-b border-border">
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Clapperboard className="w-5 h-5 text-rose-400" />
+            <div className="w-8 h-8 rounded-full bg-pink-500/20 flex items-center justify-center">
+              <Film className="w-4 h-4 text-pink-400" />
+            </div>
             <div>
-              <h2 className="text-sm font-semibold text-white">Movies</h2>
-              {editingTracker ? (
-                <div className="flex items-center gap-1 text-xs">
-                  <span className="text-gray-500">Regal Unlimited ${trackerData.monthlyCost}/mo •</span>
-                  <input
-                    type="number"
-                    value={trackerData.seenThisMonth}
-                    onChange={(e) => setTrackerData(prev => ({ ...prev, seenThisMonth: parseInt(e.target.value) || 0 }))}
-                    className="w-8 px-1 py-0.5 bg-surface-light rounded text-center text-xs"
-                    min={0}
-                  />
-                  <span className="text-gray-500">this month •</span>
-                  <input
-                    type="number"
-                    value={trackerData.seenThisYear}
-                    onChange={(e) => setTrackerData(prev => ({ ...prev, seenThisYear: parseInt(e.target.value) || 0 }))}
-                    className="w-10 px-1 py-0.5 bg-surface-light rounded text-center text-xs"
-                    min={0}
-                  />
-                  <span className="text-gray-500">this year</span>
-                  <button
-                    onClick={() => setEditingTracker(false)}
-                    className="ml-1 text-rose-400 hover:text-rose-300"
-                  >
-                    <Check className="w-3 h-3" />
-                  </button>
-                </div>
-              ) : (
-                <p 
-                  className="text-xs text-gray-500 cursor-pointer hover:text-gray-400"
-                  onClick={() => setEditingTracker(true)}
-                  title="Click to edit"
-                >
-                  Regal Unlimited ${trackerData.monthlyCost}/mo • {trackerData.seenThisMonth} this month • {trackerData.seenThisYear} this year
-                </p>
-              )}
+              <h2 className="text-sm font-semibold text-white">Movies & Shows</h2>
+              <p className="text-xs text-gray-500">{watchlist.length} in watchlist</p>
             </div>
           </div>
-          <button
-            onClick={fetchData}
-            className="p-1 hover:bg-surface-light rounded transition-colors"
-          >
-            <RefreshCw className={`w-4 h-4 text-gray-500 ${loading ? 'animate-spin' : ''}`} />
-          </button>
         </div>
+      </div>
 
-        {/* Tabs */}
-        <div className="flex flex-wrap gap-2">
-          {[
-            { id: 'regal', label: `Regal Showtimes (${regalData?.movies?.length || 0})`, color: 'red' },
-            { id: 'now-playing', label: `Now Playing (${data?.count || 0})`, color: 'pink' },
-            { id: 'watchlist', label: `Watchlist (${watchlistData?.watchlistCount || 0})`, color: 'blue' },
-            { id: 'seen', label: `Seen (${watchlistData?.seenCount || 0})`, color: 'green' }
-          ].map((tab) => (
+      {/* View Toggle */}
+      <div className="px-4 pt-3">
+        <div className="flex bg-surface-light rounded-lg p-1">
+          {(['schedule', 'watchlist', 'recommendations'] as const).map((mode) => (
             <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
-              className={`px-3 py-1.5 text-xs rounded-lg transition-colors ${
-                activeTab === tab.id
-                  ? `bg-${tab.color}-500/20 text-${tab.color}-400`
-                  : 'bg-surface-light text-gray-400 hover:text-gray-300'
+              key={mode}
+              onClick={() => setViewMode(mode)}
+              className={`flex-1 py-1.5 text-xs font-medium rounded transition-colors ${
+                viewMode === mode ? 'bg-surface text-white' : 'text-gray-500 hover:text-gray-300'
               }`}
             >
-              {tab.label}
+              {mode.charAt(0).toUpperCase() + mode.slice(1)}
             </button>
           ))}
         </div>
       </div>
 
-      <div className="p-4">
-        {/* Regal Showtimes Tab */}
-        {activeTab === 'regal' && (
-          <div className="space-y-3 max-h-[400px] overflow-y-auto">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-1 text-xs text-gray-500">
-                <MapPin className="w-3 h-3" />
-                <span>Regal Sherman Oaks • {regalDay === 'sun' ? 'Sunday' : 'Monday'}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => fetchRegalData()}
-                  className="p-1 hover:bg-surface-light rounded"
-                >
-                  <RefreshCw className={`w-3 h-3 text-gray-500 ${regalLoading ? 'animate-spin' : ''}`} />
-                </button>
-                <a
-                  href="https://www.regmovies.com/theatres/regal-sherman-oaks-galleria-1483"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs text-red-400 hover:underline flex items-center gap-1"
-                >
-                  Book
-                  <ExternalLink className="w-3 h-3" />
-                </a>
-              </div>
+      <div className="p-4 space-y-3">
+        {viewMode === 'schedule' && (
+          <>
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-medium text-gray-400 uppercase">Coming Up</h3>
+              <button className="text-xs text-pink-400 hover:underline">View All</button>
             </div>
-
-            <div className="flex gap-2 mb-2">
-              {[{ key: 'sun', label: 'Sunday' }, { key: 'mon', label: 'Monday' }].map((day) => (
+            
+            {upcomingMovies.map((movie, idx) => (
+              <div key={idx} className="flex items-center gap-3 p-3 bg-surface-light rounded-lg">
+                <div className="w-12 h-12 bg-pink-500/20 rounded-lg flex items-center justify-center">
+                  <Film className="w-5 h-5 text-pink-400" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{movie.title}</p>
+                  <p className="text-xs text-gray-500">{movie.time} • {movie.channel}</p>
+                </div>
                 <button
-                  key={day.key}
-                  onClick={() => {
-                    setRegalDay(day.key as 'sun' | 'mon');
-                    fetchRegalData(day.key as 'sun' | 'mon');
-                  }}
-                  className={`px-2 py-1 text-xs rounded ${
-                    regalDay === day.key ? 'bg-rose-500/20 text-rose-300' : 'bg-surface-light text-gray-400'
-                  }`}
+                  onClick={() => addToWatchlist({
+                    title: movie.title,
+                    year: '2024',
+                    status: 'watchlist',
+                    addedAt: new Date().toISOString(),
+                  })}
+                  className="p-2 hover:bg-pink-500/20 rounded-lg transition-colors"
+                  title="Add to watchlist"
                 >
-                  {day.label}
+                  <Plus className="w-4 h-4 text-pink-400" />
                 </button>
-              ))}
-            </div>
+              </div>
+            ))}
 
-            {regalLoading ? (
-              <div className="text-center py-8 text-gray-500">
-                <Film className="w-8 h-8 mx-auto mb-2 opacity-50 animate-pulse" />
-                <p className="text-sm">Loading showtimes...</p>
-              </div>
-            ) : !regalData?.movies?.length ? (
-              <div className="text-center py-8 text-gray-500">
-                <Film className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                <p className="text-sm">No showtimes available</p>
-                <p className="text-xs text-gray-600 mt-1">Try refreshing</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {regalData.movies.map((movie: any, index: number) => (
-                  <div key={index} className="p-3 bg-surface-light rounded-lg">
-                    <div className="flex items-start justify-between mb-2">
-                      <h3 className="font-medium text-sm">{movie.title}</h3>
-                      <span className="text-xs text-gray-500">{movie.format}</span>
-                    </div>
-                    <div className="flex flex-wrap gap-1">
-                      {movie.showtimes.map((time: string, i: number) => (
-                        <span key={i} className="px-2 py-1 bg-red-500/10 text-red-400 text-xs rounded">
-                          {time}
-                        </span>
-                      ))}
-                    </div>
+            {recommendations.length > 0 && (
+              <div className="pt-2 border-t border-border">
+                <div className="flex items-center gap-1 mb-2">
+                  <TrendingUp className="w-3 h-3 text-green-400" />
+                  <span className="text-xs text-green-400">Recommended for you</span>
+                </div>
+                {recommendations.slice(0, 2).map((movie) => (
+                  <div key={movie.id} className="flex items-center gap-2 p-2 bg-green-500/5 rounded-lg mb-1">
+                    <Star className="w-3 h-3 text-green-400" />
+                    <span className="text-sm">{movie.title}</span>
+                    <span className="text-xs text-gray-500">• {movie.recommendedReason}</span>
                   </div>
                 ))}
               </div>
             )}
-          </div>
+          </>
         )}
 
-        {/* Now Playing Tab */}
-        {activeTab === 'now-playing' && (
-          <div className="space-y-3 max-h-[400px] overflow-y-auto">
-            {!data ? (
-              <div className="text-center py-8 text-gray-500">
+        {viewMode === 'watchlist' && (
+          <>
+            {watchlist.length === 0 ? (
+              <div className="text-center py-6 text-gray-500">
                 <Film className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                <p className="text-sm">{loading ? 'Loading movies...' : 'No movie data'}</p>
+                <p className="text-sm">No movies in watchlist</p>
+                <p className="text-xs mt-1">Add from schedule or recommendations</p>
               </div>
             ) : (
-              data.movies.map((movie) => (
-                <MovieRow
-                  key={movie.id}
-                  movie={movie}
-                  isInWatchlist={isInWatchlist(movie.id)}
-                  isInSeen={isInSeen(movie.id)}
-                  onAddToWatchlist={() => addToWatchlist(movie, 'tmdb')}
-                  onMarkAsSeen={() => setSelectedMovie(movie)}
-                  poster_path={movie.poster_path}
-                  vote_average={movie.vote_average}
-                  release_date={movie.release_date}
-                  overview={movie.overview}
-                />
-              ))
-            )}
-          </div>
-        )}
-
-        {/* Watchlist Tab */}
-        {activeTab === 'watchlist' && (
-          <div className="space-y-3 max-h-[400px] overflow-y-auto">
-            {!watchlistData?.watchlist.length ? (
-              <div className="text-center py-8 text-gray-500">
-                <Plus className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                <p className="text-sm">Your watchlist is empty</p>
-              </div>
-            ) : (
-              watchlistData.watchlist.map((movie) => (
-                <div key={movie.id} className="flex gap-3 p-2 bg-surface-light rounded-lg group">
-                  {movie.poster_path ? (
-                    <img src={movie.poster_path} alt={movie.title} className="w-16 h-24 object-cover rounded" />
-                  ) : (
-                    <div className="w-16 h-24 bg-surface flex items-center justify-center rounded">
-                      <Film className="w-6 h-6 text-gray-600" />
-                    </div>
-                  )}
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between">
-                      <h3 className="font-medium text-sm truncate">{movie.title}</h3>
-                      <div className="flex gap-1">
-                        <button
-                          onClick={() => setSelectedMovie(movie)}
-                          className="p-1 bg-green-500/20 text-green-400 rounded hover:bg-green-500/30"
-                          title="Mark as seen"
-                        >
-                          <Check className="w-3 h-3" />
-                        </button>
-                        <button
-                          onClick={() => removeFromList(movie, 'watchlist')}
-                          className="p-1 bg-red-500/20 text-red-400 rounded hover:bg-red-500/30"
-                          title="Remove"
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </button>
+              <div className="space-y-2 max-h-[250px] overflow-y-auto">
+                {watchlist.map((movie) => (
+                  <div key={movie.id} className="flex items-center justify-between p-3 bg-surface-light rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <Film className="w-4 h-4 text-gray-500" />
+                      <div>
+                        <p className="text-sm font-medium">{movie.title}</p>
+                        <p className="text-xs text-gray-500">{movie.year}</p>
                       </div>
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">Added {new Date(movie.addedAt).toLocaleDateString()}</p>
+                    <button
+                      onClick={() => markAsWatched(movie.id)}
+                      className="p-1.5 hover:bg-green-500/20 rounded-lg transition-colors"
+                      title="Mark as watched"
+                    >
+                      <Check className="w-4 h-4 text-green-400" />
+                    </button>
                   </div>
-                </div>
-              ))
+                ))}
+              </div>
             )}
-          </div>
+          </>
         )}
 
-        {/* Seen Tab */}
-        {activeTab === 'seen' && (
-          <div className="space-y-3 max-h-[400px] overflow-y-auto">
-            {!watchlistData?.seenList.length ? (
-              <div className="text-center py-8 text-gray-500">
-                <Eye className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                <p className="text-sm">No movies marked as seen yet</p>
+        {viewMode === 'recommendations' && (
+          <>
+            <div className="flex items-center gap-1 mb-2">
+              <Calendar className="w-3 h-3 text-blue-400" />
+              <span className="text-xs text-blue-400">Based on your free time</span>
+            </div>
+            {recommendations.length === 0 ? (
+              <div className="text-center py-4 text-gray-500">
+                <p className="text-sm">No recommendations yet</p>
+                <p className="text-xs mt-1">Check back after calendar sync</p>
               </div>
             ) : (
-              watchlistData.seenList.map((movie) => (
-                <div key={movie.id} className="flex gap-3 p-2 bg-surface-light rounded-lg group">
-                  {movie.poster_path ? (
-                    <img src={movie.poster_path} alt={movie.title} className="w-16 h-24 object-cover rounded" />
-                  ) : (
-                    <div className="w-16 h-24 bg-surface flex items-center justify-center rounded">
-                      <Film className="w-6 h-6 text-gray-600" />
+              <div className="space-y-2">
+                {recommendations.map((movie) => (
+                  <div key={movie.id} className="p-3 bg-surface-light rounded-lg">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-medium text-sm">{movie.title}</span>
+                      <span className="text-xs text-gray-500">{movie.duration}</span>
                     </div>
-                  )}
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between">
-                      <h3 className="font-medium text-sm truncate">{movie.title}</h3>
+                    <p className="text-xs text-gray-500 mb-2">{movie.recommendedReason}</p>
+                    <div className="flex gap-2">
                       <button
-                        onClick={() => removeFromList(movie, 'seen')}
-                        className="p-1 bg-red-500/20 text-red-400 rounded hover:bg-red-500/30 opacity-0 group-hover:opacity-100 transition-opacity"
-                        title="Remove"
+                        onClick={() => addToWatchlist(movie)}
+                        className="flex-1 py-1.5 text-xs bg-pink-500/20 text-pink-400 rounded hover:bg-pink-500/30 transition-colors"
                       >
-                        <Trash2 className="w-3 h-3" />
+                        Add to Watchlist
                       </button>
                     </div>
-
-                    {movie.userRating && (
-                      <div className="flex items-center gap-1 mt-1">
-                        {[...Array(5)].map((_, i) => (
-                          <Star
-                            key={i}
-                            className={`w-3 h-3 ${i < movie.userRating! ? 'text-yellow-400 fill-current' : 'text-gray-600'}`}
-                          />
-                        ))}
-                      </div>
-                    )}
-
-                    {movie.notes && <p className="text-xs text-gray-400 mt-1">{movie.notes}</p>}
-
-                    <p className="text-xs text-gray-500 mt-1">Watched {new Date(movie.addedAt).toLocaleDateString()}</p>
                   </div>
-                </div>
-              ))
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Rating Modal */}
-      {selectedMovie && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-surface border border-border rounded-xl p-6 max-w-sm w-full mx-4">
-            <h3 className="font-medium text-lg mb-4">Mark as Seen: {selectedMovie.title}</h3>
-
-            <div className="mb-4">
-              <label className="text-sm text-gray-400 mb-2 block">Your Rating</label>
-              <div className="flex gap-2">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <button
-                    key={star}
-                    onClick={() => setRating(star)}
-                    className="p-1"
-                  >
-                    <Star
-                      className={`w-6 h-6 ${star <= rating ? 'text-yellow-400 fill-current' : 'text-gray-600'}`}
-                    />
-                  </button>
                 ))}
               </div>
-            </div>
-
-            <div className="mb-4">
-              <label className="text-sm text-gray-400 mb-2 block">Notes (optional)</label>
-              <textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="What did you think?"
-                className="w-full px-3 py-2 bg-surface border border-border rounded text-sm resize-none"
-                rows={3}
-              />
-            </div>
-
-            <div className="flex gap-2">
-              <button
-                onClick={() => markAsSeen(selectedMovie, rating || undefined, notes || undefined)}
-                className="flex-1 py-2 bg-green-500/20 text-green-400 rounded text-sm hover:bg-green-500/30"
-              >
-                Save
-              </button>
-              <button
-                onClick={() => {
-                  setSelectedMovie(null);
-                  setRating(0);
-                  setNotes('');
-                }}
-                className="px-4 py-2 bg-surface border border-border rounded text-sm hover:bg-border"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// Helper Components
-function MovieRow({
-  movie,
-  isInWatchlist,
-  isInSeen,
-  onAddToWatchlist,
-  onMarkAsSeen,
-  poster_path,
-  vote_average,
-  release_date,
-  overview
-}: {
-  movie: Movie;
-  isInWatchlist: boolean;
-  isInSeen: boolean;
-  onAddToWatchlist: () => void;
-  onMarkAsSeen: () => void;
-  poster_path: string | null | undefined;
-  vote_average: number | undefined;
-  release_date: string | undefined;
-  overview: string | undefined;
-}) {
-  return (
-    <div className="flex gap-3 p-2 bg-surface-light rounded-lg group">
-      {poster_path ? (
-        <img src={poster_path} alt={movie.title} className="w-16 h-24 object-cover rounded" />
-      ) : (
-        <div className="w-16 h-24 bg-surface flex items-center justify-center rounded">
-          <Film className="w-6 h-6 text-gray-600" />
-        </div>
-      )}
-
-      <div className="flex-1 min-w-0">
-        <div className="flex items-start justify-between">
-          <h3 className="font-medium text-sm truncate">{movie.title}</h3>
-
-          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            {!isInWatchlist && !isInSeen && (
-              <button
-                onClick={onAddToWatchlist}
-                className="p-1 bg-blue-500/20 text-blue-400 rounded hover:bg-blue-500/30"
-                title="Add to watchlist"
-              >
-                <Plus className="w-3 h-3" />
-              </button>
             )}
-            <button
-              onClick={onMarkAsSeen}
-              className="p-1 bg-green-500/20 text-green-400 rounded hover:bg-green-500/30"
-              title="Mark as seen"
-            >
-              <Eye className="w-3 h-3" />
-            </button>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 mt-1">
-          {vote_average && (
-            <div className="flex items-center gap-1 text-xs text-yellow-400">
-              <Star className="w-3 h-3 fill-current" />
-              <span>{vote_average}</span>
-            </div>
-          )}
-          {release_date && (
-            <span className="text-xs text-gray-500">
-              {new Date(release_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-            </span>
-          )}
-          {isInWatchlist && <span className="text-xs text-blue-400">• In Watchlist</span>}
-          {isInSeen && <span className="text-xs text-green-400">• Seen</span>}
-        </div>
-
-        {overview && <p className="text-xs text-gray-400 mt-1 line-clamp-2">{overview}</p>}
+          </>
+        )}
       </div>
     </div>
   );
