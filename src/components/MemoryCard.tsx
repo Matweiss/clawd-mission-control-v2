@@ -153,7 +153,7 @@ export default function MemoryCard() {
           >
             <tab.icon className="w-4 h-4" />
             {tab.label}
-            {'count' in tab && tab.count > 0 && (
+            {tab.count !== undefined && tab.count > 0 && (
               <span className="bg-slate-700 text-xs px-2 py-0.5 rounded-full">{tab.count}</span>
             )}
           </button>
