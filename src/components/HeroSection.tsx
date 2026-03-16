@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Zap, AlertCircle, Calendar, Activity, Mail, TrendingUp, Dumbbell, Film, Clock, Cloud } from 'lucide-react';
+import { HeroSkeleton } from './Skeletons';
 
 interface HeroData {
   currentEvent?: {
@@ -166,11 +167,7 @@ export function HeroSection() {
   };
 
   if (loading) {
-    return (
-      <div className="bg-gradient-to-r from-work/20 via-work/10 to-transparent border border-work/30 rounded-xl p-4 animate-pulse">
-        <div className="h-8 bg-work/10 rounded w-1/2" />
-      </div>
-    );
+    return <HeroSkeleton />;
   }
 
   if (!data) return null;
