@@ -27,8 +27,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // Use Open-Meteo API (free, no key required)
-    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,uv_index&hourly=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&timezone=America/Los_Angeles&forecast_days=2`;
+    // Use Open-Meteo API (free, no key required) - Fahrenheit for US
+    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,uv_index&hourly=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min&timezone=America/Los_Angeles&forecast_days=2&temperature_unit=fahrenheit&wind_speed_unit=mph`;
 
     const response = await fetch(weatherUrl);
     
