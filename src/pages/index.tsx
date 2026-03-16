@@ -4,7 +4,7 @@ import {
   Activity, Mail, Database, Cpu, Sparkles, 
   Zap, Calendar, TrendingUp, AlertCircle,
   CheckCircle, Clock, RefreshCw, MoreHorizontal,
-  Command, Search, Settings, Bell, HardDrive
+  Command, Search, Settings, Bell, HardDrive, Reply, X
 } from 'lucide-react';
 import { useCommandPalette, useRealtimeData, useAgentActions } from '../hooks/useMissionControl';
 import { useAgentStatus } from '../hooks/useAgentStatus';
@@ -78,6 +78,8 @@ export default function MissionControl() {
   const [mobileTab, setMobileTab] = useState<'agents' | 'life' | 'work'>('life');
   const [systemTab, setSystemTab] = useState<'memory' | 'health' | 'cron'>('memory');
   const [priorityMode, setPriorityMode] = useState(false);
+  const [showUrgentEmails, setShowUrgentEmails] = useState(false);
+  const [showReplyNeededEmails, setShowReplyNeededEmails] = useState(false);
 
   // Quick Actions keyboard shortcut (Cmd+K or Ctrl+K)
   useEffect(() => {
@@ -219,6 +221,114 @@ export default function MissionControl() {
         onRefresh={refresh}
       />
 
+      {/* Urgent Emails Modal */}
+      {showUrgentEmails && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowUrgentEmails(false)} />
+          <div className="relative bg-surface border border-border rounded-xl w-full max-w-lg mx-4 max-h-[80vh] overflow-hidden">
+            <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="w-5 h-5 text-red-500" />
+                <h2 className="text-lg font-semibold">Urgent Emails</h2>
+                <span className="px-2 py-0.5 bg-red-500/20 text-red-400 text-xs rounded-full">
+                  {emails.filter((e: any) => e.category === 'URGENT').length}
+                </span>
+              </div>
+              <button onClick={() => setShowUrgentEmails(false)} className="p-2 hover:bg-surface-light rounded">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-4 overflow-y-auto max-h-[60vh]">
+              {emails.filter((e: any) => e.category === 'URGENT').length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <Mail className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                  <p>No urgent emails</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {emails.filter((e: any) => e.category === 'URGENT').map((email: any) => (
+                    <div key={email.id} className="bg-red-500/10 border border-red-500/30 rounded-lg p-3">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-medium">{email.from_name || email.from_email}</span>
+                        <span className="text-xs text-gray-500">
+                          {new Date(email.received_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-300 mb-2">{email.subject}</p>
+                      <p className="text-xs text-gray-500 line-clamp-2 mb-2">{email.snippet}</p>
+                      <div className="flex gap-2">
+                        <a
+                          href={`https://mail.google.com/mail/u/0/#inbox/${email.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs bg-surface-light hover:bg-border px-3 py-1.5 rounded transition-colors"
+                        >
+                          View in Gmail
+                        </a>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reply Needed Emails Modal */}
+      {showReplyNeededEmails && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowReplyNeededEmails(false)} />
+          <div className="relative bg-surface border border-border rounded-xl w-full max-w-lg mx-4 max-h-[80vh] overflow-hidden">
+            <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Reply className="w-5 h-5 text-yellow-500" />
+                <h2 className="text-lg font-semibold">Reply Needed</h2>
+                <span className="px-2 py-0.5 bg-yellow-500/20 text-yellow-400 text-xs rounded-full">
+                  {emails.filter((e: any) => e.category === 'REPLY_NEEDED').length}
+                </span>
+              </div>
+              <button onClick={() => setShowReplyNeededEmails(false)} className="p-2 hover:bg-surface-light rounded">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-4 overflow-y-auto max-h-[60vh]">
+              {emails.filter((e: any) => e.category === 'REPLY_NEEDED').length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <Reply className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                  <p>No emails waiting for reply</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {emails.filter((e: any) => e.category === 'REPLY_NEEDED').map((email: any) => (
+                    <div key={email.id} className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-medium">{email.from_name || email.from_email}</span>
+                        <span className="text-xs text-gray-500">
+                          {new Date(email.received_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-300 mb-2">{email.subject}</p>
+                      <p className="text-xs text-gray-500 line-clamp-2 mb-2">{email.snippet}</p>
+                      <div className="flex gap-2">
+                        <a
+                          href={`https://mail.google.com/mail/u/0/#inbox/${email.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30 px-3 py-1.5 rounded transition-colors"
+                        >
+                          Reply in Gmail
+                        </a>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <header className="border-b border-border bg-surface/50 backdrop-blur-sm sticky top-0 z-40">
         <div className="max-w-[1800px] mx-auto px-4 py-3 flex items-center justify-between">
@@ -303,11 +413,16 @@ export default function MissionControl() {
         <div className="mb-4 py-2 border-y border-border">
           <QuickStatsBar 
             urgentEmails={emails.filter((e: any) => e.category === 'URGENT').length}
-            pipelineValue="$18.4k"
+            replyNeededEmails={emails.filter((e: any) => e.category === 'REPLY_NEEDED').length}
+            pipelineMRR="$4.3k"
+            pipelineARR="$51.3k"
             yogaClasses={51}
             watchlistCount={0}
             buddyPasses={2}
             buddyPassDays={16}
+            onUrgentClick={() => setShowUrgentEmails(true)}
+            onReplyNeededClick={() => setShowReplyNeededEmails(true)}
+            onPipelineClick={() => setShowSalesHub(true)}
           />
         </div>
 
