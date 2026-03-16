@@ -142,8 +142,6 @@ export function UnifiedMovieCard() {
                   onClick={() => addToWatchlist({
                     title: movie.title,
                     year: '2024',
-                    status: 'watchlist',
-                    addedAt: new Date().toISOString(),
                   })}
                   className="p-2 hover:bg-pink-500/20 rounded-lg transition-colors"
                   title="Add to watchlist"
