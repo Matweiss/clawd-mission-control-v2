@@ -70,6 +70,7 @@ export default function MissionControl() {
   const [showAgentCommandCenter, setShowAgentCommandCenter] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState<any>(null);
   const [showSalesHub, setShowSalesHub] = useState(false);
+  const [mobileTab, setMobileTab] = useState<'agents' | 'life' | 'work'>('life');
 
   // Quick Actions keyboard shortcut (Cmd+K or Ctrl+K)
   useEffect(() => {
@@ -217,13 +218,13 @@ export default function MissionControl() {
           <div className="flex items-center gap-3">
             <span className="text-2xl">🦞</span>
             <div>
-              <h1 className="font-bold text-lg">Clawd Mission Control</h1>
-              <p className="text-xs text-gray-400">AI Agent Command Center</p>
+              <h1 className="font-bold text-base lg:text-lg">Clawd Mission Control</h1>
+              <p className="text-xs text-gray-400 hidden sm:block">AI Agent Command Center</p>
             </div>
           </div>
           
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 text-sm text-gray-400">
+          <div className="flex items-center gap-2 lg:gap-4">
+            <div className="hidden md:flex items-center gap-2 text-sm text-gray-400">
               <span>{currentDate}</span>
               <span>•</span>
               <span className="font-mono">{currentTime} PT</span>
@@ -240,7 +241,7 @@ export default function MissionControl() {
             >
               <Command className="w-4 h-4" />
               <span className="hidden sm:inline">Command</span>
-              <span className="text-xs text-gray-500">⌘K</span>
+              <span className="text-xs text-gray-500 hidden sm:inline">⌘K</span>
             </button>
             
             <button 
@@ -259,6 +260,14 @@ export default function MissionControl() {
             </button>
           </div>
         </div>
+        
+        {/* Mobile Date Bar */}
+        <div className="md:hidden border-t border-border/50 px-4 py-2">
+          <div className="flex items-center justify-between text-xs text-gray-400">
+            <span>{currentDate}</span>
+            <span className="font-mono">{currentTime} PT</span>
+          </div>
+        </div>
       </header>
 
       {/* Main Content */}
@@ -269,10 +278,49 @@ export default function MissionControl() {
           </div>
         )}
 
+        {/* Mobile Tab Navigation */}
+        <div className="lg:hidden mb-4">
+          <div className="flex bg-surface-light rounded-xl p-1">
+            <button
+              onClick={() => setMobileTab('agents')}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium rounded-lg transition-colors ${
+                mobileTab === 'agents' 
+                  ? 'bg-surface text-white shadow-sm' 
+                  : 'text-gray-500'
+              }`}
+            >
+              <Cpu className="w-4 h-4" />
+              Agents
+            </button>
+            <button
+              onClick={() => setMobileTab('life')}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium rounded-lg transition-colors ${
+                mobileTab === 'life' 
+                  ? 'bg-surface text-white shadow-sm' 
+                  : 'text-gray-500'
+              }`}
+            >
+              <Activity className="w-4 h-4" />
+              Life
+            </button>
+            <button
+              onClick={() => setMobileTab('work')}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium rounded-lg transition-colors ${
+                mobileTab === 'work' 
+                  ? 'bg-surface text-white shadow-sm' 
+                  : 'text-gray-500'
+              }`}
+            >
+              <TrendingUp className="w-4 h-4" />
+              Work
+            </button>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           
           {/* LEFT: Operations / System */}
-          <div className="space-y-4">
+          <div className={`space-y-4 ${mobileTab !== 'agents' ? 'hidden lg:block' : ''}`}>
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Active Agents</h2>
               <div className="flex items-center gap-2">
@@ -309,7 +357,7 @@ export default function MissionControl() {
           </div>
 
           {/* CENTER: Life / Presence */}
-          <div className="space-y-4">
+          <div className={`space-y-4 ${mobileTab !== 'life' ? 'hidden lg:block' : ''}`}>
             <SectionLabel title="Recent Events" />
             <ActivityPanel activities={[]} />
 
@@ -323,7 +371,7 @@ export default function MissionControl() {
           </div>
 
           {/* RIGHT: Work / Execution */}
-          <div className="space-y-4">
+          <div className={`space-y-4 ${mobileTab !== 'work' ? 'hidden lg:block' : ''}`}>
             <MergedCalendarCard />
 
             <EmailCard />
@@ -341,43 +389,60 @@ export default function MissionControl() {
       </main>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-surface border-t border-border z-50">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-surface border-t border-border z-50 pb-safe">
         <div className="flex items-center justify-around px-2 py-2">
           <button 
+            onClick={() => {
+              setMobileTab('agents');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            className={`flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-colors ${
+              mobileTab === 'agents' ? 'bg-surface-light' : ''
+            }`}
+          >
+            <Cpu className={`w-5 h-5 ${mobileTab === 'agents' ? 'text-work' : 'text-gray-400'}`} />
+            <span className={`text-[10px] ${mobileTab === 'agents' ? 'text-white' : 'text-gray-400'}`}>Agents</span>
+          </button>
+
+          <button 
+            onClick={() => {
+              setMobileTab('life');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            className={`flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-colors ${
+              mobileTab === 'life' ? 'bg-surface-light' : ''
+            }`}
+          >
+            <Activity className={`w-5 h-5 ${mobileTab === 'life' ? 'text-green-400' : 'text-gray-400'}`} />
+            <span className={`text-[10px] ${mobileTab === 'life' ? 'text-white' : 'text-gray-400'}`}>Life</span>
+          </button>
+
+          <button 
             onClick={() => setShowQuickActions(true)}
-            className="flex flex-col items-center gap-1 px-3 py-2 rounded-lg"
+            className="flex flex-col items-center justify-center w-12 h-12 -mt-4 bg-work rounded-full shadow-lg shadow-work/30"
           >
-            <Zap className="w-5 h-5 text-work" />
-            <span className="text-[10px] text-gray-400">Actions</span>
+            <Zap className="w-6 h-6 text-white" />
           </button>
 
           <button 
-            onClick={() => setShowSalesHub(true)}
-            className="flex flex-col items-center gap-1 px-3 py-2 rounded-lg"
+            onClick={() => {
+              setMobileTab('work');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            className={`flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-colors ${
+              mobileTab === 'work' ? 'bg-surface-light' : ''
+            }`}
           >
-            <TrendingUp className="w-5 h-5 text-cyan-400" />
-            <span className="text-[10px] text-gray-400">Pipeline</span>
+            <TrendingUp className={`w-5 h-5 ${mobileTab === 'work' ? 'text-cyan-400' : 'text-gray-400'}`} />
+            <span className={`text-[10px] ${mobileTab === 'work' ? 'text-white' : 'text-gray-400'}`}>Work</span>
           </button>
 
           <button 
-            onClick={() => setShowEmailModal(true)}
-            className="flex flex-col items-center gap-1 px-3 py-2 rounded-lg relative"
-          >
-            <Mail className="w-5 h-5 text-pink-400" />
-            <span className="text-[10px] text-gray-400">Emails</span>
-            {emails.length > 0 && (
-              <span className="absolute top-1 right-2 w-4 h-4 bg-work text-[10px] rounded-full flex items-center justify-center">
-                {emails.length}
-              </span>
-            )}
-          </button>
-
-          <button 
+            onClick={() => setIsOpen(true)}
             className="flex flex-col items-center gap-1 px-3 py-2 rounded-lg"
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           >
             <Command className="w-5 h-5 text-gray-400" />
-            <span className="text-[10px] text-gray-400">Top</span>
+            <span className="text-[10px] text-gray-400">Cmd</span>
           </button>
         </div>
       </nav>
