@@ -7,6 +7,8 @@ import {
   Command, Search, Settings, Bell, HardDrive
 } from 'lucide-react';
 import { useCommandPalette, useRealtimeData, useAgentActions } from '../hooks/useMissionControl';
+import { useAgentStatus } from '../hooks/useAgentStatus';
+import { AgentCard } from '../components/AgentCard';
 import { CommandPalette } from '../components/CommandPalette';
 import { LifestyleHealthPanel } from '../components/LifestyleHealthPanel';
 import { QuickActionsPalette } from '../components/QuickActionsPalette';
@@ -55,9 +57,10 @@ export default function MissionControl() {
   const { isOpen, setIsOpen } = useCommandPalette();
   const { spawnAgent, refreshAgent } = useAgentActions();
   const { 
-    agents, emails, pipeline, calendarEvents,
+    emails, pipeline, calendarEvents,
     loading, lastRefresh, refresh 
   } = useRealtimeData();
+  const { data: agentStatus, refresh: refreshAgents } = useAgentStatus();
   const [activeAction, setActiveAction] = useState('');
   const [showPipelineModal, setShowPipelineModal] = useState(false);
   const [showEmailModal, setShowEmailModal] = useState(false);
@@ -271,21 +274,27 @@ export default function MissionControl() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Active Agents</h2>
-              <span className="text-xs text-gray-500">{agents.length}/7 Online</span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-gray-500">
+                  {agentStatus?.openclaw?.sessions || 0} session{agentStatus?.openclaw?.sessions !== 1 ? 's' : ''}
+                </span>
+                <button 
+                  onClick={refreshAgents}
+                  className="p-1 hover:bg-surface-light rounded"
+                >
+                  <RefreshCw className="w-3 h-3 text-gray-500" />
+                </button>
+              </div>
             </div>
             
             <div className="space-y-3">
-              {AGENTS.map(agent => {
-                const agentData = agents.find((a: any) => a.agent_id === agent.id);
-                return (
-                  <AgentCard 
-                    key={agent.id}
-                    config={agent}
-                    data={agentData}
-                    onRefresh={() => refreshAgent(agent.id)}
-                  />
-                );
-              })}
+              {agentStatus?.agents.map(agent => (
+                <AgentCard 
+                  key={agent.id}
+                  agent={agent}
+                  onRefresh={refreshAgents}
+                />
+              ))}
             </div>
 
             <SectionLabel title="Vault & Restoration" />
@@ -381,93 +390,6 @@ function SectionLabel({ title }: { title: string }) {
   return (
     <div className="flex items-center justify-between">
       <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">{title}</h2>
-    </div>
-  );
-}
-
-// Agent Card Component
-function AgentCard({ config, data, onRefresh }: any) {
-  const colors: any = {
-    work: 'border-orange-500 text-orange-500',
-    build: 'border-blue-500 text-blue-500',
-    research: 'border-green-500 text-green-500',
-    lifestyle: 'border-purple-500 text-purple-500',
-    email: 'border-pink-500 text-pink-500',
-    hubspot: 'border-cyan-500 text-cyan-500',
-  };
-
-  const status = data?.status || 'offline';
-  const statusColor = status === 'running' ? 'bg-yellow-500 animate-pulse' :
-                     status === 'error' ? 'bg-red-500' :
-                     status === 'idle' ? 'bg-green-500' :
-                     status === 'weekend' ? 'bg-purple-500' : 'bg-gray-600';
-
-  return (
-    <div className={`bg-surface border ${status === 'error' ? 'border-red-500' : config.level === 1 ? 'border-red-500/50' : 'border-border'} rounded-xl p-4 hover:border-gray-600 transition-colors ${config.level === 1 ? 'ring-1 ring-red-500/20' : ''}`}>
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <span className="text-2xl">{config.emoji}</span>
-            <span className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-surface ${statusColor}`} />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className={`font-semibold ${colors[config.color].split(' ')[1]}`}>{config.name}</h3>
-              {config.level === 1 && (
-                <span className="text-xs px-1.5 py-0.5 bg-red-500/20 text-red-400 rounded">YOU</span>
-              )}
-              {config.level === 3 && (
-                <span className="text-xs px-1.5 py-0.5 bg-gray-700 text-gray-400 rounded">L3</span>
-              )}
-            </div>
-            <p className="text-xs text-gray-500">{config.role}</p>
-          </div>
-        </div>
-        <button 
-          onClick={onRefresh}
-          className="p-1 hover:bg-surface-light rounded transition-colors"
-          title="Refresh"
-        >
-          <RefreshCw className="w-4 h-4 text-gray-500" />
-        </button>
-      </div>
-
-      {data && (
-        <div className="space-y-2">
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-gray-500">Success Rate</span>
-            <span className="font-mono">{data.success_rate || 0}%</span>
-          </div>
-          <div className="w-full bg-gray-800 rounded-full h-1.5">
-            <div 
-              className={`h-1.5 rounded-full bg-${config.color === 'work' ? 'orange' : config.color === 'build' ? 'blue' : config.color === 'research' ? 'green' : config.color === 'lifestyle' ? 'purple' : config.color === 'email' ? 'pink' : 'cyan'}-500`}
-              style={{ width: `${data.success_rate || 0}%` }}
-            />
-          </div>
-          {data.last_task && (
-            <p className="text-xs text-gray-500 truncate">{data.last_task}</p>
-          )}
-        </div>
-      )}
-
-      {!data && (
-        <p className="text-xs text-gray-600">No data available</p>
-      )}
-
-      <div className="flex gap-2 mt-3">
-        <button 
-          onClick={() => alert(`Logs for ${config.name}:\n\nLast run: ${data?.updated_at || 'Never'}\nStatus: ${status}\nSuccess rate: ${data?.success_rate || 0}%`)}
-          className="flex-1 py-1.5 text-xs bg-surface-light hover:bg-border rounded transition-colors"
-        >
-          View Logs
-        </button>
-        <button 
-          onClick={() => alert(`Spawn task for ${config.name}:\n\nFeature coming soon: Create custom tasks for this agent`)}
-          className="flex-1 py-1.5 text-xs bg-surface-light hover:bg-border rounded transition-colors"
-        >
-          Spawn Task
-        </button>
-      </div>
     </div>
   );
 }
