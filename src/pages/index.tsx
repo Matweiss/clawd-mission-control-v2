@@ -168,7 +168,7 @@ export default function MissionControl() {
       <QuickActionsPalette
         isOpen={showQuickActions}
         onClose={() => setShowQuickActions(false)}
-        agents={agents}
+        agents={agentStatus?.agents || []}
         pipeline={pipeline}
         emails={emails}
         onRefresh={refresh}
