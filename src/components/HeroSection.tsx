@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Zap, AlertCircle, Calendar, Activity, Mail, TrendingUp, Dumbbell, Film, Clock } from 'lucide-react';
+import { Zap, AlertCircle, Calendar, Activity, Mail, TrendingUp, Dumbbell, Film, Clock, Cloud } from 'lucide-react';
 
 interface HeroData {
   currentEvent?: {
@@ -24,7 +24,16 @@ interface HeroData {
   weather?: {
     temp: number;
     condition: string;
+    icon: string;
+    high: number;
+    low: number;
+    feelsLike: number;
+    humidity: number;
+    windSpeed: number;
+    uvIndex: number;
   };
+  pipelineValue: string;
+  pipelineDeals: number;
 }
 
 export function HeroSection() {
@@ -38,16 +47,20 @@ export function HeroSection() {
   const fetchHeroData = async () => {
     try {
       // Fetch multiple endpoints in parallel
-      const [calendarRes, haRes, emailRes, yogaRes] = await Promise.all([
+      const [calendarRes, haRes, emailRes, yogaRes, weatherRes, pipelineRes] = await Promise.all([
         fetch('/api/calendar/today').catch(() => null),
         fetch('/api/ha/presence').catch(() => null),
         fetch('/api/emails/recent').catch(() => null),
         fetch('/api/yoga/stats').catch(() => null),
+        fetch('/api/weather').catch(() => null),
+        fetch('/api/pipeline/summary').catch(() => null),
       ]);
 
       const heroData: HeroData = {
         sarahStatus: { isHome: true, location: 'Unknown' },
         urgentCount: 0,
+        pipelineValue: '$18.4k',
+        pipelineDeals: 3,
       };
 
       // Parse calendar
@@ -121,6 +134,29 @@ export function HeroSection() {
         title: 'Project Hail Mary',
       };
 
+      // Parse weather
+      if (weatherRes?.ok) {
+        const weather = await weatherRes.json();
+        heroData.weather = {
+          temp: weather.temp,
+          condition: weather.condition,
+          icon: weather.icon,
+          high: weather.high,
+          low: weather.low,
+          feelsLike: weather.feelsLike,
+          humidity: weather.humidity,
+          windSpeed: weather.windSpeed,
+          uvIndex: weather.uvIndex,
+        };
+      }
+
+      // Parse pipeline
+      if (pipelineRes?.ok) {
+        const pipeline = await pipelineRes.json();
+        heroData.pipelineValue = pipeline.totalValue || '$18.4k';
+        heroData.pipelineDeals = pipeline.dealCount || 3;
+      }
+
       setData(heroData);
     } catch (err) {
       console.error('Hero data fetch error:', err);
@@ -182,7 +218,25 @@ export function HeroSection() {
       </div>
 
       {/* Status Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        {/* Weather */}
+        <div className="bg-surface/50 rounded-lg p-3 col-span-2 sm:col-span-1">
+          <div className="flex items-center gap-2 text-xs text-gray-400 mb-1">
+            <Cloud className="w-3 h-3" />
+            <span>Sherman Oaks</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-2xl">{data.weather?.icon || '⛅'}</span>
+            <div>
+              <div className="text-lg font-bold text-white">{data.weather?.temp || '--'}°F</div>
+              <div className="text-xs text-gray-500">{data.weather?.condition || 'Loading...'}</div>
+            </div>
+          </div>
+          <div className="text-xs text-gray-500 mt-1">
+            H: {data.weather?.high || '--'}° L: {data.weather?.low || '--'}°
+          </div>
+        </div>
+
         {/* Sarah Status */}
         <div className="bg-surface/50 rounded-lg p-3">
           <div className="flex items-center gap-2 text-xs text-gray-400 mb-1">
@@ -221,8 +275,8 @@ export function HeroSection() {
             <TrendingUp className="w-3 h-3" />
             <span>Pipeline</span>
           </div>
-          <div className="text-sm font-medium text-cyan-400">$18.4k</div>
-          <div className="text-xs text-gray-500">3 deals active</div>
+          <div className="text-sm font-medium text-cyan-400">{data.pipelineValue}</div>
+          <div className="text-xs text-gray-500">{data.pipelineDeals} deals active</div>
         </div>
       </div>
     </div>

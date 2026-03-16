@@ -74,6 +74,8 @@ export default function MissionControl() {
   const [selectedAgent, setSelectedAgent] = useState<any>(null);
   const [showSalesHub, setShowSalesHub] = useState(false);
   const [mobileTab, setMobileTab] = useState<'agents' | 'life' | 'work'>('life');
+  const [systemTab, setSystemTab] = useState<'memory' | 'health' | 'cron'>('memory');
+  const [priorityMode, setPriorityMode] = useState(false);
 
   // Quick Actions keyboard shortcut (Cmd+K or Ctrl+K)
   useEffect(() => {
@@ -261,6 +263,20 @@ export default function MissionControl() {
                 <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
               )}
             </button>
+
+            {/* Priority Mode Toggle */}
+            <button
+              onClick={() => setPriorityMode(!priorityMode)}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors text-sm ${
+                priorityMode
+                  ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+                  : 'bg-surface-light hover:bg-border text-gray-400'
+              }`}
+              title={priorityMode ? 'Exit Priority Mode' : 'Enter Priority Mode'}
+            >
+              <AlertCircle className="w-4 h-4" />
+              <span className="hidden sm:inline">{priorityMode ? 'Priority' : 'Normal'}</span>
+            </button>
           </div>
         </div>
         
@@ -340,81 +356,135 @@ export default function MissionControl() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           
           {/* LEFT: Operations / System */}
-          <div className={`space-y-4 ${mobileTab !== 'agents' ? 'hidden lg:block' : ''}`}>
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">System Status</h2>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-500">
-                  {agentStatus?.openclaw?.sessions || 0} session{agentStatus?.openclaw?.sessions !== 1 ? 's' : ''}
-                </span>
-                <button 
-                  onClick={refreshAgents}
-                  className="p-1 hover:bg-surface-light rounded"
-                >
-                  <RefreshCw className="w-3 h-3 text-gray-500" />
-                </button>
-              </div>
-            </div>
-            
-            <div className="space-y-3">
-              {agentStatus?.agents.map(agent => (
-                <AgentCard 
-                  key={agent.id}
-                  agent={agent}
-                  onRefresh={refreshAgents}
-                />
-              ))}
-            </div>
+          <div className={`space-y-4 ${mobileTab !== 'agents' ? 'hidden lg:block' : ''} ${priorityMode ? 'hidden' : ''}`}>
+            {!priorityMode && (
+              <>
+                <div className="flex items-center justify-between">
+                  <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">System Status</h2>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-500">
+                      {agentStatus?.openclaw?.sessions || 0} session{agentStatus?.openclaw?.sessions !== 1 ? 's' : ''}
+                    </span>
+                    <button 
+                      onClick={refreshAgents}
+                      className="p-1 hover:bg-surface-light rounded"
+                    >
+                      <RefreshCw className="w-3 h-3 text-gray-500" />
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="space-y-3">
+                  {agentStatus?.agents.map(agent => (
+                    <AgentCard 
+                      key={agent.id}
+                      agent={agent}
+                      onRefresh={refreshAgents}
+                    />
+                  ))}
+                </div>
 
-            {/* Consolidated System Panel */}
-            <div className="bg-surface border border-border rounded-xl overflow-hidden">
-              <div className="flex border-b border-border">
-                <button className="flex-1 px-4 py-2 text-xs font-medium text-white border-b-2 border-work bg-surface-light">
-                  Memory
-                </button>
-                <button className="flex-1 px-4 py-2 text-xs font-medium text-gray-500 hover:text-gray-300">
-                  Health
-                </button>
-                <button className="flex-1 px-4 py-2 text-xs font-medium text-gray-500 hover:text-gray-300">
-                  Cron
-                </button>
-              </div>
-              <div className="p-3">
-                <DocumentRepository />
-              </div>
-            </div>
+                {/* Consolidated System Panel */}
+                <div className="bg-surface border border-border rounded-xl overflow-hidden">
+                  <div className="flex border-b border-border">
+                    <button
+                      onClick={() => setSystemTab('memory')}
+                      className={`flex-1 px-4 py-2 text-xs font-medium transition-colors ${
+                        systemTab === 'memory'
+                          ? 'text-white border-b-2 border-work bg-surface-light'
+                          : 'text-gray-500 hover:text-gray-300'
+                      }`}
+                    >
+                      Memory
+                    </button>
+                    <button
+                      onClick={() => setSystemTab('health')}
+                      className={`flex-1 px-4 py-2 text-xs font-medium transition-colors ${
+                        systemTab === 'health'
+                          ? 'text-white border-b-2 border-work bg-surface-light'
+                          : 'text-gray-500 hover:text-gray-300'
+                      }`}
+                    >
+                      Health
+                    </button>
+                    <button
+                      onClick={() => setSystemTab('cron')}
+                      className={`flex-1 px-4 py-2 text-xs font-medium transition-colors ${
+                        systemTab === 'cron'
+                          ? 'text-white border-b-2 border-work bg-surface-light'
+                          : 'text-gray-500 hover:text-gray-300'
+                      }`}
+                    >
+                      Cron
+                    </button>
+                  </div>
+                  <div className="p-3">
+                    {systemTab === 'memory' && <DocumentRepository />}
+                    {systemTab === 'health' && (
+                      <div className="text-center py-8 text-gray-500">
+                        <Activity className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                        <p className="text-sm">Health integrations coming soon</p>
+                        <p className="text-xs mt-1">Apple Health, Fitbit, Oura</p>
+                      </div>
+                    )}
+                    {systemTab === 'cron' && <CronPanel />}
+                  </div>
+                </div>
 
-            <IntegrationStatusPanel />
+                <IntegrationStatusPanel />
+              </>
+            )}
           </div>
 
           {/* CENTER: Life / Presence */}
-          <div className={`space-y-4 ${mobileTab !== 'life' ? 'hidden lg:block' : ''}`}>
-            <SectionLabel title="Recent Events" />
-            <ActivityPanel activities={[]} />
+          <div className={`space-y-4 ${mobileTab !== 'life' ? 'hidden lg:block' : ''} ${priorityMode ? 'lg:col-span-2' : ''}`}>
+            {!priorityMode && (
+              <>
+                <SectionLabel title="Recent Events" />
+                <ActivityPanel activities={[]} />
 
-            <SmartRecommendationsV2 />
+                <SmartRecommendationsV2 />
+              </>
+            )}
+
+            {priorityMode && (
+              <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 mb-4">
+                <div className="flex items-center gap-2 text-red-400">
+                  <AlertCircle className="w-5 h-5" />
+                  <span className="font-semibold">Priority Mode Active</span>
+                </div>
+                <p className="text-sm text-red-200 mt-1">Showing only urgent items</p>
+              </div>
+            )}
 
             <HomeAssistantCard />
 
-            <UnifiedMovieCard />
-
-            <YogaCard />
+            {!priorityMode && (
+              <>
+                <UnifiedMovieCard />
+                <YogaCard />
+              </>
+            )}
           </div>
 
           {/* RIGHT: Work / Execution */}
-          <div className={`space-y-4 ${mobileTab !== 'work' ? 'hidden lg:block' : ''}`}>
+          <div className={`space-y-4 ${mobileTab !== 'work' ? 'hidden lg:block' : ''} ${priorityMode ? '' : ''}`}>
             <MergedCalendarCard />
 
             <EmailCard />
 
-            <PipelineSheetCard />
+            {!priorityMode && (
+              <>
+                <PipelineSheetCard />
 
-            <LucraCommissionCard />
+                <LucraCommissionCard />
 
-            <TaskPanel 
-              tasks={tasks}
-              onViewDetails={() => setShowTaskModal(true)}
-            />
+                <TaskPanel 
+                  tasks={tasks}
+                  onViewDetails={() => setShowTaskModal(true)}
+                />
+              </>
+            )}
           </div>
         </div>
       </main>
