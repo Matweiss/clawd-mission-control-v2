@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Dumbbell, Calendar, Clock, MapPin, Award, ChevronDown, ChevronUp, History } from 'lucide-react';
+import { Dumbbell, Calendar, Clock, MapPin, Award, History, BookOpen } from 'lucide-react';
 
 interface YogaClass {
   date: string;
@@ -9,11 +9,16 @@ interface YogaClass {
   location: string;
 }
 
+interface ScheduledClass extends YogaClass {
+  day: string;
+}
+
 interface YogaStats {
   totalClasses: number;
   studioClasses: number;
   liveClasses: number;
   recentClasses: YogaClass[];
+  upcomingClasses: ScheduledClass[];
   buddyPasses: number;
   buddyPassExpiry: string;
   completedChallenge: string | null;
@@ -81,33 +86,12 @@ export function YogaCard() {
   const lastClass = stats?.recentClasses[0];
   const daysSinceLastClass = lastClass ? getDaysSince(lastClass.date) : 0;
 
-  // Generate upcoming week schedule
-  const getUpcomingSchedule = () => {
-    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    const today = new Date();
-    const schedule = [];
-    
-    for (let i = 0; i < 7; i++) {
-      const date = new Date(today);
-      date.setDate(today.getDate() + i);
-      const dayName = days[date.getDay()];
-      const dateNum = date.getDate();
-      
-      // Mat's typical pattern based on history
-      const isTypicalDay = ['Sun', 'Mon', 'Tue', 'Thu', 'Fri'].includes(dayName);
-      
-      schedule.push({
-        day: dayName,
-        date: dateNum,
-        isToday: i === 0,
-        hasClass: isTypicalDay,
-        suggestedTime: isTypicalDay ? '4:15pm' : null,
-      });
-    }
-    return schedule;
-  };
-
-  const upcomingSchedule = getUpcomingSchedule();
+  // Upcoming classes from scraped schedule
+  const upcomingClasses: ScheduledClass[] = [
+    { day: 'Today', date: 'Mar 16', time: '4:00pm', classType: 'C2 - CorePower Yoga 2', teacher: 'Toni S', location: 'Encino' },
+    { day: 'Today', date: 'Mar 16', time: '4:30pm', classType: 'CSX - CorePower Strength X', teacher: 'Janelle P', location: 'Encino' },
+    { day: 'Tomorrow', date: 'Mar 17', time: '4:30pm', classType: 'YS - Yoga Sculpt', teacher: 'Ling C', location: 'Sherman Oaks' },
+  ];
 
   if (loading) {
     return (
@@ -205,32 +189,34 @@ export function YogaCard() {
               </div>
             )}
 
-            {/* Upcoming Schedule */}
+            {/* Upcoming Classes (Scraped) */}
             <div>
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-xs font-medium text-gray-400 uppercase">This Week</h3>
-                <span className="text-xs text-gray-500">Suggested</span>
+                <h3 className="text-xs font-medium text-gray-400 uppercase">Up Next</h3>
+                <span className="text-xs text-gray-500">Next 2 Days</span>
               </div>
-              <div className="grid grid-cols-7 gap-1">
-                {upcomingSchedule.map((day, idx) => (
-                  <div
-                    key={idx}
-                    className={`text-center p-2 rounded-lg ${
-                      day.isToday 
-                        ? 'bg-orange-500/20 border border-orange-500/30' 
-                        : day.hasClass 
-                          ? 'bg-surface-light' 
-                          : 'bg-transparent'
+              <div className="space-y-2">
+                {upcomingClasses.map((cls, idx) => (
+                  <div 
+                    key={idx} 
+                    className={`p-3 rounded-lg border ${
+                      cls.time === '4:30pm' 
+                        ? 'bg-orange-500/10 border-orange-500/30' 
+                        : 'bg-surface-light border-transparent'
                     }`}
                   >
-                    <div className={`text-xs ${day.isToday ? 'text-orange-400 font-medium' : 'text-gray-500'}`}>
-                      {day.day}
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-medium text-orange-400">{cls.day}</span>
+                      <span className="text-xs text-gray-500">{cls.time}</span>
                     </div>
-                    <div className={`text-sm font-medium ${day.isToday ? 'text-white' : 'text-gray-300'}`}>
-                      {day.date}
-                    </div>
-                    {day.hasClass && day.suggestedTime && (
-                      <div className="text-[10px] text-gray-500 mt-1">{day.suggestedTime}</div>
+                    <h4 className="font-medium text-sm">{cls.classType}</h4>
+                    <p className="text-xs text-gray-500">
+                      {cls.teacher} • {cls.location}
+                    </p>
+                    {cls.time === '4:30pm' && (
+                      <span className="inline-block mt-1 text-[10px] bg-orange-500/20 text-orange-400 px-2 py-0.5 rounded">
+                        Your time
+                      </span>
                     )}
                   </div>
                 ))}
@@ -241,8 +227,9 @@ export function YogaCard() {
             <div className="flex gap-2">
               <button
                 onClick={() => window.open('https://www.corepoweryoga.com/yoga-schedules', '_blank')}
-                className="flex-1 py-2 bg-orange-500/20 text-orange-400 rounded-lg text-sm font-medium hover:bg-orange-500/30 transition-colors"
+                className="flex-1 py-2 bg-orange-500/20 text-orange-400 rounded-lg text-sm font-medium hover:bg-orange-500/30 transition-colors flex items-center justify-center gap-2"
               >
+                <BookOpen className="w-4 h-4" />
                 Book Class
               </button>
               <button
