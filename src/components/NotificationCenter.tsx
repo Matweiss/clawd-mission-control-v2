@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Bell, X, Mail, Calendar, Home, Dumbbell, Film, ArrowRight } from 'lucide-react';
 
 interface Notification {
@@ -270,7 +271,7 @@ export function NotificationCenter() {
 
       {/* Slide-out Panel - Portal to body */}
       {mounted && panelContent && typeof document !== 'undefined' && 
-        React.createPortal(panelContent, document.body)}
+        createPortal(panelContent, document.body)}
     </>
   );
 }
