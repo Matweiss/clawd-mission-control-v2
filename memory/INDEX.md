@@ -1,7 +1,7 @@
 ---
 type: index
-created: 2026-03-16 02:03 PT
-updated: 2026-03-16 02:03 PT
+created: 2026-03-16 04:51 PT
+updated: 2026-03-16 04:51 PT
 ---
 
 # Memory Index
@@ -28,6 +28,7 @@ Auto-generated manifest of all memory files.
 ## Logs
 | File | Date | Tags |
 |------|------|------|
+| [2026-03-16-lock-it-down-automation.md](./logs/2026-03-16-lock-it-down-automation.md) | 2026-03-16 | home-assistant, automation, bedtime, sop, feature |
 | [2026-03-16-corepower-yoga-history.md](./logs/2026-03-16-corepower-yoga-history.md) | 2026-03-16 | yoga, corepower, fitness, tracking, lifestyle |
 | [2026-03-16-memory-system-migration.md](./logs/2026-03-16-memory-system-migration.md) | 2026-03-16 | system, memory, migration, critical |
 

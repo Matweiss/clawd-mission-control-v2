@@ -275,13 +275,20 @@ export function HomeAssistantCard() {
         </div>
       )}
 
-      <div className="mb-3 grid grid-cols-1 gap-2">
+      <div className="mb-3 grid grid-cols-2 gap-2">
         <button
           onClick={() => runCommand('feed theo', 'feed_theo')}
           disabled={runningAction === 'feed_theo'}
           className="px-3 py-2 rounded-lg bg-emerald-500/20 text-emerald-300 text-xs hover:bg-emerald-500/30 disabled:opacity-50"
         >
           {runningAction === 'feed_theo' ? 'Feeding…' : 'Feed Theo'}
+        </button>
+        <button
+          onClick={() => runCommand('automation.lock_it_down', 'lock_it_down')}
+          disabled={runningAction === 'lock_it_down'}
+          className="px-3 py-2 rounded-lg bg-indigo-500/20 text-indigo-300 text-xs hover:bg-indigo-500/30 disabled:opacity-50"
+        >
+          {runningAction === 'lock_it_down' ? 'Locking…' : 'Lock It Down'}
         </button>
       </div>
 
