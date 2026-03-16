@@ -29,6 +29,9 @@ import { LifestyleGoalTrackerCard } from '../components/LifestyleGoalTrackerCard
 import { UnifiedMovieCard } from '../components/UnifiedMovieCard';
 import { YogaCard } from '../components/YogaCard';
 import { RecommendationsCard } from '../components/RecommendationsCard';
+import { HeroSection } from '../components/HeroSection';
+import { QuickStatsBar } from '../components/QuickStatsBar';
+import { SmartRecommendationsV2 } from '../components/SmartRecommendationsV2';
 
 // Agent configuration - 3-Tier Architecture
 const AGENTS = [
@@ -278,6 +281,23 @@ export default function MissionControl() {
           </div>
         )}
 
+        {/* Hero Section */}
+        <div className="mb-4">
+          <HeroSection />
+        </div>
+
+        {/* Quick Stats Bar */}
+        <div className="mb-4 py-2 border-y border-border">
+          <QuickStatsBar 
+            urgentEmails={emails.filter((e: any) => e.category === 'URGENT').length}
+            pipelineValue="$18.4k"
+            yogaClasses={51}
+            watchlistCount={0}
+            buddyPasses={2}
+            buddyPassDays={16}
+          />
+        </div>
+
         {/* Mobile Tab Navigation */}
         <div className="lg:hidden mb-4">
           <div className="flex bg-surface-light rounded-xl p-1">
@@ -322,7 +342,7 @@ export default function MissionControl() {
           {/* LEFT: Operations / System */}
           <div className={`space-y-4 ${mobileTab !== 'agents' ? 'hidden lg:block' : ''}`}>
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Active Agents</h2>
+              <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">System Status</h2>
               <div className="flex items-center gap-2">
                 <span className="text-xs text-gray-500">
                   {agentStatus?.openclaw?.sessions || 0} session{agentStatus?.openclaw?.sessions !== 1 ? 's' : ''}
@@ -346,14 +366,25 @@ export default function MissionControl() {
               ))}
             </div>
 
-            <SectionLabel title="Vault & Restoration" />
-            <DocumentRepository />
+            {/* Consolidated System Panel */}
+            <div className="bg-surface border border-border rounded-xl overflow-hidden">
+              <div className="flex border-b border-border">
+                <button className="flex-1 px-4 py-2 text-xs font-medium text-white border-b-2 border-work bg-surface-light">
+                  Memory
+                </button>
+                <button className="flex-1 px-4 py-2 text-xs font-medium text-gray-500 hover:text-gray-300">
+                  Health
+                </button>
+                <button className="flex-1 px-4 py-2 text-xs font-medium text-gray-500 hover:text-gray-300">
+                  Cron
+                </button>
+              </div>
+              <div className="p-3">
+                <DocumentRepository />
+              </div>
+            </div>
 
-            <SectionLabel title="Integration Status" />
             <IntegrationStatusPanel />
-
-            <SectionLabel title="Schedule of Operations" />
-            <CronPanel />
           </div>
 
           {/* CENTER: Life / Presence */}
@@ -361,7 +392,7 @@ export default function MissionControl() {
             <SectionLabel title="Recent Events" />
             <ActivityPanel activities={[]} />
 
-            <RecommendationsCard />
+            <SmartRecommendationsV2 />
 
             <HomeAssistantCard />
 
