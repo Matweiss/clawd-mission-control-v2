@@ -121,6 +121,20 @@ export function UnifiedMovieCard() {
 
         {/* Movie Schedule */}
         <div className="space-y-2 max-h-[280px] overflow-y-auto">
+          {/* Empty State CTA */}
+          {filteredMovies.length === 0 && (
+            <div className="text-center py-6 bg-surface-light rounded-lg border border-dashed border-border">
+              <Film className="w-8 h-8 mx-auto mb-2 text-gray-600" />
+              <p className="text-sm text-gray-400 mb-2">No movies found</p>
+              <button
+                onClick={() => window.open('https://www.regmovies.com/theatres/regal-sherman-oaks-galleria-1483', '_blank')}
+                className="text-xs bg-pink-500/20 text-pink-400 px-3 py-1.5 rounded hover:bg-pink-500/30"
+              >
+                Check Regal schedule
+              </button>
+            </div>
+          )}
+          
           {filteredMovies.map((movie, idx) => (
             <div key={idx} className="p-3 bg-surface-light rounded-lg">
               <div className="flex items-start justify-between mb-2">

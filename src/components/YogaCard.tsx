@@ -200,6 +200,21 @@ export function YogaCard() {
                 <h3 className="text-xs font-medium text-gray-400 uppercase">Up Next</h3>
                 <span className="text-xs text-gray-500">Next 2 Days</span>
               </div>
+              
+              {/* Empty State CTA */}
+              {upcomingClasses.length === 0 && (
+                <div className="text-center py-6 bg-surface-light rounded-lg border border-dashed border-border">
+                  <Dumbbell className="w-8 h-8 mx-auto mb-2 text-gray-600" />
+                  <p className="text-sm text-gray-400 mb-2">No classes scheduled</p>
+                  <button
+                    onClick={() => window.open('https://www.corepoweryoga.com/yoga-schedules', '_blank')}
+                    className="text-xs bg-orange-500/20 text-orange-400 px-3 py-1.5 rounded hover:bg-orange-500/30"
+                  >
+                    Book a 4:30pm class
+                  </button>
+                </div>
+              )}
+              
               <div className="space-y-2">
                 {upcomingClasses.map((cls, idx) => (
                   <div 
