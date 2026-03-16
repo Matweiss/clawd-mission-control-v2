@@ -33,6 +33,7 @@ import { HeroSection } from '../components/HeroSection';
 import { QuickStatsBar } from '../components/QuickStatsBar';
 import { SmartRecommendationsV2 } from '../components/SmartRecommendationsV2';
 import { NotificationCenter } from '../components/NotificationCenter';
+import { AnimatedCard, StaggerContainer, StaggerItem, FadeIn, SlideIn } from '../components/animations';
 
 // Agent configuration - 3-Tier Architecture
 const AGENTS = [
@@ -352,136 +353,193 @@ export default function MissionControl() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           
           {/* LEFT: Operations / System */}
-          <div className={`space-y-4 ${mobileTab !== 'agents' ? 'hidden lg:block' : ''} ${priorityMode ? 'hidden' : ''}`}>
+          <StaggerContainer className={`space-y-4 ${mobileTab !== 'agents' ? 'hidden lg:block' : ''} ${priorityMode ? 'hidden' : ''}`} staggerDelay={0.05}>
             {!priorityMode && (
               <>
-                <div className="flex items-center justify-between">
-                  <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">System Status</h2>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-500">
-                      {agentStatus?.openclaw?.sessions || 0} session{agentStatus?.openclaw?.sessions !== 1 ? 's' : ''}
-                    </span>
-                    <button 
-                      onClick={refreshAgents}
-                      className="p-1 hover:bg-surface-light rounded"
-                    >
-                      <RefreshCw className="w-3 h-3 text-gray-500" />
-                    </button>
+                <StaggerItem>
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">System Status</h2>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-gray-500">
+                        {agentStatus?.openclaw?.sessions || 0} session{agentStatus?.openclaw?.sessions !== 1 ? 's' : ''}
+                      </span>
+                      <button 
+                        onClick={refreshAgents}
+                        className="p-1 hover:bg-surface-light rounded"
+                      >
+                        <RefreshCw className="w-3 h-3 text-gray-500" />
+                      </button>
+                    </div>
                   </div>
-                </div>
+                </StaggerItem>
                 
                 <div className="space-y-3">
-                  {agentStatus?.agents.map(agent => (
-                    <AgentCard 
-                      key={agent.id}
-                      agent={agent}
-                      onRefresh={refreshAgents}
-                    />
+                  {agentStatus?.agents.map((agent, idx) => (
+                    <StaggerItem key={agent.id}>
+                      <AnimatedCard delay={idx * 0.05}>
+                        <AgentCard 
+                          agent={agent}
+                          onRefresh={refreshAgents}
+                        />
+                      </AnimatedCard>
+                    </StaggerItem>
                   ))}
                 </div>
 
                 {/* Consolidated System Panel */}
-                <div className="bg-surface border border-border rounded-xl overflow-hidden">
-                  <div className="flex border-b border-border">
-                    <button
-                      onClick={() => setSystemTab('memory')}
-                      className={`flex-1 px-4 py-2 text-xs font-medium transition-colors ${
-                        systemTab === 'memory'
-                          ? 'text-white border-b-2 border-work bg-surface-light'
-                          : 'text-gray-500 hover:text-gray-300'
-                      }`}
-                    >
-                      Memory
-                    </button>
-                    <button
-                      onClick={() => setSystemTab('health')}
-                      className={`flex-1 px-4 py-2 text-xs font-medium transition-colors ${
-                        systemTab === 'health'
-                          ? 'text-white border-b-2 border-work bg-surface-light'
-                          : 'text-gray-500 hover:text-gray-300'
-                      }`}
-                    >
-                      Health
-                    </button>
-                    <button
-                      onClick={() => setSystemTab('cron')}
-                      className={`flex-1 px-4 py-2 text-xs font-medium transition-colors ${
-                        systemTab === 'cron'
-                          ? 'text-white border-b-2 border-work bg-surface-light'
-                          : 'text-gray-500 hover:text-gray-300'
-                      }`}
-                    >
-                      Cron
-                    </button>
-                  </div>
-                  <div className="p-3">
-                    {systemTab === 'memory' && <DocumentRepository />}
-                    {systemTab === 'health' && (
-                      <div className="text-center py-8 text-gray-500">
-                        <Activity className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                        <p className="text-sm">Health integrations coming soon</p>
-                        <p className="text-xs mt-1">Apple Health, Fitbit, Oura</p>
+                <StaggerItem>
+                  <AnimatedCard>
+                    <div className="bg-surface border border-border rounded-xl overflow-hidden">
+                      <div className="flex border-b border-border">
+                        <button
+                          onClick={() => setSystemTab('memory')}
+                          className={`flex-1 px-4 py-2 text-xs font-medium transition-colors ${
+                            systemTab === 'memory'
+                              ? 'text-white border-b-2 border-work bg-surface-light'
+                              : 'text-gray-500 hover:text-gray-300'
+                          }`}
+                        >
+                          Memory
+                        </button>
+                        <button
+                          onClick={() => setSystemTab('health')}
+                          className={`flex-1 px-4 py-2 text-xs font-medium transition-colors ${
+                            systemTab === 'health'
+                              ? 'text-white border-b-2 border-work bg-surface-light'
+                              : 'text-gray-500 hover:text-gray-300'
+                          }`}
+                        >
+                          Health
+                        </button>
+                        <button
+                          onClick={() => setSystemTab('cron')}
+                          className={`flex-1 px-4 py-2 text-xs font-medium transition-colors ${
+                            systemTab === 'cron'
+                              ? 'text-white border-b-2 border-work bg-surface-light'
+                              : 'text-gray-500 hover:text-gray-300'
+                          }`}
+                        >
+                          Cron
+                        </button>
                       </div>
-                    )}
-                    {systemTab === 'cron' && <CronPanel />}
-                  </div>
-                </div>
+                      <div className="p-3">
+                        {systemTab === 'memory' && <DocumentRepository />}
+                        {systemTab === 'health' && (
+                          <div className="text-center py-8 text-gray-500">
+                            <Activity className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                            <p className="text-sm">Health integrations coming soon</p>
+                            <p className="text-xs mt-1">Apple Health, Fitbit, Oura</p>
+                          </div>
+                        )}
+                        {systemTab === 'cron' && <CronPanel />}
+                      </div>
+                    </div>
+                  </AnimatedCard>
+                </StaggerItem>
 
-                <IntegrationStatusPanel />
+                <StaggerItem>
+                  <AnimatedCard>
+                    <IntegrationStatusPanel />
+                  </AnimatedCard>
+                </StaggerItem>
               </>
             )}
-          </div>
+          </StaggerContainer>
 
           {/* CENTER: Life / Presence */}
-          <div className={`space-y-4 ${mobileTab !== 'life' ? 'hidden lg:block' : ''} ${priorityMode ? 'lg:col-span-2' : ''}`}>
+          <StaggerContainer className={`space-y-4 ${mobileTab !== 'life' ? 'hidden lg:block' : ''} ${priorityMode ? 'lg:col-span-2' : ''}`} staggerDelay={0.08}>
             {!priorityMode && (
               <>
-                <SectionLabel title="Recent Events" />
-                <ActivityPanel activities={[]} />
+                <StaggerItem>
+                  <SectionLabel title="Recent Events" />
+                </StaggerItem>
+                <StaggerItem>
+                  <AnimatedCard>
+                    <ActivityPanel activities={[]} />
+                  </AnimatedCard>
+                </StaggerItem>
 
-                <SmartRecommendationsV2 />
+                <StaggerItem>
+                  <AnimatedCard>
+                    <SmartRecommendationsV2 />
+                  </AnimatedCard>
+                </StaggerItem>
               </>
             )}
 
             {priorityMode && (
-              <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 mb-4">
-                <div className="flex items-center gap-2 text-red-400">
-                  <AlertCircle className="w-5 h-5" />
-                  <span className="font-semibold">Priority Mode Active</span>
+              <StaggerItem>
+                <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 mb-4">
+                  <div className="flex items-center gap-2 text-red-400">
+                    <AlertCircle className="w-5 h-5" />
+                    <span className="font-semibold">Priority Mode Active</span>
+                  </div>
+                  <p className="text-sm text-red-200 mt-1">Showing only urgent items</p>
                 </div>
-                <p className="text-sm text-red-200 mt-1">Showing only urgent items</p>
-              </div>
+              </StaggerItem>
             )}
 
-            <HomeAssistantCard />
+            <StaggerItem>
+              <AnimatedCard>
+                <HomeAssistantCard />
+              </AnimatedCard>
+            </StaggerItem>
 
             {!priorityMode && (
               <>
-                <UnifiedMovieCard />
-                <YogaCard />
+                <StaggerItem>
+                  <AnimatedCard delay={0.1}>
+                    <UnifiedMovieCard />
+                  </AnimatedCard>
+                </StaggerItem>
+                <StaggerItem>
+                  <AnimatedCard delay={0.15}>
+                    <YogaCard />
+                  </AnimatedCard>
+                </StaggerItem>
               </>
             )}
-          </div>
+          </StaggerContainer>
 
           {/* RIGHT: Work / Execution */}
-          <div className={`space-y-4 ${mobileTab !== 'work' ? 'hidden lg:block' : ''} ${priorityMode ? '' : ''}`}>
-            <MergedCalendarCard />
+          <StaggerContainer className={`space-y-4 ${mobileTab !== 'work' ? 'hidden lg:block' : ''} ${priorityMode ? '' : ''}`} staggerDelay={0.06}>
+            <StaggerItem>
+              <AnimatedCard>
+                <MergedCalendarCard />
+              </AnimatedCard>
+            </StaggerItem>
 
-            <EmailCard />
+            <StaggerItem>
+              <AnimatedCard delay={0.05}>
+                <EmailCard />
+              </AnimatedCard>
+            </StaggerItem>
 
             {!priorityMode && (
               <>
-                <PipelineSheetCard />
+                <StaggerItem>
+                  <AnimatedCard delay={0.1}>
+                    <PipelineSheetCard />
+                  </AnimatedCard>
+                </StaggerItem>
 
-                <LucraCommissionCard />
+                <StaggerItem>
+                  <AnimatedCard delay={0.15}>
+                    <LucraCommissionCard />
+                  </AnimatedCard>
+                </StaggerItem>
 
-                <TaskPanel 
-                  tasks={tasks}
-                  onViewDetails={() => setShowTaskModal(true)}
-                />
+                <StaggerItem>
+                  <AnimatedCard delay={0.2}>
+                    <TaskPanel 
+                      tasks={tasks}
+                      onViewDetails={() => setShowTaskModal(true)}
+                    />
+                  </AnimatedCard>
+                </StaggerItem>
               </>
             )}
-          </div>
+          </StaggerContainer>
         </div>
       </main>
 
