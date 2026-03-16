@@ -146,17 +146,21 @@ export function NotificationCenter() {
         )}
       </button>
 
-      {/* Slide-out Panel */}
+      {/* Slide-out Panel - Portal to body */}
       {isOpen && (
         <>
           {/* Backdrop */}
           <div 
-            className="fixed inset-0 bg-black/50 z-[100]"
+            className="fixed inset-0 bg-black/50"
+            style={{ zIndex: 9998 }}
             onClick={() => setIsOpen(false)}
           />
           
           {/* Panel */}
-          <div className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-surface border-l border-border z-[101] flex flex-col">
+          <div 
+            className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-surface border-l border-border flex flex-col"
+            style={{ zIndex: 9999 }}
+          >
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-border">
               <div className="flex items-center gap-2">
