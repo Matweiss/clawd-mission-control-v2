@@ -25,16 +25,21 @@ interface YogaStats {
 }
 
 function getDaysSince(dateStr: string): number {
-  const date = new Date();
+  const now = new Date();
+  // Set to midnight to avoid timezone edge cases
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  
   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const parts = dateStr.split(' ');
   if (parts.length >= 2) {
     const month = monthNames.indexOf(parts[0]);
     const day = parseInt(parts[1]);
     if (month !== -1 && !isNaN(day)) {
-      const classDate = new Date(date.getFullYear(), month, day);
-      const diffMs = date.getTime() - classDate.getTime();
-      return Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      const classDate = new Date(today.getFullYear(), month, day);
+      const diffMs = today.getTime() - classDate.getTime();
+      const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      // Guard against negative values from timezone math
+      return Math.max(0, days);
     }
   }
   return 0;

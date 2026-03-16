@@ -192,8 +192,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     audioOutput: iphoneAudioOutput?.state || 'Unknown',
     wifi: iphoneWifi?.state || 'Unknown',
     // Inferred state: not on WiFi but connected to Bluetooth audio = likely driving
-    likelyDriving: (iphoneWifi?.state === 'Unknown' || iphoneWifi?.state === 'Not Connected') && 
-                   (iphoneAudioOutput?.state && iphoneAudioOutput?.state !== 'iPhone' && iphoneAudioOutput?.state !== 'Unknown'),
+    // Guards: never infer driving when home, exclude Built-in Speaker from BT check
+    likelyDriving: !['home', 'house'].includes(String(trackerState).toLowerCase()) &&
+                   (iphoneWifi?.state === 'Unknown' || iphoneWifi?.state === 'Not Connected') && 
+                   (iphoneAudioOutput?.state && iphoneAudioOutput?.state !== 'iPhone' && 
+                    iphoneAudioOutput?.state !== 'Unknown' && iphoneAudioOutput?.state !== 'Built-in Speaker'),
     sarah: {
       entityId: ENTITY_IDS.sarahTracker,
       geocodedEntityId: ENTITY_IDS.sarahGeocodedLocation,

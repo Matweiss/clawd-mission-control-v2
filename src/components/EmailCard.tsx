@@ -20,6 +20,14 @@ interface EmailData {
   lastUpdated: string;
 }
 
+// Decode HTML entities in email snippets
+function decodeHtml(html: string): string {
+  if (typeof document === 'undefined') return html; // SSR safety
+  const txt = document.createElement('textarea');
+  txt.innerHTML = html;
+  return txt.value;
+}
+
 export function EmailCard() {
   const [data, setData] = useState<EmailData | null>(null);
   const [loading, setLoading] = useState(false);
@@ -134,7 +142,7 @@ export function EmailCard() {
                   </span>
                 </div>
                 <p className="text-xs text-gray-200 font-medium truncate">{email.subject}</p>
-                <p className="text-[10px] text-gray-400 truncate mt-0.5">{email.snippet}</p>
+                <p className="text-[10px] text-gray-400 truncate mt-0.5">{decodeHtml(email.snippet)}</p>
               </div>
             ))}
           </div>
@@ -155,7 +163,7 @@ export function EmailCard() {
                   </span>
                 </div>
                 <p className="text-xs text-gray-200 truncate">{email.subject}</p>
-                <p className="text-[10px] text-gray-400 truncate mt-0.5">{email.snippet}</p>
+                <p className="text-[10px] text-gray-400 truncate mt-0.5">{decodeHtml(email.snippet)}</p>
               </div>
             ))}
           </div>
@@ -194,7 +202,7 @@ export function EmailCard() {
                   </div>
                 </div>
                 <p className="text-xs text-gray-200 truncate">{email.subject}</p>
-                <p className="text-[10px] text-gray-400 truncate mt-0.5">{email.snippet}</p>
+                <p className="text-[10px] text-gray-400 truncate mt-0.5">{decodeHtml(email.snippet)}</p>
               </div>
             ))}
             {fyi.length > 3 && (
