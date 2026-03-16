@@ -42,12 +42,20 @@ status: active
 - **Smart home:** Home Assistant on Raspberry Pi with Nabu Casa Cloud
 - **Timezone for all scheduling:** PT / America/Los_Angeles
 
-## Key Relationships (Work)
-- Five Iron Golf — warm opportunity (Craftable customer)
-- Another Planet Entertainment — warm opportunity
-- Big Easy Entertainment — warm opportunity (has CSM relationships)
-- PopStroke — requested no further outreach (DO NOT CONTACT)
-- Topgolf — satisfied with competitor (deprioritize)
+## Current Focus (March 2026)
+**Closing out Craftable deals** — 6 active deals in March Pipeline (Google Sheets)
+- All energy on closing existing pipeline before April 1 transition
+- No new prospecting until Lucra start date
+
+## April 2026+ (Lucra)
+Key work relationships TBD — will build prospect list for entertainment venues starting April 1
+
+## Previous Relationships (On Hold)
+- Five Iron Golf — warm opportunity (paused until April)
+- Another Planet Entertainment — warm opportunity (paused until April)
+- Big Easy Entertainment — warm opportunity (paused until April)
+- PopStroke — DO NOT CONTACT
+- Topgolf — deprioritized
 
 ## What Mat Values
 - Systems that eliminate toil
