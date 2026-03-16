@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Bell, X, Mail, Calendar, Home, Dumbbell, Film, ArrowRight } from 'lucide-react';
 
 interface Notification {
@@ -131,36 +131,24 @@ export function NotificationCenter() {
     return `${diffDays}d ago`;
   };
 
-  return (
-    <>
-      {/* Bell Button with Badge */}
-      <button 
-        onClick={() => setIsOpen(true)}
-        className="p-2 hover:bg-surface-light rounded-lg transition-colors relative"
-      >
-        <Bell className="w-5 h-5" />
-        {unreadCount > 0 && (
-          <span className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center animate-pulse">
-            {unreadCount}
-          </span>
-        )}
-      </button>
+  // Create portal container
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
-      {/* Slide-out Panel - Portal to body */}
-      {isOpen && (
-        <>
-          {/* Backdrop */}
-          <div 
-            className="fixed inset-0 bg-black/50"
-            style={{ zIndex: 9998 }}
-            onClick={() => setIsOpen(false)}
-          />
-          
-          {/* Panel */}
-          <div 
-            className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-surface border-l border-border flex flex-col"
-            style={{ zIndex: 9999 }}
-          >
+  const panelContent = isOpen ? (
+    <>
+      {/* Backdrop */}
+      <div 
+        className="fixed inset-0 bg-black/50"
+        style={{ zIndex: 9998 }}
+        onClick={() => setIsOpen(false)}
+      />
+      
+      {/* Panel */}
+      <div 
+        className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-surface border-l border-border flex flex-col"
+        style={{ zIndex: 9999 }}
+      >
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-border">
               <div className="flex items-center gap-2">
@@ -262,8 +250,27 @@ export function NotificationCenter() {
               </button>
             </div>
           </div>
-        </>
-      )}
+    </>
+  ) : null;
+
+  return (
+    <>
+      {/* Bell Button with Badge */}
+      <button 
+        onClick={() => setIsOpen(true)}
+        className="p-2 hover:bg-surface-light rounded-lg transition-colors relative"
+      >
+        <Bell className="w-5 h-5" />
+        {unreadCount > 0 && (
+          <span className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center animate-pulse">
+            {unreadCount}
+          </span>
+        )}
+      </button>
+
+      {/* Slide-out Panel - Portal to body */}
+      {mounted && panelContent && typeof document !== 'undefined' && 
+        React.createPortal(panelContent, document.body)}
     </>
   );
 }
