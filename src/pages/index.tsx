@@ -317,13 +317,9 @@ export default function MissionControl() {
 
             <HomeAssistantCard />
 
-            <LifestyleGoalTrackerCard />
-
             <UnifiedMovieCard />
 
             <YogaCard />
-
-            <LifestyleHealthPanel />
           </div>
 
           {/* RIGHT: Work / Execution */}
