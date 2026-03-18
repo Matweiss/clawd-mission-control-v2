@@ -39,6 +39,38 @@ Preparation for starting as Founding Account Executive at Lucra, Inc.
 - [ ] Set up CRM/tools
 - [ ] Define 30-60-90 day plan
 
+## CRM Options
+
+### Primary Path
+**Use whatever CRM Lucra already has.** Learn their existing system first.
+
+### Fallback Option (if no CRM)
+| Tool | Type | Notes |
+|------|------|-------|
+| **CRMy.ai** | AI-native CRM | Purpose-built for AI agents — propose ONLY if Lucra has no CRM |
+
+### CRMy.ai Research
+- **URL:** https://crmy.ai/
+- **GitHub:** https://github.com/crmy-ai/crmy
+- **Tagline:** "The CRM Made for Agents"
+- **Status:** To explore if Lucra needs CRM recommendation
+- **Use Case:** AI-powered sales workflow, automation, agent handoffs
+
+**Key Features:**
+- OpenClaw native (12 CRM tools, SKILL.md included)
+- MCP-native: "Log the call I just had with Sarah Chen at Acme and advance the deal to negotiation"
+- Self-hosted PostgreSQL (your data, no subscriptions)
+- Context Engine: memory layer for contacts, accounts, deals across sessions
+- HITL approvals: human-in-the-loop for sensitive operations
+- Full REST API + React web UI
+
+**Install:**
+```bash
+npx @crmy/cli init
+npx @crmy/cli server
+openclaw plugins install @crmy/openclaw-plugin
+```
+
 ## Resources
 - **Lucra Repository:** `docs/lucra-employment-document-repository.md`
 - **Pitch Deck Summary:** `docs/lucra-pitch-deck-overview.md`
