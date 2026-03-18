@@ -11,17 +11,26 @@ Called by cron jobs:
 - `sunday-schedule` (Sun 11:45pm)
 
 ## Prerequisites
-1. SSH tunnel to Mac must be active:
-   ```bash
-   ssh -N -R 18800:127.0.0.1:18800 root@srv882799.hstgr.cloud
-   ```
-2. Chrome on Mac must be running with remote debugging:
+Uses **browser coworking** (Mac Chrome with remote debugging):
+
+1. **On Mac:** Chrome running with remote debugging:
    ```bash
    /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --remote-debugging-port=18800
    ```
-3. Chrome DevTools MCP must be configured in mcporter
+
+2. **On Mac:** SSH tunnel active:
+   ```bash
+   ssh -N -R 18800:127.0.0.1:18800 root@srv882799.hstgr.cloud
+   ```
+
+3. **On VPS:** Chrome DevTools MCP configured:
+   ```bash
+   mcporter list  # Should show chrome-devtools
+   ```
 
 ## Workflow: Monday Schedule (Mon-Wed)
+
+**Uses live browser coworking** — you can see everything I do in your Chrome window.
 
 ### Step 1: Delete Old Schedule
 ```bash
