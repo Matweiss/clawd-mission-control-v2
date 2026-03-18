@@ -42,5 +42,13 @@ Auto-generated manifest of all memory files.
 | [2026-03-16-corepower-yoga-history.md](./logs/2026-03-16-corepower-yoga-history.md) | 2026-03-16 | yoga, corepower, fitness, tracking, lifestyle |
 | [2026-03-16-memory-system-migration.md](./logs/2026-03-16-memory-system-migration.md) | 2026-03-16 | system, memory, migration, critical |
 
+## SOPs
+| File | Status | Description |
+|------|--------|-------------|
+| [bedtime-automation.md](./sops/bedtime-automation.md) | active | Lock-It-Down Telegram Bot Automation |
+| [account-authentication.md](./sops/account-authentication.md) | active | Login procedures for CorePower + Regal |
+| [rolling-schedule-cron.md](./sops/rolling-schedule-cron.md) | active | Automated schedule scraping (Mon/Wed/Fri/Sun) |
+| [schedule-scraper-workflow.md](./sops/schedule-scraper-workflow.md) | active | Browser coworking workflow for schedule updates |
+
 ---
 *To update this index: `node scripts/update-memory-index.js`*
