@@ -49,6 +49,17 @@ function toDateTimeValue(date: string, time: string) {
   return base.getTime();
 }
 
+function toMinutesOnly(time: string) {
+  const match = time.trim().match(/^(\d{1,2}):(\d{2})\s*(am|pm)$/i);
+  if (!match) return Number.MAX_SAFE_INTEGER;
+  let hour = parseInt(match[1], 10);
+  const minute = parseInt(match[2], 10);
+  const meridiem = match[3].toLowerCase();
+  if (meridiem === 'pm' && hour !== 12) hour += 12;
+  if (meridiem === 'am' && hour === 12) hour = 0;
+  return hour * 60 + minute;
+}
+
 export function YogaCard() {
   const [stats, setStats] = useState<YogaStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -100,9 +111,12 @@ export function YogaCard() {
   }
 
   const recentClassesSorted = [...stats.recentClasses].sort((a, b) => toDateTimeValue(b.date, b.time) - toDateTimeValue(a.date, a.time));
-  const upcomingClassesSorted = [...stats.upcomingClasses].sort((a, b) => toDateTimeValue(a.date, a.time) - toDateTimeValue(b.date, b.time));
+  const upcomingClassesSorted = [...stats.upcomingClasses].sort((a, b) => {
+    const dateDiff = new Date(`${a.date}T12:00:00`).getTime() - new Date(`${b.date}T12:00:00`).getTime();
+    if (dateDiff !== 0) return dateDiff;
+    return toMinutesOnly(a.time) - toMinutesOnly(b.time);
+  });
   const lastClass = recentClassesSorted[0];
-  const daysSinceLastClass = lastClass ? getDaysSince(lastClass.date) : 0;
 
   return (
     <div className="bg-surface border border-border rounded-xl overflow-hidden">
@@ -165,9 +179,6 @@ export function YogaCard() {
               <div className="bg-gradient-to-br from-orange-500/10 to-orange-600/5 border border-orange-500/20 rounded-xl p-4">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-medium text-orange-400 uppercase tracking-wide">Last Class</span>
-                  <span className={`text-xs font-medium ${daysSinceLastClass <= 1 ? 'text-green-400' : daysSinceLastClass <= 3 ? 'text-yellow-400' : 'text-red-400'}`}>
-                    {daysSinceLastClass === 0 ? 'Today' : daysSinceLastClass === 1 ? 'Yesterday' : `${daysSinceLastClass} days ago`}
-                  </span>
                 </div>
                 <h3 className="text-lg font-semibold text-white mb-1">{lastClass.classType}</h3>
                 <div className="flex items-center gap-3 text-sm text-gray-400">
