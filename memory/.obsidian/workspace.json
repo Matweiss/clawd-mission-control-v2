@@ -49,7 +49,8 @@
               "title": "yoga-fitness-tracking"
             }
           }
-        ]
+        ],
+        "currentTab": 2
       }
     ],
     "direction": "vertical"
@@ -81,7 +82,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "mat-",
+                "query": "",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -102,8 +103,7 @@
               "title": "Bookmarks"
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "horizontal",
@@ -123,7 +123,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "sops/mac-browser-node-persistent-setup.md",
+                "file": "projects/yoga-fitness-tracking.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -133,7 +133,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for mac-browser-node-persistent-setup"
+              "title": "Backlinks for yoga-fitness-tracking"
             }
           },
           {
@@ -142,12 +142,12 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "sops/mac-browser-node-persistent-setup.md",
+                "file": "projects/yoga-fitness-tracking.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Outgoing links from mac-browser-node-persistent-setup"
+              "title": "Outgoing links from yoga-fitness-tracking"
             }
           },
           {
@@ -185,13 +185,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "sops/mac-browser-node-persistent-setup.md",
+                "file": "projects/yoga-fitness-tracking.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Outline of mac-browser-node-persistent-setup"
+              "title": "Outline of yoga-fitness-tracking"
             }
           }
         ]
@@ -214,15 +214,17 @@
       "markdown-importer:Open format converter": false
     }
   },
-  "active": "f4f764715f447f00",
+  "active": "3ad4754899be06d9",
   "lastOpenFiles": [
+    "conflict-files-obsidian-git.md",
+    "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.md",
+    "projects/yoga-fitness-tracking.md",
+    "Obsidian Sync Test.md",
+    "sops/mac-browser-node-persistent-setup.md",
     "logs/old/2026-03-15.md",
     "logs/old/2026-03-15-browser-cowork-win.md",
     "data/regal-schedule-mar16-19.md",
-    "projects/yoga-fitness-tracking.md",
     "Funlab and HoleyMoley team.md",
-    "Obsidian Sync Test.md",
-    "sops/mac-browser-node-persistent-setup.md",
     "data/corepower-schedule-next2days.md",
     "context/STATE.md",
     "context/STACK.md",
