@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Dumbbell, Calendar, Clock, MapPin, Award, History, BookOpen } from 'lucide-react';
+import { Dumbbell, Calendar, Clock, MapPin, Award, History, BookOpen, RefreshCw } from 'lucide-react';
 
 interface YogaClass {
   date: string;
@@ -22,41 +22,18 @@ interface YogaStats {
   buddyPasses: number;
   buddyPassExpiry: string;
   completedChallenge: string | null;
+  confidence?: 'high' | 'medium' | 'low';
+  freshness?: string;
+  lastUpdated?: string;
 }
 
 function getDaysSince(dateStr: string): number {
   const now = new Date();
-  // Set to midnight to avoid timezone edge cases
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  
-  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const parts = dateStr.split(' ');
-  if (parts.length >= 2) {
-    const month = monthNames.indexOf(parts[0]);
-    const day = parseInt(parts[1]);
-    if (month !== -1 && !isNaN(day)) {
-      const classDate = new Date(today.getFullYear(), month, day);
-      const diffMs = today.getTime() - classDate.getTime();
-      const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-      // Guard against negative values from timezone math
-      return Math.max(0, days);
-    }
-  }
-  return 0;
-}
-
-function getDayName(dateStr: string): string {
-  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const parts = dateStr.split(' ');
-  if (parts.length >= 2) {
-    const month = monthNames.indexOf(parts[0]);
-    const day = parseInt(parts[1]);
-    if (month !== -1 && !isNaN(day)) {
-      const date = new Date(new Date().getFullYear(), month, day);
-      return date.toLocaleDateString('en-US', { weekday: 'long' });
-    }
-  }
-  return '';
+  const parsed = new Date(`${dateStr}T12:00:00`);
+  if (Number.isNaN(parsed.getTime())) return 0;
+  const diffMs = today.getTime() - parsed.getTime();
+  return Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
 }
 
 export function YogaCard() {
@@ -90,13 +67,7 @@ export function YogaCard() {
 
   const lastClass = stats?.recentClasses[0];
   const daysSinceLastClass = lastClass ? getDaysSince(lastClass.date) : 0;
-
-  // Upcoming classes from scraped schedule
-  const upcomingClasses: ScheduledClass[] = [
-    { day: 'Today', date: 'Mar 16', time: '4:00pm', classType: 'C2 - CorePower Yoga 2', teacher: 'Toni S', location: 'Encino' },
-    { day: 'Today', date: 'Mar 16', time: '4:30pm', classType: 'CSX - CorePower Strength X', teacher: 'Janelle P', location: 'Encino' },
-    { day: 'Tomorrow', date: 'Mar 17', time: '4:30pm', classType: 'YS - Yoga Sculpt', teacher: 'Ling C', location: 'Sherman Oaks' },
-  ];
+  const confidenceColor = stats?.confidence === 'high' ? 'text-green-400' : stats?.confidence === 'medium' ? 'text-yellow-400' : 'text-red-400';
 
   if (loading) {
     return (
@@ -119,7 +90,6 @@ export function YogaCard() {
 
   return (
     <div className="bg-surface border border-border rounded-xl overflow-hidden">
-      {/* Header */}
       <div className="px-4 py-3 border-b border-border">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -131,24 +101,32 @@ export function YogaCard() {
               <p className="text-xs text-gray-500">All Access • {stats.totalClasses} classes</p>
             </div>
           </div>
-          <button
-            onClick={() => window.open('https://www.corepoweryoga.com', '_blank')}
-            className="text-xs text-orange-400 hover:underline"
-          >
-            Open App
-          </button>
+          <div className="flex items-center gap-3">
+            <button onClick={fetchYogaData} className="text-xs text-gray-400 hover:text-white"><RefreshCw className="w-4 h-4" /></button>
+            <button
+              onClick={() => window.open('https://www.corepoweryoga.com/yoga-schedules/studio', '_blank')}
+              className="text-xs text-orange-400 hover:underline"
+            >
+              Open App
+            </button>
+          </div>
         </div>
       </div>
 
       <div className="p-4 space-y-4">
-        {/* View Toggle */}
+        <div className="flex items-center justify-between text-[11px] text-gray-500">
+          <div className="flex items-center gap-3">
+            <span className={confidenceColor}>Confidence: {stats.confidence || 'medium'}</span>
+            <span>Freshness: {stats.freshness || 'stale'}</span>
+          </div>
+          <span>{stats.lastUpdated ? `Updated ${new Date(stats.lastUpdated).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}` : ''}</span>
+        </div>
+
         <div className="flex bg-surface-light rounded-lg p-1">
           <button
             onClick={() => setViewMode('schedule')}
             className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-medium rounded transition-colors ${
-              viewMode === 'schedule' 
-                ? 'bg-surface text-white' 
-                : 'text-gray-500 hover:text-gray-300'
+              viewMode === 'schedule' ? 'bg-surface text-white' : 'text-gray-500 hover:text-gray-300'
             }`}
           >
             <Calendar className="w-3 h-3" />
@@ -157,9 +135,7 @@ export function YogaCard() {
           <button
             onClick={() => setViewMode('history')}
             className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-medium rounded transition-colors ${
-              viewMode === 'history' 
-                ? 'bg-surface text-white' 
-                : 'text-gray-500 hover:text-gray-300'
+              viewMode === 'history' ? 'bg-surface text-white' : 'text-gray-500 hover:text-gray-300'
             }`}
           >
             <History className="w-3 h-3" />
@@ -169,7 +145,6 @@ export function YogaCard() {
 
         {viewMode === 'schedule' ? (
           <>
-            {/* Last Class */}
             {lastClass && (
               <div className="bg-gradient-to-br from-orange-500/10 to-orange-600/5 border border-orange-500/20 rounded-xl p-4">
                 <div className="flex items-center justify-between mb-2">
@@ -185,7 +160,7 @@ export function YogaCard() {
                     {lastClass.time}
                   </span>
                   <span>•</span>
-                  <span>{getDayName(lastClass.date)}, {lastClass.date}</span>
+                  <span>{lastClass.date}</span>
                 </div>
                 <div className="flex items-center gap-1 mt-2 text-sm text-gray-500">
                   <MapPin className="w-3 h-3" />
@@ -194,59 +169,28 @@ export function YogaCard() {
               </div>
             )}
 
-            {/* Upcoming Classes (Scraped) */}
             <div>
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-xs font-medium text-gray-400 uppercase">Up Next</h3>
-                <span className="text-xs text-gray-500">Next 2 Days</span>
+                <span className="text-xs text-gray-500">Live schedule snapshot</span>
               </div>
-              
-              {/* Empty State CTA */}
-              {upcomingClasses.length === 0 && (
-                <div className="text-center py-6 bg-surface-light rounded-lg border border-dashed border-border">
-                  <Dumbbell className="w-8 h-8 mx-auto mb-2 text-gray-600" />
-                  <p className="text-sm text-gray-400 mb-2">No classes scheduled</p>
-                  <button
-                    onClick={() => window.open('https://www.corepoweryoga.com/yoga-schedules', '_blank')}
-                    className="text-xs bg-orange-500/20 text-orange-400 px-3 py-1.5 rounded hover:bg-orange-500/30"
-                  >
-                    Book a 4:30pm class
-                  </button>
-                </div>
-              )}
-              
-              <div className="space-y-2">
-                {upcomingClasses.map((cls, idx) => (
-                  <div 
-                    key={idx} 
-                    className={`p-3 rounded-lg border ${
-                      cls.time === '4:30pm' 
-                        ? 'bg-orange-500/10 border-orange-500/30' 
-                        : 'bg-surface-light border-transparent'
-                    }`}
-                  >
+              <div className="space-y-2 max-h-[220px] overflow-y-auto">
+                {stats.upcomingClasses.slice(0, 10).map((cls, idx) => (
+                  <div key={idx} className="p-3 rounded-lg border bg-surface-light border-transparent">
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-xs font-medium text-orange-400">{cls.day}</span>
                       <span className="text-xs text-gray-500">{cls.time}</span>
                     </div>
                     <h4 className="font-medium text-sm">{cls.classType}</h4>
-                    <p className="text-xs text-gray-500">
-                      {cls.teacher} • {cls.location}
-                    </p>
-                    {cls.time === '4:30pm' && (
-                      <span className="inline-block mt-1 text-[10px] bg-orange-500/20 text-orange-400 px-2 py-0.5 rounded">
-                        Your time
-                      </span>
-                    )}
+                    <p className="text-xs text-gray-500">{cls.teacher} • {cls.location} • {cls.date}</p>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Quick Actions */}
             <div className="flex gap-2">
               <button
-                onClick={() => window.open('https://www.corepoweryoga.com/yoga-schedules', '_blank')}
+                onClick={() => window.open('https://www.corepoweryoga.com/yoga-schedules/studio', '_blank')}
                 className="flex-1 py-2 bg-orange-500/20 text-orange-400 rounded-lg text-sm font-medium hover:bg-orange-500/30 transition-colors flex items-center justify-center gap-2"
               >
                 <BookOpen className="w-4 h-4" />
@@ -262,7 +206,6 @@ export function YogaCard() {
           </>
         ) : (
           <>
-            {/* Stats Summary */}
             <div className="grid grid-cols-3 gap-2">
               <div className="text-center p-2 bg-surface-light rounded-lg">
                 <div className="text-xl font-bold text-orange-400">{stats.totalClasses}</div>
@@ -278,7 +221,6 @@ export function YogaCard() {
               </div>
             </div>
 
-            {/* Recent Classes */}
             <div>
               <h3 className="text-xs font-medium text-gray-400 uppercase mb-2">Recent Classes</h3>
               <div className="space-y-1 max-h-[180px] overflow-y-auto">
@@ -288,9 +230,7 @@ export function YogaCard() {
                       <Calendar className="w-3 h-3 text-gray-500" />
                       <div>
                         <p className="text-sm font-medium">{cls.classType}</p>
-                        <p className="text-xs text-gray-500">
-                          {cls.teacher} • {cls.time}
-                        </p>
+                        <p className="text-xs text-gray-500">{cls.teacher} • {cls.time}</p>
                       </div>
                     </div>
                     <span className="text-xs text-gray-400">{cls.date}</span>
@@ -301,24 +241,18 @@ export function YogaCard() {
           </>
         )}
 
-        {/* Buddy Pass Alert */}
         {stats.buddyPasses > 0 && (
           <div className={`p-3 rounded-lg ${daysUntilExpiry <= 14 ? 'bg-red-500/10 border border-red-500/30' : 'bg-yellow-500/10 border border-yellow-500/20'}`}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Award className={`w-4 h-4 ${daysUntilExpiry <= 14 ? 'text-red-400' : 'text-yellow-400'}`} />
-                <span className="text-sm font-medium">
-                  {stats.buddyPasses} Buddy Pass{stats.buddyPasses !== 1 ? 'es' : ''}
-                </span>
+                <span className="text-sm font-medium">{stats.buddyPasses} Buddy Pass{stats.buddyPasses !== 1 ? 'es' : ''}</span>
               </div>
-              <span className={`text-xs ${daysUntilExpiry <= 14 ? 'text-red-400 font-medium' : 'text-yellow-400'}`}>
-                {daysUntilExpiry} days left
-              </span>
+              <span className={`text-xs ${daysUntilExpiry <= 14 ? 'text-red-400 font-medium' : 'text-yellow-400'}`}>{daysUntilExpiry} days left</span>
             </div>
           </div>
         )}
 
-        {/* Completed Challenge */}
         {stats.completedChallenge && (
           <div className="flex items-center gap-2 p-2 bg-green-500/10 rounded-lg">
             <Award className="w-4 h-4 text-green-400" />
