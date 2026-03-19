@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import fs from 'fs';
 import path from 'path';
+import { loadScheduleSnapshot, formatDateLabel } from '../../../lib/schedule-data';
 
 interface YogaClass {
   date: string;
@@ -10,69 +11,64 @@ interface YogaClass {
   location: string;
 }
 
+function loadRecentHistory(): YogaClass[] {
+  const logPath = path.join(process.cwd(), 'memory', 'logs', '2026-03-16-corepower-yoga-history.md');
+  if (!fs.existsSync(logPath)) return [];
+  const content = fs.readFileSync(logPath, 'utf8');
+  const tableMatch = content.match(/\| Date \| Class \| Teacher \| Time \| Location \|[\s\S]+?(?=\n\n|\n##)/);
+  if (!tableMatch) return [];
+  return tableMatch[0]
+    .split('\n')
+    .slice(2)
+    .filter((line) => line.startsWith('|'))
+    .map((line) => {
+      const parts = line.split('|').filter((p) => p.trim());
+      return {
+        date: parts[0]?.trim() || '',
+        classType: parts[1]?.trim() || '',
+        teacher: parts[2]?.trim() || '',
+        time: parts[3]?.trim() || '',
+        location: parts[4]?.trim() || 'Encino',
+      };
+    })
+    .filter((c) => c.classType);
+}
+
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
-    // Read the yoga history log
-    const logPath = path.join(process.cwd(), 'memory', 'logs', '2026-03-16-corepower-yoga-history.md');
-    const projectPath = path.join(process.cwd(), 'memory', 'projects', 'yoga-fitness-tracking.md');
-
-    let classes: YogaClass[] = [];
-    let totalClasses = 51;
-    let buddyPasses = 2;
-    let buddyPassExpiry = '2026-04-01';
-
-    // Parse the log file if it exists
-    if (fs.existsSync(logPath)) {
-      const content = fs.readFileSync(logPath, 'utf8');
-      
-      // Extract recent classes from the table
-      const tableMatch = content.match(/\| Date \| Class \| Teacher \| Time \| Location \|[\s\S]+?(?=\n\n|\n##)/);
-      if (tableMatch) {
-        const lines = tableMatch[0].split('\n').slice(2); // Skip header and separator
-        classes = lines
-          .filter(line => line.startsWith('|'))
-          .map(line => {
-            const parts = line.split('|').filter(p => p.trim());
-            if (parts.length >= 4) {
-              return {
-                date: parts[0].trim(),
-                classType: parts[1].trim(),
-                teacher: parts[2].trim(),
-                time: parts[3].trim(),
-                location: parts[4]?.trim() || 'Encino',
-              };
-            }
-            return null;
-          })
-          .filter((c): c is YogaClass => c !== null);
-      }
-    }
-
-    // Read project file for additional data
-    if (fs.existsSync(projectPath)) {
-      const projectContent = fs.readFileSync(projectPath, 'utf8');
-      
-      // Extract total classes
-      const totalMatch = projectContent.match(/\*\*Total Classes:\*\* (\d+)/);
-      if (totalMatch) totalClasses = parseInt(totalMatch[1]);
-      
-      // Extract buddy passes
-      const buddyMatch = projectContent.match(/\*\*Buddy Passes:\*\* (\d+)/);
-      if (buddyMatch) buddyPasses = parseInt(buddyMatch[1]);
-    }
+    const snapshot = loadScheduleSnapshot();
+    const recentClasses = loadRecentHistory().slice(0, 5);
+    const upcomingClasses = snapshot
+      ? snapshot.yoga.days.slice(0, 3).flatMap((day) =>
+          day.studios.flatMap((studio) =>
+            studio.classes.map((cls) => ({
+              day: day.label,
+              date: formatDateLabel(day.date),
+              time: cls.time,
+              classType: cls.className,
+              teacher: cls.teacher || '',
+              location: studio.name,
+            }))
+          )
+        )
+      : [];
 
     return res.status(200).json({
-      totalClasses,
-      studioClasses: totalClasses - 1,
+      totalClasses: 51,
+      studioClasses: 50,
       liveClasses: 1,
-      recentClasses: classes.slice(0, 5),
-      buddyPasses,
-      buddyPassExpiry,
+      recentClasses,
+      upcomingClasses,
+      buddyPasses: 2,
+      buddyPassExpiry: '2026-04-01',
       completedChallenge: 'Live Your Power Challenge (Jan 2026)',
+      confidence: snapshot?.yoga.confidence || 'medium',
+      freshness: snapshot?.yoga.freshness || 'stale',
+      lastUpdated: snapshot?.yoga.lastUpdated || new Date().toISOString(),
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
