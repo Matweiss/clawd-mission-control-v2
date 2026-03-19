@@ -66,11 +66,11 @@ export function UnifiedMovieCard() {
 
   const strictBadge = data?.strict ? (
     <span className="inline-flex items-center gap-1 rounded-full border border-green-500/30 bg-green-500/10 px-2 py-0.5 text-[10px] font-medium text-green-300">
-      <ShieldCheck className="h-3 w-3" /> Strict
+      <ShieldCheck className="h-3 w-3" /> Verified
     </span>
   ) : (
     <span className="inline-flex items-center gap-1 rounded-full border border-yellow-500/30 bg-yellow-500/10 px-2 py-0.5 text-[10px] font-medium text-yellow-300">
-      <ShieldAlert className="h-3 w-3" /> Legacy day
+      <ShieldAlert className="h-3 w-3" /> Provisional
     </span>
   );
 
@@ -124,7 +124,7 @@ export function UnifiedMovieCard() {
             >
               <div className="flex flex-col items-center leading-tight">
                 <span>{day.label}</span>
-                <span className={`text-[10px] ${day.strict ? 'text-green-400' : 'text-yellow-400'}`}>{day.strict ? 'strict' : 'legacy'}</span>
+                <span className={`text-[10px] ${day.strict ? 'text-green-400' : 'text-yellow-400'}`}>{day.strict ? 'verified' : 'provisional'}</span>
               </div>
             </button>
           ))}
@@ -138,7 +138,7 @@ export function UnifiedMovieCard() {
         {data?.confidence !== 'high' && (
           <div className="p-2 bg-yellow-500/10 border border-yellow-500/20 rounded-lg text-xs text-yellow-300 flex items-start gap-2">
             <AlertCircle className="w-3 h-3 mt-0.5 shrink-0" />
-            <span>{data?.sourceNote || 'Showtimes are browser-pulled and may need manual spot-checking on dense format pages.'}</span>
+            <span>{data?.strict ? 'This day is fully verified from Regal’s structured page data.' : 'This day is usable, but still needs a stricter per-day verification pass.'}</span>
           </div>
         )}
 

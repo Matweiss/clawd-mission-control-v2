@@ -36,6 +36,19 @@ function getDaysSince(dateStr: string): number {
   return Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
 }
 
+function toDateTimeValue(date: string, time: string) {
+  const match = time.trim().match(/^(\d{1,2}):(\d{2})\s*(am|pm)$/i);
+  const base = new Date(`${date}T00:00:00`);
+  if (!match || Number.isNaN(base.getTime())) return Number.MAX_SAFE_INTEGER;
+  let hour = parseInt(match[1], 10);
+  const minute = parseInt(match[2], 10);
+  const meridiem = match[3].toLowerCase();
+  if (meridiem === 'pm' && hour !== 12) hour += 12;
+  if (meridiem === 'am' && hour === 12) hour = 0;
+  base.setHours(hour, minute, 0, 0);
+  return base.getTime();
+}
+
 export function YogaCard() {
   const [stats, setStats] = useState<YogaStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -65,8 +78,6 @@ export function YogaCard() {
     ? Math.ceil((new Date(stats.buddyPassExpiry).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
     : 0;
 
-  const lastClass = stats?.recentClasses[0];
-  const daysSinceLastClass = lastClass ? getDaysSince(lastClass.date) : 0;
   const confidenceColor = stats?.confidence === 'high' ? 'text-green-400' : stats?.confidence === 'medium' ? 'text-yellow-400' : 'text-red-400';
 
   if (loading) {
@@ -87,6 +98,11 @@ export function YogaCard() {
       </div>
     );
   }
+
+  const recentClassesSorted = [...stats.recentClasses].sort((a, b) => toDateTimeValue(b.date, b.time) - toDateTimeValue(a.date, a.time));
+  const upcomingClassesSorted = [...stats.upcomingClasses].sort((a, b) => toDateTimeValue(a.date, a.time) - toDateTimeValue(b.date, b.time));
+  const lastClass = recentClassesSorted[0];
+  const daysSinceLastClass = lastClass ? getDaysSince(lastClass.date) : 0;
 
   return (
     <div className="bg-surface border border-border rounded-xl overflow-hidden">
@@ -175,7 +191,7 @@ export function YogaCard() {
                 <span className="text-xs text-gray-500">Live schedule snapshot</span>
               </div>
               <div className="space-y-2 max-h-[220px] overflow-y-auto">
-                {stats.upcomingClasses.slice(0, 10).map((cls, idx) => (
+                {upcomingClassesSorted.slice(0, 10).map((cls, idx) => (
                   <div key={idx} className="p-3 rounded-lg border bg-surface-light border-transparent">
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-xs font-medium text-orange-400">{cls.day}</span>
@@ -224,7 +240,7 @@ export function YogaCard() {
             <div>
               <h3 className="text-xs font-medium text-gray-400 uppercase mb-2">Recent Classes</h3>
               <div className="space-y-1 max-h-[180px] overflow-y-auto">
-                {stats.recentClasses.map((cls, idx) => (
+                {recentClassesSorted.map((cls, idx) => (
                   <div key={idx} className="flex items-center justify-between p-2 bg-surface-light rounded-lg">
                     <div className="flex items-center gap-2">
                       <Calendar className="w-3 h-3 text-gray-500" />
