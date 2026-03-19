@@ -31,6 +31,7 @@ import { YogaCard } from '../components/YogaCard';
 import { RecommendationsCard } from '../components/RecommendationsCard';
 import { HeroSection } from '../components/HeroSection';
 import { QuickStatsBar } from '../components/QuickStatsBar';
+import { TodayNeedsAttention } from '../components/TodayNeedsAttention';
 import { SmartRecommendationsV2 } from '../components/SmartRecommendationsV2';
 import { NotificationCenter } from '../components/NotificationCenter';
 import { AnimatedCard, StaggerContainer, StaggerItem, FadeIn, SlideIn } from '../components/animations';
