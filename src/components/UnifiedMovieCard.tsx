@@ -1,10 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { Film, Clock, TrendingUp, MapPin, RefreshCw, AlertCircle } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { AlertCircle, Film, MapPin, RefreshCw, ShieldCheck, ShieldAlert, TrendingUp } from 'lucide-react';
+
+interface FormatGroup {
+  format: string;
+  showtimes: string[];
+}
 
 interface Movie {
   title: string;
-  showtimes: string[];
-  format?: string;
+  masterMovieCode?: string | null;
+  formats: FormatGroup[];
 }
 
 interface DayOption {
@@ -12,6 +17,7 @@ interface DayOption {
   label: string;
   date: string;
   count: number;
+  strict?: boolean;
 }
 
 interface MoviesResponse {
@@ -19,6 +25,8 @@ interface MoviesResponse {
   officialUrl: string;
   confidence: 'high' | 'medium' | 'low';
   freshness: string;
+  strict?: boolean;
+  schemaVersion?: number;
   days: DayOption[];
   movies: Movie[];
   lastUpdated: string;
@@ -49,7 +57,22 @@ export function UnifiedMovieCard() {
     }
   };
 
-  const confidenceColor = data?.confidence === 'high' ? 'text-green-400' : data?.confidence === 'medium' ? 'text-yellow-400' : 'text-red-400';
+  const confidenceColor =
+    data?.confidence === 'high'
+      ? 'text-green-400'
+      : data?.confidence === 'medium'
+        ? 'text-yellow-400'
+        : 'text-red-400';
+
+  const strictBadge = data?.strict ? (
+    <span className="inline-flex items-center gap-1 rounded-full border border-green-500/30 bg-green-500/10 px-2 py-0.5 text-[10px] font-medium text-green-300">
+      <ShieldCheck className="h-3 w-3" /> Strict
+    </span>
+  ) : (
+    <span className="inline-flex items-center gap-1 rounded-full border border-yellow-500/30 bg-yellow-500/10 px-2 py-0.5 text-[10px] font-medium text-yellow-300">
+      <ShieldAlert className="h-3 w-3" /> Legacy day
+    </span>
+  );
 
   return (
     <div className="bg-surface border border-border rounded-xl overflow-hidden">
@@ -84,6 +107,7 @@ export function UnifiedMovieCard() {
             <div className="flex items-center gap-3">
               <span className={confidenceColor}>Confidence: {data.confidence}</span>
               <span>Freshness: {data.freshness}</span>
+              {strictBadge}
             </div>
             <span>Updated {new Date(data.lastUpdated).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</span>
           </div>
@@ -98,7 +122,10 @@ export function UnifiedMovieCard() {
                 selectedDay === day.key ? 'bg-surface text-white' : 'text-gray-500 hover:text-gray-300'
               }`}
             >
-              {day.label}
+              <div className="flex flex-col items-center leading-tight">
+                <span>{day.label}</span>
+                <span className={`text-[10px] ${day.strict ? 'text-green-400' : 'text-yellow-400'}`}>{day.strict ? 'strict' : 'legacy'}</span>
+              </div>
             </button>
           ))}
         </div>
@@ -115,26 +142,40 @@ export function UnifiedMovieCard() {
           </div>
         )}
 
-        <div className="space-y-2 max-h-[320px] overflow-y-auto">
+        <div className="space-y-2 max-h-[360px] overflow-y-auto">
           {loading && <div className="text-sm text-gray-500">Loading showtimes…</div>}
           {!loading && data?.movies?.map((movie, idx) => (
-            <div key={idx} className="p-3 bg-surface-light rounded-lg">
-              <div className="flex items-start justify-between mb-2">
+            <div key={idx} className="p-3 bg-surface-light rounded-lg space-y-2">
+              <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <h3 className="font-medium text-sm truncate">{movie.title}</h3>
-                  {movie.format && <p className="text-xs text-gray-500">{movie.format}</p>}
+                  <p className="text-[11px] text-gray-500">
+                    {movie.masterMovieCode ? `Movie ID: ${movie.masterMovieCode}` : 'No stable movie id in legacy data'}
+                  </p>
                 </div>
               </div>
 
-              <div className="flex flex-wrap gap-1.5">
-                {movie.showtimes.map((time, sidx) => (
-                  <button
-                    key={sidx}
-                    onClick={() => window.open(data?.officialUrl || 'https://www.regmovies.com/theatres/regal-sherman-oaks-galleria-1483', '_blank')}
-                    className="text-xs px-2 py-1 rounded bg-surface text-gray-300 border border-border hover:border-gray-500"
-                  >
-                    {time}
-                  </button>
+              <div className="space-y-2">
+                {movie.formats.map((formatGroup, fidx) => (
+                  <div key={fidx} className="rounded-lg border border-border/60 bg-surface/60 p-2">
+                    <div className="mb-2 flex items-center justify-between">
+                      <span className="text-[11px] font-medium uppercase tracking-wide text-pink-300">
+                        {formatGroup.format}
+                      </span>
+                      <span className="text-[10px] text-gray-500">{formatGroup.showtimes.length} showtimes</span>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {formatGroup.showtimes.map((time, sidx) => (
+                        <button
+                          key={sidx}
+                          onClick={() => window.open(data?.officialUrl || 'https://www.regmovies.com/theatres/regal-sherman-oaks-galleria-1483', '_blank')}
+                          className="text-xs px-2 py-1 rounded bg-surface text-gray-300 border border-border hover:border-gray-500"
+                        >
+                          {time}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>
@@ -147,7 +188,7 @@ export function UnifiedMovieCard() {
             <span className="text-xs text-green-400">Operator notes</span>
           </div>
           <div className="p-2 bg-green-500/5 rounded-lg border border-green-500/10 text-xs text-gray-400">
-            This panel now reads from structured schedule JSON instead of hardcoded movie data.
+            This panel now reads from strict structured schedule JSON when available, including format-separated Regal showtimes.
           </div>
         </div>
       </div>

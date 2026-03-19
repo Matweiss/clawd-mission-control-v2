@@ -44,13 +44,20 @@ export type ScheduleSnapshot = {
     freshness: string;
     confidence: 'high' | 'medium' | 'low';
     theater: string;
+    schemaVersion?: number;
     days: Array<{
       key: string;
       label: string;
       date: string;
+      strict?: boolean;
       movies: Array<{
         title: string;
-        showtimes: string[];
+        masterMovieCode?: string | null;
+        formats?: Array<{
+          format: string;
+          showtimes: string[];
+        }>;
+        showtimes?: string[];
       }>;
     }>;
   };
