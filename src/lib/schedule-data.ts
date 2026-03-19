@@ -65,6 +65,7 @@ export type ScheduleSnapshot = {
 
 export function loadScheduleSnapshot(): ScheduleSnapshot | null {
   const candidatePaths = [
+    path.join(process.cwd(), 'data', 'schedule-current.json'),
     path.join(process.cwd(), 'memory', 'data', 'schedule-current.json'),
     path.join(process.cwd(), '..', 'memory', 'data', 'schedule-current.json'),
   ];
