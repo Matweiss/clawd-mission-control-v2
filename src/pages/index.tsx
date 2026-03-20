@@ -145,28 +145,35 @@ export default function MissionControl() {
     { id: '6', title: 'Research cache review', priority: 'low' as const, status: 'pending' as const },
   ]);
 
-  // Persist desktop tasks in localStorage so user-added tasks survive refresh/restart.
+  // Persist tasks in localStorage (shared key with mobile tab) so user-added
+  // tasks survive refresh/restart and stay in sync across dashboard views.
   useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
-      const saved = localStorage.getItem('mission-control-desktop-tasks');
+      const shared = localStorage.getItem('mission-control-tasks');
+      const legacyDesktop = localStorage.getItem('mission-control-desktop-tasks');
+      const saved = shared || legacyDesktop;
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) {
           setTasks(parsed);
+          // one-time migration from old desktop-only key to shared key
+          if (!shared) {
+            localStorage.setItem('mission-control-tasks', JSON.stringify(parsed));
+          }
         }
       }
     } catch (e) {
-      console.error('Failed to load desktop tasks:', e);
+      console.error('Failed to load dashboard tasks:', e);
     }
   }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
     try {
-      localStorage.setItem('mission-control-desktop-tasks', JSON.stringify(tasks));
+      localStorage.setItem('mission-control-tasks', JSON.stringify(tasks));
     } catch (e) {
-      console.error('Failed to save desktop tasks:', e);
+      console.error('Failed to save dashboard tasks:', e);
     }
   }, [tasks]);
 
