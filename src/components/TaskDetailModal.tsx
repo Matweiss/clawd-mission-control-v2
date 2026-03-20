@@ -8,6 +8,8 @@ interface Task {
   status: 'pending' | 'in_progress' | 'completed';
   assignee?: string;
   dueDate?: string;
+  recurrence?: 'none' | 'daily' | 'weekly' | 'monthly';
+  snoozedUntil?: string;
   description?: string;
 }
 
@@ -42,12 +44,27 @@ export function TaskDetailModal({
 }: TaskDetailModalProps) {
   const [activeTab, setActiveTab] = useState<'all' | 'high' | 'medium' | 'low'>('all');
   const [showAddForm, setShowAddForm] = useState(false);
-  const [newTask, setNewTask] = useState({ title: '', priority: 'medium' as const, description: '' });
+  const [newTask, setNewTask] = useState({
+    title: '',
+    priority: 'medium' as const,
+    description: '',
+    dueDate: '',
+    recurrence: 'none' as const,
+  });
 
   if (!isOpen) return null;
 
-  const filteredTasks = tasks.filter(task => 
-    activeTab === 'all' || task.priority === activeTab
+  const isSnoozed = (task: Task) => !!task.snoozedUntil && new Date(task.snoozedUntil) > new Date();
+  const isDueSoon = (task: Task) => {
+    if (!task.dueDate || task.status === 'completed') return false;
+    const now = new Date();
+    const due = new Date(task.dueDate);
+    const diffMs = due.getTime() - now.getTime();
+    return diffMs >= 0 && diffMs <= 48 * 60 * 60 * 1000;
+  };
+
+  const filteredTasks = tasks.filter(task =>
+    (activeTab === 'all' || task.priority === activeTab) && !isSnoozed(task)
   );
 
   const pendingCount = tasks.filter(t => t.status !== 'completed').length;
@@ -90,7 +107,7 @@ export function TaskDetailModal({
                 className="w-full bg-surface border border-border rounded-lg px-3 py-2 text-sm"
                 autoFocus
               />
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
                 <select
                   value={newTask.priority}
                   onChange={(e) => setNewTask({ ...newTask, priority: e.target.value as any })}
@@ -101,11 +118,27 @@ export function TaskDetailModal({
                   <option value="low">Low Priority</option>
                 </select>
                 <input
+                  type="date"
+                  value={newTask.dueDate}
+                  onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
+                  className="bg-surface border border-border rounded-lg px-3 py-2 text-sm"
+                />
+                <select
+                  value={newTask.recurrence}
+                  onChange={(e) => setNewTask({ ...newTask, recurrence: e.target.value as any })}
+                  className="bg-surface border border-border rounded-lg px-3 py-2 text-sm"
+                >
+                  <option value="none">No recurrence</option>
+                  <option value="daily">Daily</option>
+                  <option value="weekly">Weekly</option>
+                  <option value="monthly">Monthly</option>
+                </select>
+                <input
                   type="text"
                   placeholder="Description (optional)"
                   value={newTask.description}
                   onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
-                  className="flex-1 bg-surface border border-border rounded-lg px-3 py-2 text-sm"
+                  className="flex-1 min-w-[220px] bg-surface border border-border rounded-lg px-3 py-2 text-sm"
                 />
               </div>
               <div className="flex gap-2">
@@ -117,8 +150,10 @@ export function TaskDetailModal({
                         priority: newTask.priority,
                         status: 'pending',
                         description: newTask.description,
+                        dueDate: newTask.dueDate || undefined,
+                        recurrence: newTask.recurrence,
                       });
-                      setNewTask({ title: '', priority: 'medium', description: '' });
+                      setNewTask({ title: '', priority: 'medium', description: '', dueDate: '', recurrence: 'none' });
                       setShowAddForm(false);
                     }
                   }}
@@ -211,26 +246,47 @@ export function TaskDetailModal({
                           <p className="text-sm text-gray-400 mt-1">{task.description}</p>
                         )}
                         
-                        <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
+                        <div className="flex items-center gap-3 mt-2 text-xs text-gray-500 flex-wrap">
                           <span className="flex items-center gap-1">
                             <StatusIcon className="w-3 h-3" />
                             {task.status.replace('_', ' ')}
                           </span>
                           {task.dueDate && (
-                            <span className="flex items-center gap-1">
+                            <span className={`flex items-center gap-1 ${isDueSoon(task) ? 'text-orange-400' : ''}`}>
                               <Calendar className="w-3 h-3" />
                               {new Date(task.dueDate).toLocaleDateString()}
+                              {isDueSoon(task) && <span className="ml-1 px-1.5 py-0.5 rounded bg-orange-500/20 text-orange-300">due soon</span>}
+                            </span>
+                          )}
+                          {task.recurrence && task.recurrence !== 'none' && (
+                            <span className="px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300">
+                              {task.recurrence}
                             </span>
                           )}
                         </div>
                       </div>
                       
-                      <button
-                        onClick={() => onDeleteTask(task.id)}
-                        className="p-1.5 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        {task.status !== 'completed' && (
+                          <button
+                            onClick={() => {
+                              const next = new Date();
+                              next.setDate(next.getDate() + 1);
+                              onUpdateTask(task.id, { snoozedUntil: next.toISOString() });
+                            }}
+                            className="p-1.5 text-gray-500 hover:text-blue-300 hover:bg-blue-500/10 rounded"
+                            title="Snooze 1 day"
+                          >
+                            <Clock className="w-4 h-4" />
+                          </button>
+                        )}
+                        <button
+                          onClick={() => onDeleteTask(task.id)}
+                          className="p-1.5 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 );

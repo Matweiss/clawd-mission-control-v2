@@ -197,6 +197,13 @@ export default function MissionControl() {
     return close <= weekFromNow;
   });
 
+  const todayBoard = {
+    urgentEmails: urgentEmails.length,
+    dueTasks: tasks.filter((t: any) => t.status !== 'completed').length,
+    nextEvent: calendarEvents?.[0]?.title || 'No upcoming events',
+    nextAction: tasks.find((t: any) => t.status !== 'completed')?.title || 'No pending tasks',
+  };
+
   return (
     <div className="min-h-screen bg-background text-white">
       <Head>
@@ -457,6 +464,32 @@ export default function MissionControl() {
             onReplyNeededClick={() => setShowReplyNeededEmails(true)}
             onPipelineClick={() => setShowSalesHub(true)}
           />
+        </div>
+
+        {/* Today Board */}
+        <div className="mb-4 rounded-xl border border-border bg-surface p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-semibold text-white">Today Board</h3>
+            <span className="text-xs text-gray-400">Focus mode</span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 text-sm">
+            <div className="rounded-lg bg-surface-light px-3 py-2">
+              <div className="text-xs text-gray-400">Urgent Emails</div>
+              <div className="text-orange-300 font-semibold">{todayBoard.urgentEmails}</div>
+            </div>
+            <div className="rounded-lg bg-surface-light px-3 py-2">
+              <div className="text-xs text-gray-400">Open Tasks</div>
+              <div className="text-blue-300 font-semibold">{todayBoard.dueTasks}</div>
+            </div>
+            <div className="rounded-lg bg-surface-light px-3 py-2">
+              <div className="text-xs text-gray-400">Next Event</div>
+              <div className="text-white truncate">{todayBoard.nextEvent}</div>
+            </div>
+            <div className="rounded-lg bg-surface-light px-3 py-2">
+              <div className="text-xs text-gray-400">Next Action</div>
+              <div className="text-white truncate">{todayBoard.nextAction}</div>
+            </div>
+          </div>
         </div>
 
         {/* Mobile Tab Navigation */}
