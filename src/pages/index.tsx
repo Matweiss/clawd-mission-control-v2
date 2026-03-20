@@ -3,7 +3,7 @@ import Head from 'next/head';
 import { 
   Activity, Mail, Database, Cpu, Sparkles, 
   Zap, Calendar, TrendingUp, AlertCircle,
-  CheckCircle, Clock, RefreshCw, MoreHorizontal,
+  CheckCircle, Clock, RefreshCw, MoreHorizontal, CreditCard,
   Command, Search, Settings, Bell, HardDrive, Reply, X
 } from 'lucide-react';
 import { useCommandPalette, useRealtimeData, useAgentActions } from '../hooks/useMissionControl';
@@ -145,6 +145,34 @@ export default function MissionControl() {
     { id: '6', title: 'Research cache review', priority: 'low' as const, status: 'pending' as const },
   ]);
 
+  const [amexBenefits, setAmexBenefits] = useState<any[]>([
+    {
+      id: 'resy-quarterly',
+      name: '$400 Resy Credit',
+      card: 'Amex Platinum',
+      category: 'Dining',
+      frequency: 'quarterly',
+      periodCap: 100,
+      annualCap: 400,
+      usedAmount: 0,
+      status: 'unused',
+      enrollmentRequired: true,
+      notes: 'Up to $100 per quarter. User noted unused.',
+    },
+    {
+      id: 'lululemon',
+      name: 'Lululemon Benefit',
+      card: 'Amex Platinum',
+      category: 'Shopping',
+      frequency: 'annual',
+      annualCap: 0,
+      usedAmount: 0,
+      status: 'unused',
+      enrollmentRequired: false,
+      notes: 'User noted unused. Confirm annual cap from benefits terms.',
+    },
+  ]);
+
   // Persist tasks in localStorage (shared key with mobile tab) so user-added
   // tasks survive refresh/restart and stay in sync across dashboard views.
   useEffect(() => {
@@ -176,6 +204,28 @@ export default function MissionControl() {
       console.error('Failed to save dashboard tasks:', e);
     }
   }, [tasks]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const saved = localStorage.getItem('mission-control-amex-benefits');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) setAmexBenefits(parsed);
+      }
+    } catch (e) {
+      console.error('Failed to load amex benefits:', e);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.setItem('mission-control-amex-benefits', JSON.stringify(amexBenefits));
+    } catch (e) {
+      console.error('Failed to save amex benefits:', e);
+    }
+  }, [amexBenefits]);
 
   const addTask = (task: any) => {
     setTasks([...tasks, { ...task, id: Date.now().toString() }]);
@@ -225,6 +275,10 @@ export default function MissionControl() {
     nextEvent: calendarEvents?.[0]?.title || 'No upcoming events',
     nextAction: tasks.find((t: any) => t.status !== 'completed')?.title || 'No pending tasks',
   };
+
+  const amexUsedYtd = amexBenefits.reduce((sum: number, b: any) => sum + Number(b.usedAmount || 0), 0);
+  const amexEstimatedCap = amexBenefits.reduce((sum: number, b: any) => sum + Number(b.annualCap || b.periodCap || 0), 0);
+  const amexUnusedCount = amexBenefits.filter((b: any) => b.status === 'unused').length;
 
   return (
     <div className="min-h-screen bg-background text-white">
@@ -757,6 +811,51 @@ export default function MissionControl() {
                       tasks={tasks}
                       onViewDetails={() => setShowTaskModal(true)}
                     />
+                  </AnimatedCard>
+                </StaggerItem>
+
+                <StaggerItem>
+                  <AnimatedCard delay={0.25}>
+                    <div className="bg-surface border border-border rounded-xl p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <CreditCard className="w-4 h-4 text-blue-300" />
+                          <h3 className="text-sm font-semibold">Amex Benefits (Platinum)</h3>
+                        </div>
+                        <span className="text-xs text-gray-400">MVP</span>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2 text-xs mb-3">
+                        <div className="bg-surface-light rounded-lg p-2">
+                          <div className="text-gray-400">Tracked</div>
+                          <div className="text-white font-semibold">{amexBenefits.length}</div>
+                        </div>
+                        <div className="bg-surface-light rounded-lg p-2">
+                          <div className="text-gray-400">Used YTD</div>
+                          <div className="text-green-300 font-semibold">${amexUsedYtd.toFixed(2)}</div>
+                        </div>
+                        <div className="bg-surface-light rounded-lg p-2">
+                          <div className="text-gray-400">Unused</div>
+                          <div className="text-orange-300 font-semibold">{amexUnusedCount}</div>
+                        </div>
+                      </div>
+                      <div className="space-y-2 text-xs">
+                        {amexBenefits.slice(0, 4).map((b: any) => (
+                          <div key={b.id} className="flex items-center justify-between border border-border rounded-lg px-2 py-1.5">
+                            <div>
+                              <div className="text-white">{b.name}</div>
+                              <div className="text-gray-400">{b.frequency} • {b.category}</div>
+                            </div>
+                            <div className="text-right">
+                              <div className={b.status === 'unused' ? 'text-orange-300' : 'text-green-300'}>{b.status}</div>
+                              <div className="text-gray-400">${Number(b.usedAmount || 0).toFixed(2)}</div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="mt-3 text-[11px] text-gray-400">
+                        Estimated cap tracked: ${amexEstimatedCap.toFixed(2)}
+                      </div>
+                    </div>
                   </AnimatedCard>
                 </StaggerItem>
               </>
