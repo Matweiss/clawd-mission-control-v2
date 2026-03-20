@@ -145,6 +145,31 @@ export default function MissionControl() {
     { id: '6', title: 'Research cache review', priority: 'low' as const, status: 'pending' as const },
   ]);
 
+  // Persist desktop tasks in localStorage so user-added tasks survive refresh/restart.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const saved = localStorage.getItem('mission-control-desktop-tasks');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          setTasks(parsed);
+        }
+      }
+    } catch (e) {
+      console.error('Failed to load desktop tasks:', e);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.setItem('mission-control-desktop-tasks', JSON.stringify(tasks));
+    } catch (e) {
+      console.error('Failed to save desktop tasks:', e);
+    }
+  }, [tasks]);
+
   const addTask = (task: any) => {
     setTasks([...tasks, { ...task, id: Date.now().toString() }]);
   };
