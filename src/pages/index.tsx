@@ -136,7 +136,7 @@ export default function MissionControl() {
   const replyNeededEmails = emails.filter(e => e.category === 'REPLY_NEEDED');
   const fyiEmails = emails.filter(e => e.category === 'FYI');
 
-  const [tasks, setTasks] = useState([
+  const [tasks, setTasks] = useState<any[]>([
     { id: '1', title: 'Finalize HAP walkaway', priority: 'high' as const, status: 'pending' as const },
     { id: '2', title: 'Update Rodrigo contract', priority: 'high' as const, status: 'in_progress' as const },
     { id: '3', title: 'Update Chubby CPay pricing', priority: 'medium' as const, status: 'pending' as const },
