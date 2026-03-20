@@ -182,7 +182,29 @@ export default function MissionControl() {
   };
 
   const updateTask = (id: string, updates: any) => {
-    setTasks(tasks.map(t => t.id === id ? { ...t, ...updates } : t));
+    setTasks((prev) => {
+      const current = prev.find((t: any) => t.id === id);
+      const next = prev.map((t: any) => (t.id === id ? { ...t, ...updates } : t));
+
+      // Auto-rollover recurring tasks when marked completed.
+      if (current && updates?.status === 'completed' && current.recurrence && current.recurrence !== 'none') {
+        const base = current.dueDate ? new Date(current.dueDate) : new Date();
+        const nextDue = new Date(base);
+        if (current.recurrence === 'daily') nextDue.setDate(nextDue.getDate() + 1);
+        if (current.recurrence === 'weekly') nextDue.setDate(nextDue.getDate() + 7);
+        if (current.recurrence === 'monthly') nextDue.setMonth(nextDue.getMonth() + 1);
+
+        next.push({
+          ...current,
+          id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+          status: 'pending',
+          dueDate: nextDue.toISOString().slice(0, 10),
+          snoozedUntil: undefined,
+        });
+      }
+
+      return next;
+    });
   };
 
   const deleteTask = (id: string) => {
@@ -489,6 +511,25 @@ export default function MissionControl() {
               <div className="text-xs text-gray-400">Next Action</div>
               <div className="text-white truncate">{todayBoard.nextAction}</div>
             </div>
+          </div>
+        </div>
+
+        {/* Reliability / Freshness */}
+        <div className="mb-4 rounded-xl border border-border bg-surface px-4 py-3">
+          <div className="flex flex-wrap items-center gap-3 text-xs">
+            <span className="px-2 py-1 rounded bg-surface-light text-gray-300">
+              Data freshness: {lastRefresh ? new Date(lastRefresh).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : 'unknown'}
+            </span>
+            <span className={`px-2 py-1 rounded ${loading ? 'bg-yellow-500/20 text-yellow-300' : 'bg-green-500/20 text-green-300'}`}>
+              {loading ? 'Syncing…' : 'Healthy'}
+            </span>
+            <span className="px-2 py-1 rounded bg-blue-500/20 text-blue-300">Confidence: Operational</span>
+            <button
+              onClick={() => refresh()}
+              className="px-2 py-1 rounded bg-work/20 text-work hover:bg-work/30"
+            >
+              Retry refresh
+            </button>
           </div>
         </div>
 
