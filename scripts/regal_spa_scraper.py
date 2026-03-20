@@ -128,8 +128,17 @@ def scrape_regal_sherman_oaks():
                 try:
                     data = json.loads(matches[0])
                     print(f"    ✓ Successfully parsed JSON with {len(str(data))} chars", file=sys.stderr)
-                    # TODO: Extract theater/showtime data from parsed JSON
-                except:
+
+                    # Best-effort extraction for theater/showtime shaped payloads
+                    payload = str(data).lower()
+                    if any(k in payload for k in ['theater', 'showtime', 'movie', 'film']):
+                        results.setdefault('structured_hits', []).append({
+                            'source': 'embedded_json',
+                            'pattern': pattern,
+                            'keys': list(data.keys())[:10] if isinstance(data, dict) else None,
+                        })
+                        print("    ✓ Embedded JSON contains theater/showtime signals", file=sys.stderr)
+                except Exception:
                     pass
         
         # If we have API endpoints, try calling them
@@ -162,9 +171,14 @@ def scrape_regal_sherman_oaks():
                             # Check if this contains theater/showtime data
                             if any(key in str(api_data).lower() for key in ['theater', 'showtime', 'movie', 'film']):
                                 print(f"      ✓ This looks like theater/showtime data!", file=sys.stderr)
-                                # TODO: Parse and normalize the data
+                                normalized = {
+                                    'source': 'api',
+                                    'url': api_url,
+                                    'keys': list(api_data.keys())[:20] if isinstance(api_data, dict) else None,
+                                }
+                                results.setdefault('structured_hits', []).append(normalized)
                                 
-                        except:
+                        except Exception:
                             print(f"      ⚠ Not valid JSON", file=sys.stderr)
                             
                 except Exception as e:
