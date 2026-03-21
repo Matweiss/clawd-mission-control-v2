@@ -10,7 +10,7 @@ interface AnimatedCardProps {
 export function AnimatedCard({ children, delay = 0, className = '' }: AnimatedCardProps) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={false}
       animate={{ opacity: 1, y: 0 }}
       transition={{ 
         duration: 0.4, 
@@ -37,10 +37,9 @@ interface StaggerContainerProps {
 export function StaggerContainer({ children, className = '', staggerDelay = 0.1 }: StaggerContainerProps) {
   return (
     <motion.div
-      initial="hidden"
+      initial={false}
       animate="visible"
       variants={{
-        hidden: { opacity: 0 },
         visible: {
           opacity: 1,
           transition: {
@@ -59,7 +58,6 @@ export function StaggerItem({ children, className = '' }: { children: ReactNode;
   return (
     <motion.div
       variants={{
-        hidden: { opacity: 0, y: 20 },
         visible: { 
           opacity: 1, 
           y: 0,
@@ -86,7 +84,7 @@ interface FadeInProps {
 export function FadeIn({ children, delay = 0, duration = 0.5, className = '' }: FadeInProps) {
   return (
     <motion.div
-      initial={{ opacity: 0 }}
+      initial={false}
       animate={{ opacity: 1 }}
       transition={{ duration, delay }}
       className={className}
@@ -104,16 +102,9 @@ interface SlideInProps {
 }
 
 export function SlideIn({ children, direction = 'up', delay = 0, className = '' }: SlideInProps) {
-  const directions = {
-    left: { x: -50, y: 0 },
-    right: { x: 50, y: 0 },
-    up: { x: 0, y: 30 },
-    down: { x: 0, y: -30 },
-  };
-
   return (
     <motion.div
-      initial={{ opacity: 0, ...directions[direction] }}
+      initial={false}
       animate={{ opacity: 1, x: 0, y: 0 }}
       transition={{ 
         duration: 0.5, 

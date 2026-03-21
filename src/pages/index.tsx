@@ -530,8 +530,8 @@ export default function MissionControl() {
           <QuickStatsBar 
             urgentEmails={emails.filter((e: any) => e.category === 'URGENT').length}
             replyNeededEmails={emails.filter((e: any) => e.category === 'REPLY_NEEDED').length}
-            pipelineMRR="$4.3k"
-            pipelineARR="$51.3k"
+            pipelineMRR={`$${((pipeline?.total || 0) / 1000).toFixed(1)}k`}
+            pipelineARR={`$${(((pipeline?.total || 0) * 12) / 1000).toFixed(1)}k`}
             yogaClasses={51}
             watchlistCount={0}
             buddyPasses={2}
@@ -650,7 +650,7 @@ export default function MissionControl() {
                 </StaggerItem>
                 
                 <div className="space-y-3">
-                  {agentStatus?.agents.map((agent, idx) => (
+                  {(agentStatus?.agents?.length > 0 ? agentStatus.agents : AGENTS).map((agent, idx) => (
                     <StaggerItem key={agent.id}>
                       <AnimatedCard delay={idx * 0.05}>
                         <AgentCard 
