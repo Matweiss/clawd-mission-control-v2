@@ -228,10 +228,11 @@
       "markdown-importer:Open format converter": false
     }
   },
-  "active": "a11d7573f5146803",
+  "active": "de9eabe899bb55d2",
   "lastOpenFiles": [
-    "INDEX.md",
+    "Unknown.txt",
     "Sarah's interview with AI Agent.md",
+    "INDEX.md",
     "MEMORY-SOP.md",
     "context/MAT.md",
     "logs/2026-03-18-sarah-integration-setup.md",
@@ -255,7 +256,6 @@
     "guides/smart-model-router.md",
     "guides/gpt4v-auto-video-analyzer.md",
     "guides/auto-video-analyzer-setup.md",
-    "guides",
-    "conflict-files-obsidian-git.md"
+    "guides"
   ]
 }
