@@ -650,7 +650,7 @@ export default function MissionControl() {
                 </StaggerItem>
                 
                 <div className="space-y-3">
-                  {(agentStatus?.agents?.length > 0 ? agentStatus.agents : AGENTS).map((agent, idx) => (
+                  {((agentStatus?.agents?.length ?? 0) > 0 ? agentStatus!.agents : AGENTS).map((agent, idx) => (
                     <StaggerItem key={agent.id}>
                       <AnimatedCard delay={idx * 0.05}>
                         <AgentCard 
