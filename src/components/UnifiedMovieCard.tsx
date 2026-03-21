@@ -33,14 +33,27 @@ interface MoviesResponse {
   sourceNote?: string;
 }
 
+function getTodayKeyPT() {
+  const parts = new Intl.DateTimeFormat('en-US', { weekday: 'short', timeZone: 'America/Los_Angeles' })
+    .format(new Date())
+    .toLowerCase();
+  return parts.slice(0, 3);
+}
+
 export function UnifiedMovieCard() {
   const [data, setData] = useState<MoviesResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedDay, setSelectedDay] = useState('thu');
+  const [selectedDay, setSelectedDay] = useState(getTodayKeyPT());
 
   useEffect(() => {
     fetchMovies(selectedDay);
   }, [selectedDay]);
+
+  useEffect(() => {
+    if (!data?.days?.length) return;
+    const exists = data.days.some((d) => d.key === selectedDay);
+    if (!exists) setSelectedDay(data.days[0].key);
+  }, [data, selectedDay]);
 
   const fetchMovies = async (day: string) => {
     try {
@@ -138,19 +151,26 @@ export function UnifiedMovieCard() {
         {data?.confidence !== 'high' && (
           <div className="p-2 bg-yellow-500/10 border border-yellow-500/20 rounded-lg text-xs text-yellow-300 flex items-start gap-2">
             <AlertCircle className="w-3 h-3 mt-0.5 shrink-0" />
-            <span>{data?.strict ? 'This day is fully verified from Regal’s structured page data.' : 'This day is usable, but still needs a stricter per-day verification pass.'}</span>
+            <span>{data?.strict ? 'This day is fully verified from Regal’s structured page data.' : (data?.sourceNote || 'No strict Regal parse is available for this day yet.')}</span>
           </div>
         )}
 
         <div className="space-y-2 max-h-[360px] overflow-y-auto">
           {loading && <div className="text-sm text-gray-500">Loading showtimes…</div>}
+          {!loading && !data?.movies?.length && (
+            <div className="rounded-lg border border-border bg-surface-light p-4 text-sm text-gray-400">
+              {data?.strict
+                ? 'No strict movie rows were returned for this day.'
+                : 'Strict Regal parsing is not complete for this day yet, so legacy mixed showtimes are intentionally hidden instead of shown inaccurately.'}
+            </div>
+          )}
           {!loading && data?.movies?.map((movie, idx) => (
             <div key={idx} className="p-3 bg-surface-light rounded-lg space-y-2">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <h3 className="font-medium text-sm truncate">{movie.title}</h3>
                   <p className="text-[11px] text-gray-500">
-                    {movie.masterMovieCode ? `Movie ID: ${movie.masterMovieCode}` : 'No stable movie id in legacy data'}
+                    {movie.masterMovieCode ? `Movie ID: ${movie.masterMovieCode}` : 'No stable movie id'}
                   </p>
                 </div>
               </div>

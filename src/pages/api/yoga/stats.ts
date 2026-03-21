@@ -42,8 +42,13 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     const snapshot = loadScheduleSnapshot();
     const recentClasses = loadRecentHistory().slice(0, 5);
+    const todayPT = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Los_Angeles' }).format(new Date()); // YYYY-MM-DD
+    const yogaDays = snapshot?.yoga.days || [];
+    const upcomingWindow = yogaDays.filter((d) => d.date >= todayPT).slice(0, 3);
+    const fallbackWindow = upcomingWindow.length ? upcomingWindow : yogaDays.slice(0, 3);
+
     const upcomingClasses = snapshot
-      ? snapshot.yoga.days.slice(0, 3).flatMap((day) =>
+      ? fallbackWindow.flatMap((day) =>
           day.studios.flatMap((studio) =>
             studio.classes.map((cls) => ({
               day: day.label,
