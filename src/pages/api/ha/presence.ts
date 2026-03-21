@@ -216,7 +216,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       geocodedEntityId: ENTITY_IDS.sarahGeocodedLocation,
       status: sarahTracker?.state || 'unknown',
       isHome: ['home', 'house'].includes(String(sarahTracker?.state || '').toLowerCase()),
-      location: sarahGeocodedLocation?.state || 'Unknown location',
+      location: sanitizeLocation(sarahGeocodedLocation?.state),
     },
     locks,
     garageDoor: {
