@@ -39,17 +39,17 @@ import { AnimatedCard, StaggerContainer, StaggerItem, FadeIn, SlideIn } from '..
 // Agent configuration - 3-Tier Architecture
 const AGENTS = [
   // Level 1: Director (You)
-  { id: 'clawd-prime', name: 'CLAWD Prime', emoji: '🦞', color: 'work', role: 'Director & Orchestrator', level: 1 },
+  { id: 'clawd-prime', name: 'CLAWD Prime', emoji: '🦞', color: 'work', role: 'Director & Orchestrator', level: 1, status: 'running' as const, lastActive: new Date().toISOString() },
   
   // Level 2: Directors
-  { id: 'work-agent', name: 'Work Agent', emoji: '🤖', color: 'work', role: 'Sales & Business Operations', level: 2 },
-  { id: 'lifestyle-agent', name: 'Lifestyle Agent', emoji: '🧘', color: 'lifestyle', role: 'Wellness & Life Balance', level: 2 },
-  { id: 'build-agent', name: 'Build Agent', emoji: '🔧', color: 'build', role: 'Engineering & Infrastructure', level: 2 },
+  { id: 'work-agent', name: 'Work Agent', emoji: '🤖', color: 'work', role: 'Sales & Business Operations', level: 2, status: 'idle' as const, lastActive: new Date().toISOString() },
+  { id: 'lifestyle-agent', name: 'Lifestyle Agent', emoji: '🧘', color: 'lifestyle', role: 'Wellness & Life Balance', level: 2, status: 'idle' as const, lastActive: new Date().toISOString() },
+  { id: 'build-agent', name: 'Build Agent', emoji: '🔧', color: 'build', role: 'Engineering & Infrastructure', level: 2, status: 'running' as const, lastActive: new Date().toISOString() },
   
   // Level 3: Specialists
-  { id: 'email-agent', name: 'Email Agent', emoji: '📧', color: 'email', role: 'Inbox Monitor → Work Agent', level: 3 },
-  { id: 'hubspot-agent', name: 'HubSpot Agent', emoji: '📊', color: 'hubspot', role: 'CRM Data → Work Agent', level: 3 },
-  { id: 'research-agent', name: 'Research Agent', emoji: '🔍', color: 'research', role: 'Intelligence Gathering', level: 3 },
+  { id: 'email-agent', name: 'Email Agent', emoji: '📧', color: 'email', role: 'Inbox Monitor → Work Agent', level: 3, status: 'offline' as const, lastActive: new Date(Date.now() - 86400000).toISOString() },
+  { id: 'hubspot-agent', name: 'HubSpot Agent', emoji: '📊', color: 'hubspot', role: 'CRM Data → Work Agent', level: 3, status: 'offline' as const, lastActive: new Date(Date.now() - 86400000).toISOString() },
+  { id: 'research-agent', name: 'Research Agent', emoji: '🔍', color: 'research', role: 'Intelligence Gathering', level: 3, status: 'weekend' as const, lastActive: new Date(Date.now() - 172800000).toISOString() },
 ];
 
 const STAGE_COLORS: any = {
