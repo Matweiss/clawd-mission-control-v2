@@ -1,27 +1,16 @@
 #!/bin/bash
-# SSH Tunnel for OpenClaw Browser Coworking
-# This script establishes the reverse tunnel from Mac to VPS
+set -euo pipefail
 
-# Configuration
-VPS_HOST="root@srv882799.hstgr.cloud"
-LOCAL_PORT=18800
-REMOTE_PORT=18800
+REMOTE_HOST="srv882799.hstgr.cloud"
+REMOTE_USER="root"
+LOCAL_PORT="14535"
+REMOTE_PORT="45350"
 
-# Check if tunnel already exists
-if lsof -Pi :$LOCAL_PORT -sTCP:LISTEN -t >/dev/null 2>&1; then
-    echo "Tunnel already running on port $LOCAL_PORT"
-    exit 0
-fi
-
-# Establish reverse tunnel
-# -N: Don't execute remote command (just port forwarding)
-# -R: Reverse tunnel (remote port -> local port)
-# -o ServerAliveInterval=60: Keep connection alive
-# -o ExitOnForwardFailure=yes: Exit if port forwarding fails
-exec ssh -N \
-    -R ${REMOTE_PORT}:127.0.0.1:${LOCAL_PORT} \
-    -o ServerAliveInterval=60 \
-    -o ServerAliveCountMax=3 \
-    -o ExitOnForwardFailure=yes \
-    -o StrictHostKeyChecking=no \
-    $VPS_HOST
+exec /usr/bin/ssh \
+  -o ServerAliveInterval=30 \
+  -o ServerAliveCountMax=3 \
+  -o ExitOnForwardFailure=yes \
+  -o StrictHostKeyChecking=accept-new \
+  -N \
+  -L ${LOCAL_PORT}:127.0.0.1:${REMOTE_PORT} \
+  ${REMOTE_USER}@${REMOTE_HOST}

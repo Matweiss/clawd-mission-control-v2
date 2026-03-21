@@ -1,44 +1,75 @@
-# mac browser-node persistent setup
+# Mac browser-node persistent setup
 
-Goal: make browser coworking survive restarts and scheduled runs without manual terminal juggling.
+Goal: make browser coworking survive restarts and support unattended scheduled pulls.
 
-## Required services
+## Correct architecture
 
-### 1) SSH tunnel LaunchAgent
-Keep an SSH local forward from Mac → VPS:
+- VPS hosts the primary OpenClaw gateway
+- Mac keeps Chrome local
+- Mac maintains an SSH local forward to the VPS gateway
+- Mac runs `openclaw node run` as the browser-capable node host
 
-- Local port: `14535`
-- Remote target: `127.0.0.1:45350` on VPS
+## Files created in this repo
 
-Command:
+- `scripts/ssh-tunnel.sh`
+- `scripts/com.openclaw.ssh-tunnel.plist`
+- `scripts/run-openclaw-node.sh`
+- `scripts/com.openclaw.node-host.plist`
+
+## Recommended install location on Mac
+
+Copy scripts to:
+- `/Users/mat/Documents/obsidian-memory/scripts/ssh-tunnel.sh`
+- `/Users/mat/Documents/obsidian-memory/scripts/run-openclaw-node.sh`
+
+Copy LaunchAgents to:
+- `/Users/mat/Library/LaunchAgents/com.openclaw.ssh-tunnel.plist`
+- `/Users/mat/Library/LaunchAgents/com.openclaw.node-host.plist`
+
+Then make scripts executable:
+
 ```bash
-ssh -N -L 14535:127.0.0.1:45350 root@srv882799.hstgr.cloud
+chmod +x ~/Documents/obsidian-memory/scripts/ssh-tunnel.sh
+chmod +x ~/Documents/obsidian-memory/scripts/run-openclaw-node.sh
 ```
 
-### 2) OpenClaw node host LaunchAgent
-Run the Mac as a browser-capable node host:
+## Load services
 
 ```bash
-export OPENCLAW_GATEWAY_TOKEN="mat-relay-2026"
-openclaw node run --host 127.0.0.1 --port 14535 --display-name "Mat's MacBook Pro"
+launchctl bootout gui/$UID ~/Library/LaunchAgents/com.openclaw.ssh-tunnel.plist 2>/dev/null || true
+launchctl bootout gui/$UID ~/Library/LaunchAgents/com.openclaw.node-host.plist 2>/dev/null || true
+
+launchctl bootstrap gui/$UID ~/Library/LaunchAgents/com.openclaw.ssh-tunnel.plist
+launchctl bootstrap gui/$UID ~/Library/LaunchAgents/com.openclaw.node-host.plist
 ```
 
-## Health checks
+## Verify
 
-On Mac:
+### Tunnel
 ```bash
 nc -vz 127.0.0.1 14535
 ```
+Expected: succeeded/open
 
+### Node host
+```bash
+tail -n 50 /tmp/openclaw-node-host.log
+```
+
+### VPS sees node
 On VPS:
 ```bash
 openclaw nodes status
 ```
 Expected:
+- Known: 1
+- Paired: 1
 - Connected: 1
-- Caps include browser
+- Caps include browser/system
 
-## Why this is the permanent fix
-- avoids invalid/insecure public ws remote config
-- avoids misusing `openclaw gateway` as the node layer
-- gives scheduled jobs a stable browser-capable remote host
+## Notes
+
+- The node host uses `OPENCLAW_GATEWAY_TOKEN="mat-relay-2026"`
+- It connects through the SSH tunnel on `127.0.0.1:14535`
+- This is the correct replacement for the earlier failed attempts to run the Mac gateway itself in remote mode
+- For true unattended schedule execution, these LaunchAgents should remain loaded after login

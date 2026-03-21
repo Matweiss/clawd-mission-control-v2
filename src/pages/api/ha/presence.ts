@@ -74,6 +74,20 @@ function normalizeZone(value?: string) {
   return value.replace(/_/g, ' ');
 }
 
+function sanitizeLocation(raw?: string): string {
+  if (!raw) return 'Unknown';
+  // Remove street address, keep city/state/country
+  // Input: "6945 Orion Ave\nLos Angeles CA 91406\nUnited States"
+  // Output: "Los Angeles, CA"
+  const parts = raw.split(/[\n,]/).map(s => s.trim()).filter(Boolean);
+  if (parts.length >= 2) {
+    // Skip first line (street), take city/state line, remove zip
+    const cityState = parts[1].replace(/\s*\d{5}(-\d{4})?/, '').trim();
+    return cityState;
+  }
+  return raw;
+}
+
 function lockLabel(state?: string) {
   if (!state) return 'Unknown';
   if (state.toLowerCase() === 'locked') return 'Locked';
@@ -184,7 +198,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     iphoneCharging: batteryStateLabel(iphoneBatteryState?.state) === 'Charging',
     iphoneBatteryLabel: batteryStateLabel(iphoneBatteryState?.state),
     zone,
-    geocodedLocation: iphoneGeocodedLocation?.state || 'Unknown location',
+    geocodedLocation: sanitizeLocation(iphoneGeocodedLocation?.state),
     away,
     focusMode: normalizeFocus(iphoneFocus?.state),
     steps: normalizeSteps(iphoneSteps?.state) ?? 0,

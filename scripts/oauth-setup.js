@@ -110,7 +110,7 @@ async function main() {
     console.log('2. Create OAuth 2.0 credentials');
     console.log('3. Enable Gmail API and Calendar API');
     console.log('4. Add redirect URI: http://localhost:3000/auth/callback');
-    console.log('\nThen run: GOOGLE_CLIENT_ID=xxx GOOGLE_CLIENT_SECRET=yyy node scripts/oauth-setup.js\n');
+    console.log('\nThen run: GOOGLE_CLIENT_ID=<your_client_id> GOOGLE_CLIENT_SECRET=<your_client_secret> node scripts/oauth-setup.js\n');
     rl.close();
     return;
   }

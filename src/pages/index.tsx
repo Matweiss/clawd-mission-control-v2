@@ -3,7 +3,7 @@ import Head from 'next/head';
 import { 
   Activity, Mail, Database, Cpu, Sparkles, 
   Zap, Calendar, TrendingUp, AlertCircle,
-  CheckCircle, Clock, RefreshCw, MoreHorizontal,
+  CheckCircle, Clock, RefreshCw, MoreHorizontal, CreditCard,
   Command, Search, Settings, Bell, HardDrive, Reply, X
 } from 'lucide-react';
 import { useCommandPalette, useRealtimeData, useAgentActions } from '../hooks/useMissionControl';
@@ -31,6 +31,7 @@ import { YogaCard } from '../components/YogaCard';
 import { RecommendationsCard } from '../components/RecommendationsCard';
 import { HeroSection } from '../components/HeroSection';
 import { QuickStatsBar } from '../components/QuickStatsBar';
+import { TodayNeedsAttention } from '../components/TodayNeedsAttention';
 import { SmartRecommendationsV2 } from '../components/SmartRecommendationsV2';
 import { NotificationCenter } from '../components/NotificationCenter';
 import { AnimatedCard, StaggerContainer, StaggerItem, FadeIn, SlideIn } from '../components/animations';
@@ -135,7 +136,7 @@ export default function MissionControl() {
   const replyNeededEmails = emails.filter(e => e.category === 'REPLY_NEEDED');
   const fyiEmails = emails.filter(e => e.category === 'FYI');
 
-  const [tasks, setTasks] = useState([
+  const [tasks, setTasks] = useState<any[]>([
     { id: '1', title: 'Finalize HAP walkaway', priority: 'high' as const, status: 'pending' as const },
     { id: '2', title: 'Update Rodrigo contract', priority: 'high' as const, status: 'in_progress' as const },
     { id: '3', title: 'Update Chubby CPay pricing', priority: 'medium' as const, status: 'pending' as const },
@@ -144,12 +145,116 @@ export default function MissionControl() {
     { id: '6', title: 'Research cache review', priority: 'low' as const, status: 'pending' as const },
   ]);
 
+  const [amexBenefits, setAmexBenefits] = useState<any[]>([
+    {
+      id: 'resy-quarterly',
+      name: '$400 Resy Credit',
+      card: 'Amex Platinum',
+      category: 'Dining',
+      frequency: 'quarterly',
+      periodCap: 100,
+      annualCap: 400,
+      usedAmount: 0,
+      status: 'unused',
+      enrollmentRequired: true,
+      notes: 'Up to $100 per quarter. User noted unused.',
+    },
+    {
+      id: 'lululemon',
+      name: 'Lululemon Benefit',
+      card: 'Amex Platinum',
+      category: 'Shopping',
+      frequency: 'annual',
+      annualCap: 0,
+      usedAmount: 0,
+      status: 'unused',
+      enrollmentRequired: false,
+      notes: 'User noted unused. Confirm annual cap from benefits terms.',
+    },
+  ]);
+
+  // Persist tasks in localStorage (shared key with mobile tab) so user-added
+  // tasks survive refresh/restart and stay in sync across dashboard views.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const shared = localStorage.getItem('mission-control-tasks');
+      const legacyDesktop = localStorage.getItem('mission-control-desktop-tasks');
+      const saved = shared || legacyDesktop;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          setTasks(parsed);
+          // one-time migration from old desktop-only key to shared key
+          if (!shared) {
+            localStorage.setItem('mission-control-tasks', JSON.stringify(parsed));
+          }
+        }
+      }
+    } catch (e) {
+      console.error('Failed to load dashboard tasks:', e);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.setItem('mission-control-tasks', JSON.stringify(tasks));
+    } catch (e) {
+      console.error('Failed to save dashboard tasks:', e);
+    }
+  }, [tasks]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const saved = localStorage.getItem('mission-control-amex-benefits');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) setAmexBenefits(parsed);
+      }
+    } catch (e) {
+      console.error('Failed to load amex benefits:', e);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.setItem('mission-control-amex-benefits', JSON.stringify(amexBenefits));
+    } catch (e) {
+      console.error('Failed to save amex benefits:', e);
+    }
+  }, [amexBenefits]);
+
   const addTask = (task: any) => {
     setTasks([...tasks, { ...task, id: Date.now().toString() }]);
   };
 
   const updateTask = (id: string, updates: any) => {
-    setTasks(tasks.map(t => t.id === id ? { ...t, ...updates } : t));
+    setTasks((prev) => {
+      const current = prev.find((t: any) => t.id === id);
+      const next = prev.map((t: any) => (t.id === id ? { ...t, ...updates } : t));
+
+      // Auto-rollover recurring tasks when marked completed.
+      if (current && updates?.status === 'completed' && current.recurrence && current.recurrence !== 'none') {
+        const base = current.dueDate ? new Date(current.dueDate) : new Date();
+        const nextDue = new Date(base);
+        if (current.recurrence === 'daily') nextDue.setDate(nextDue.getDate() + 1);
+        if (current.recurrence === 'weekly') nextDue.setDate(nextDue.getDate() + 7);
+        if (current.recurrence === 'monthly') nextDue.setMonth(nextDue.getMonth() + 1);
+
+        next.push({
+          ...current,
+          id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+          status: 'pending',
+          dueDate: nextDue.toISOString().slice(0, 10),
+          snoozedUntil: undefined,
+        });
+      }
+
+      return next;
+    });
   };
 
   const deleteTask = (id: string) => {
@@ -163,6 +268,17 @@ export default function MissionControl() {
     weekFromNow.setDate(weekFromNow.getDate() + 7);
     return close <= weekFromNow;
   });
+
+  const todayBoard = {
+    urgentEmails: urgentEmails.length,
+    dueTasks: tasks.filter((t: any) => t.status !== 'completed').length,
+    nextEvent: calendarEvents?.[0]?.title || 'No upcoming events',
+    nextAction: tasks.find((t: any) => t.status !== 'completed')?.title || 'No pending tasks',
+  };
+
+  const amexUsedYtd = amexBenefits.reduce((sum: number, b: any) => sum + Number(b.usedAmount || 0), 0);
+  const amexEstimatedCap = amexBenefits.reduce((sum: number, b: any) => sum + Number(b.annualCap || b.periodCap || 0), 0);
+  const amexUnusedCount = amexBenefits.filter((b: any) => b.status === 'unused').length;
 
   return (
     <div className="min-h-screen bg-background text-white">
@@ -414,8 +530,8 @@ export default function MissionControl() {
           <QuickStatsBar 
             urgentEmails={emails.filter((e: any) => e.category === 'URGENT').length}
             replyNeededEmails={emails.filter((e: any) => e.category === 'REPLY_NEEDED').length}
-            pipelineMRR="$4.3k"
-            pipelineARR="$51.3k"
+            pipelineMRR={`$${((pipeline?.total || 0) / 1000).toFixed(1)}k`}
+            pipelineARR={`$${(((pipeline?.total || 0) * 12) / 1000).toFixed(1)}k`}
             yogaClasses={51}
             watchlistCount={0}
             buddyPasses={2}
@@ -424,6 +540,51 @@ export default function MissionControl() {
             onReplyNeededClick={() => setShowReplyNeededEmails(true)}
             onPipelineClick={() => setShowSalesHub(true)}
           />
+        </div>
+
+        {/* Today Board */}
+        <div className="mb-4 rounded-xl border border-border bg-surface p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-semibold text-white">Today Board</h3>
+            <span className="text-xs text-gray-400">Focus mode</span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 text-sm">
+            <div className="rounded-lg bg-surface-light px-3 py-2">
+              <div className="text-xs text-gray-400">Urgent Emails</div>
+              <div className="text-orange-300 font-semibold">{todayBoard.urgentEmails}</div>
+            </div>
+            <div className="rounded-lg bg-surface-light px-3 py-2">
+              <div className="text-xs text-gray-400">Open Tasks</div>
+              <div className="text-blue-300 font-semibold">{todayBoard.dueTasks}</div>
+            </div>
+            <div className="rounded-lg bg-surface-light px-3 py-2">
+              <div className="text-xs text-gray-400">Next Event</div>
+              <div className="text-white truncate">{todayBoard.nextEvent}</div>
+            </div>
+            <div className="rounded-lg bg-surface-light px-3 py-2">
+              <div className="text-xs text-gray-400">Next Action</div>
+              <div className="text-white truncate">{todayBoard.nextAction}</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Reliability / Freshness */}
+        <div className="mb-4 rounded-xl border border-border bg-surface px-4 py-3">
+          <div className="flex flex-wrap items-center gap-3 text-xs">
+            <span className="px-2 py-1 rounded bg-surface-light text-gray-300">
+              Data freshness: {lastRefresh ? new Date(lastRefresh).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : 'unknown'}
+            </span>
+            <span className={`px-2 py-1 rounded ${loading ? 'bg-yellow-500/20 text-yellow-300' : 'bg-green-500/20 text-green-300'}`}>
+              {loading ? 'Syncing…' : 'Healthy'}
+            </span>
+            <span className="px-2 py-1 rounded bg-blue-500/20 text-blue-300">Confidence: Operational</span>
+            <button
+              onClick={() => refresh()}
+              className="px-2 py-1 rounded bg-work/20 text-work hover:bg-work/30"
+            >
+              Retry refresh
+            </button>
+          </div>
         </div>
 
         {/* Mobile Tab Navigation */}
@@ -489,7 +650,7 @@ export default function MissionControl() {
                 </StaggerItem>
                 
                 <div className="space-y-3">
-                  {agentStatus?.agents.map((agent, idx) => (
+                  {(agentStatus?.agents?.length > 0 ? agentStatus.agents : AGENTS).map((agent, idx) => (
                     <StaggerItem key={agent.id}>
                       <AnimatedCard delay={idx * 0.05}>
                         <AgentCard 
@@ -650,6 +811,51 @@ export default function MissionControl() {
                       tasks={tasks}
                       onViewDetails={() => setShowTaskModal(true)}
                     />
+                  </AnimatedCard>
+                </StaggerItem>
+
+                <StaggerItem>
+                  <AnimatedCard delay={0.25}>
+                    <div className="bg-surface border border-border rounded-xl p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <CreditCard className="w-4 h-4 text-blue-300" />
+                          <h3 className="text-sm font-semibold">Amex Benefits (Platinum)</h3>
+                        </div>
+                        <span className="text-xs text-gray-400">MVP</span>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2 text-xs mb-3">
+                        <div className="bg-surface-light rounded-lg p-2">
+                          <div className="text-gray-400">Tracked</div>
+                          <div className="text-white font-semibold">{amexBenefits.length}</div>
+                        </div>
+                        <div className="bg-surface-light rounded-lg p-2">
+                          <div className="text-gray-400">Used YTD</div>
+                          <div className="text-green-300 font-semibold">${amexUsedYtd.toFixed(2)}</div>
+                        </div>
+                        <div className="bg-surface-light rounded-lg p-2">
+                          <div className="text-gray-400">Unused</div>
+                          <div className="text-orange-300 font-semibold">{amexUnusedCount}</div>
+                        </div>
+                      </div>
+                      <div className="space-y-2 text-xs">
+                        {amexBenefits.slice(0, 4).map((b: any) => (
+                          <div key={b.id} className="flex items-center justify-between border border-border rounded-lg px-2 py-1.5">
+                            <div>
+                              <div className="text-white">{b.name}</div>
+                              <div className="text-gray-400">{b.frequency} • {b.category}</div>
+                            </div>
+                            <div className="text-right">
+                              <div className={b.status === 'unused' ? 'text-orange-300' : 'text-green-300'}>{b.status}</div>
+                              <div className="text-gray-400">${Number(b.usedAmount || 0).toFixed(2)}</div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="mt-3 text-[11px] text-gray-400">
+                        Estimated cap tracked: ${amexEstimatedCap.toFixed(2)}
+                      </div>
+                    </div>
                   </AnimatedCard>
                 </StaggerItem>
               </>
