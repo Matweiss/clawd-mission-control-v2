@@ -25,6 +25,7 @@ import { EmailCard } from '../components/EmailCard';
 import { MergedCalendarCard } from '../components/MergedCalendarCard';
 import { IntegrationStatusPanel } from '../components/IntegrationStatusPanel';
 import { LucraCommissionCard } from '../components/LucraCommissionCard';
+import LucraROICalculatorCard from '../components/LucraROICalculatorCard';
 import { LifestyleGoalTrackerCard } from '../components/LifestyleGoalTrackerCard';
 import { UnifiedMovieCard } from '../components/UnifiedMovieCard';
 import { YogaCard } from '../components/YogaCard';
@@ -802,6 +803,12 @@ export default function MissionControl() {
                 <StaggerItem>
                   <AnimatedCard delay={0.15}>
                     <LucraCommissionCard />
+                  </AnimatedCard>
+                </StaggerItem>
+
+                <StaggerItem>
+                  <AnimatedCard delay={0.175}>
+                    <LucraROICalculatorCard />
                   </AnimatedCard>
                 </StaggerItem>
 
