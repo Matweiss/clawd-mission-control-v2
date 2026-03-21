@@ -1,9 +1,8 @@
 // src/components/LucraROICalculatorCard.tsx
 // Lucra ROI Calculator — Dashboard Card for Clawd Mission Control
-// Drop into index.tsx alongside LucraCommissionCard in the right/work column
-// Usage: <LucraROICalculatorCard />
+// Mobile-responsive with touch-friendly targets
 
-import React, { useState, useMemo, useCallback, useRef } from 'react';
+import React, { useState, useMemo } from 'react';
 
 const PRESETS = [
   { n: 'Puttshack', v: 1100, a: 45, f: 2500, l: 16 },
@@ -70,30 +69,30 @@ export default function LucraROICalculatorCard() {
     setLift(s.lift);
   };
 
-  // Compact preview when collapsed
+  // Compact preview when collapsed - Mobile responsive
   if (!expanded) {
     return (
-      <div className="card" style={{ cursor: 'pointer' }} onClick={() => setExpanded(true)}>
-        <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 16 }}>💰</span>
-            <div>
-              <div style={{ fontWeight: 600, fontSize: 14, color: 'white' }}>Lucra ROI Calculator</div>
-              <div style={{ fontSize: 11, color: '#6B7280' }}>Sales toolkit • Click to expand</div>
+      <div className="card" style={{ cursor: 'pointer', padding: '12px' }} onClick={() => setExpanded(true)}>
+        <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 0 }}>
+            <span style={{ fontSize: 18 }}>💰</span>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontWeight: 600, fontSize: 14, color: 'white', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Lucra ROI Calc</div>
+              <div style={{ fontSize: 11, color: '#6B7280' }}>Tap to expand</div>
             </div>
           </div>
-          <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 18, fontWeight: 600, color: '#10B981' }}>{r.roiX}x</div>
-              <div style={{ fontSize: 9, color: '#6B7280' }}>ROI</div>
+              <div style={{ fontSize: 20, fontWeight: 600, color: '#10B981' }}>{r.roiX}x</div>
+              <div style={{ fontSize: 10, color: '#6B7280' }}>ROI</div>
             </div>
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 18, fontWeight: 600, color: '#10B981' }}>{fmt(r.moRev)}</div>
-              <div style={{ fontSize: 9, color: '#6B7280' }}>mo. lift</div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: '#10B981' }}>{fmt(r.moRev)}</div>
+              <div style={{ fontSize: 10, color: '#6B7280' }}>mo. lift</div>
             </div>
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 18, fontWeight: 600, color: '#F59E0B' }}>{r.paybackDays}d</div>
-              <div style={{ fontSize: 9, color: '#6B7280' }}>payback</div>
+              <div style={{ fontSize: 20, fontWeight: 600, color: '#F59E0B' }}>{r.paybackDays}d</div>
+              <div style={{ fontSize: 10, color: '#6B7280' }}>payback</div>
             </div>
           </div>
         </div>
@@ -104,27 +103,27 @@ export default function LucraROICalculatorCard() {
   return (
     <div className="card" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
       {/* Header */}
-      <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, background: '#141416', zIndex: 10, paddingBottom: 8 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <div className="card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, background: '#141416', zIndex: 10, paddingBottom: 8, flexWrap: 'wrap', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 0 }}>
           <span style={{ fontSize: 16 }}>💰</span>
-          <span style={{ fontWeight: 600, fontSize: 14, color: 'white' }}>Lucra ROI Calculator</span>
+          <span style={{ fontWeight: 600, fontSize: 14, color: 'white', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Lucra ROI Calc</span>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <span style={{ fontSize: 12, color: '#10B981', fontWeight: 600 }}>{r.roiX}x ROI</span>
-          <a href="/lucra-roi" target="_blank" style={{ fontSize: 11, color: '#6B7280', textDecoration: 'none' }}>Open full ↗</a>
-          <button onClick={() => setExpanded(false)} style={{ background: 'none', border: 'none', color: '#6B7280', cursor: 'pointer', fontSize: 16 }}>×</button>
+          <button onClick={() => setExpanded(false)} style={{ background: 'none', border: 'none', color: '#6B7280', cursor: 'pointer', fontSize: 20, padding: '4px 8px' }}>×</button>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div style={{ display: 'flex', gap: 2, marginBottom: 12 }}>
+      {/* Tabs - Mobile responsive */}
+      <div style={{ display: 'flex', gap: 2, marginBottom: 12, overflowX: 'auto', paddingBottom: 4 }}>
         {(['roi', 'compare', 'pricing', 'discount'] as const).map(t => (
           <button key={t} onClick={() => setTab(t)} style={{
-            flex: 1, padding: '6px 4px', fontSize: 10, fontWeight: 500,
+            flex: '0 0 auto', padding: '10px 12px', fontSize: 12, fontWeight: 500,
             background: tab === t ? '#1E1E22' : 'transparent',
             color: tab === t ? 'white' : '#6B7280',
             border: 'none', cursor: 'pointer', borderRadius: 6,
             borderBottom: tab === t ? '2px solid #10B981' : '2px solid transparent',
+            minWidth: '60px',
           }}>{t === 'roi' ? 'ROI' : t === 'compare' ? 'Scenarios' : t === 'pricing' ? 'Pricing' : 'Discount'}</button>
         ))}
       </div>
@@ -132,35 +131,44 @@ export default function LucraROICalculatorCard() {
       {/* Presets */}
       {tab === 'roi' && (
         <>
-          <div style={{ display: 'flex', gap: 4, overflowX: 'auto', paddingBottom: 8, marginBottom: 8 }}>
+          {/* Venue presets - Touch friendly */}
+          <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 8, marginBottom: 8, WebkitOverflowScrolling: 'touch' }}>
             {PRESETS.map((p, i) => (
               <button key={i} onClick={() => pickPreset(i)} style={{
-                padding: '4px 10px', borderRadius: 6, fontSize: 10,
+                padding: '8px 14px', borderRadius: 8, fontSize: 12,
                 border: sel === i ? '1px solid #10B981' : '1px solid #2A2A2E',
                 background: sel === i ? 'rgba(16,185,129,0.08)' : '#1E1E22',
                 color: sel === i ? '#10B981' : '#9CA3AF',
                 cursor: 'pointer', whiteSpace: 'nowrap',
+                minHeight: '36px',
               }}>{p.n}</button>
             ))}
           </div>
-          <div style={{ display: 'flex', gap: 4, marginBottom: 12 }}>
-            {[{ k: 'cons', label: 'Conservative', color: '#F59E0B' }, { k: 'avg', label: 'Average', color: '#3B82F6' }, { k: 'case', label: 'Case study', color: '#10B981' }].map(s => (
+          {/* Scenario buttons - Touch friendly */}
+          <div style={{ display: 'flex', gap: 6, marginBottom: 12, overflowX: 'auto', paddingBottom: 4 }}>
+            {[{ k: 'cons', label: 'Conservative', color: '#F59E0B' }, { k: 'avg', label: 'Average', color: '#3B82F6' }, { k: 'case', label: 'Case Study', color: '#10B981' }].map(s => (
               <button key={s.k} onClick={() => pickScenario(s.k)} style={{
-                padding: '4px 10px', borderRadius: 6, fontSize: 10, fontWeight: 500,
+                padding: '8px 14px', borderRadius: 8, fontSize: 12, fontWeight: 500,
                 border: scn === s.k ? `1px solid ${s.color}` : '1px solid #2A2A2E',
                 background: scn === s.k ? `${s.color}15` : '#1E1E22',
                 color: scn === s.k ? s.color : '#9CA3AF',
                 cursor: 'pointer',
+                minHeight: '36px',
               }}>{s.label}</button>
             ))}
           </div>
 
-          {/* Quick stats */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6, marginBottom: 12 }}>
-            <Stat label="Monthly lift" value={fmt(r.moRev)} color="#10B981" />
-            <Stat label="Net monthly" value={fmt(r.netMo)} color={r.netMo > 0 ? '#10B981' : '#EF4444'} />
+          {/* Quick stats - Responsive grid */}
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(2, 1fr)', 
+            gap: 8, 
+            marginBottom: 12 
+          }}>
+            <Stat label="Monthly Lift" value={fmt(r.moRev)} color="#10B981" />
+            <Stat label="Net Monthly" value={fmt(r.netMo)} color={r.netMo > 0 ? '#10B981' : '#EF4444'} />
             <Stat label="Payback" value={r.paybackDays === Infinity ? '—' : r.paybackDays + 'd'} color="#10B981" />
-            <Stat label="Break-even" value={r.brkVis === Infinity ? '—' : r.brkVis + ' vis'} color="#F59E0B" />
+            <Stat label="Break-Even" value={r.brkVis === Infinity ? '—' : r.brkVis + ' vis'} color="#F59E0B" />
           </div>
 
           {/* ARPU flow */}
@@ -188,9 +196,12 @@ export default function LucraROICalculatorCard() {
         </>
       )}
 
-      {/* Pitch line */}
-      <div style={{ background: 'rgba(16,185,129,0.05)', border: '1px solid rgba(16,185,129,0.15)', borderRadius: 8, padding: 10, fontSize: 11, color: '#A7F3D0', lineHeight: 1.6 }}>
-        <strong style={{ color: '#10B981' }}>Pitch:</strong> "{vis.toLocaleString()} visitors/day, {op}% opt-in = {r.dailyUsers} Lucra users. ARPU {ap} → ${r.lucraARPU.toFixed(2)}. {fmt(r.moRev)}/mo on {fmt(fee)} fee = {r.roiX}x. Payback: {r.paybackDays}d."
+      {/* Pitch line - Mobile readable */}
+      <div style={{ background: 'rgba(16,185,129,0.05)', border: '1px solid rgba(16,185,129,0.15)', borderRadius: 10, padding: 12, fontSize: 12, color: '#A7F3D0', lineHeight: 1.5 }}>
+        <strong style={{ color: '#10B981' }}>Pitch:</strong><br/>
+        <span style={{ wordBreak: 'break-word' }}>
+          "{vis.toLocaleString()} visitors/day, {op}% opt-in = {r.dailyUsers} Lucra users. ARPU {ap} → ${r.lucraARPU.toFixed(2)}. {fmt(r.moRev)}/mo on {fmt(fee)} fee = {r.roiX}x ROI. Payback: {r.paybackDays}d."
+        </span>
       </div>
     </div>
   );
@@ -198,9 +209,9 @@ export default function LucraROICalculatorCard() {
 
 function Stat({ label, value, color }: { label: string; value: string; color: string }) {
   return (
-    <div style={{ background: '#1E1E22', borderRadius: 8, padding: 8, textAlign: 'center' }}>
-      <div style={{ fontSize: 9, color: '#6B7280', marginBottom: 2 }}>{label}</div>
-      <div style={{ fontSize: 14, fontWeight: 600, color }}>{value}</div>
+    <div style={{ background: '#1E1E22', borderRadius: 10, padding: 12, textAlign: 'center', minHeight: '60px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+      <div style={{ fontSize: 10, color: '#6B7280', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{label}</div>
+      <div style={{ fontSize: 16, fontWeight: 600, color }}>{value}</div>
     </div>
   );
 }
