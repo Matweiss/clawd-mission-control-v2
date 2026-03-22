@@ -81,7 +81,7 @@ export default function LucraROICalculatorCard() {
               <div style={{ fontSize: 11, color: '#6B7280' }}>Tap to expand</div>
             </div>
           </div>
-          <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
             <div style={{ textAlign: 'center' }}>
               <div style={{ fontSize: 20, fontWeight: 600, color: '#10B981' }}>{r.roiX}x</div>
               <div style={{ fontSize: 10, color: '#6B7280' }}>ROI</div>
@@ -94,6 +94,7 @@ export default function LucraROICalculatorCard() {
               <div style={{ fontSize: 20, fontWeight: 600, color: '#F59E0B' }}>{r.paybackDays}d</div>
               <div style={{ fontSize: 10, color: '#6B7280' }}>payback</div>
             </div>
+            <a href="https://lucra-roi-calculator.vercel.app" target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} style={{ fontSize: 11, color: '#10B981', textDecoration: 'none', padding: '6px 10px', background: 'rgba(16,185,129,0.1)', borderRadius: 6, whiteSpace: 'nowrap' }}>Full ↗</a>
           </div>
         </div>
       </div>
@@ -110,6 +111,7 @@ export default function LucraROICalculatorCard() {
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <span style={{ fontSize: 12, color: '#10B981', fontWeight: 600 }}>{r.roiX}x ROI</span>
+          <a href="https://lucra-roi-calculator.vercel.app" target="_blank" rel="noopener noreferrer" style={{ fontSize: 11, color: '#10B981', textDecoration: 'none', padding: '4px 8px', background: 'rgba(16,185,129,0.1)', borderRadius: 6 }}>Full ↗</a>
           <button onClick={() => setExpanded(false)} style={{ background: 'none', border: 'none', color: '#6B7280', cursor: 'pointer', fontSize: 20, padding: '4px 8px' }}>×</button>
         </div>
       </div>
