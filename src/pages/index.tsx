@@ -588,6 +588,37 @@ export default function MissionControl() {
           </div>
         </div>
 
+        {/* System Status Bar */}
+        <div className="mb-4 rounded-xl border border-border bg-surface px-4 py-3">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <div className="text-sm font-semibold text-white">System Status</div>
+              <div className="text-xs text-gray-400">Core systems are operational, with a few known warnings still on the board.</div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 text-xs">
+              <span className="px-2.5 py-1 rounded-full bg-green-500/20 text-green-300 border border-green-500/30">
+                Core: Green
+              </span>
+              <span className="px-2.5 py-1 rounded-full bg-green-500/20 text-green-300 border border-green-500/30">
+                Composio: Green
+              </span>
+              <span className="px-2.5 py-1 rounded-full bg-green-500/20 text-green-300 border border-green-500/30">
+                GitHub smoke test: Green
+              </span>
+              <span className="px-2.5 py-1 rounded-full bg-yellow-500/20 text-yellow-300 border border-yellow-500/30">
+                GroqCloud: Yellow
+              </span>
+              <span className="px-2.5 py-1 rounded-full bg-yellow-500/20 text-yellow-300 border border-yellow-500/30">
+                OpenRouter credits: Yellow
+              </span>
+              <span className="px-2.5 py-1 rounded-full bg-yellow-500/20 text-yellow-300 border border-yellow-500/30">
+                Plugin warning: Yellow
+              </span>
+            </div>
+          </div>
+        </div>
+
         {/* Mobile Tab Navigation */}
         <div className="lg:hidden mb-4">
           <div className="flex bg-surface-light rounded-xl p-1">
