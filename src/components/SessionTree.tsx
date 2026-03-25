@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { ChevronDown, ChevronRight, Circle, CheckCircle2, Loader2, XCircle, Zap, Cpu } from 'lucide-react';
 
 export interface SessionNode {
@@ -61,13 +61,15 @@ function TreeRow({ node, expanded, toggle }: { node: SessionNode; expanded: Set<
         type="button"
         onClick={() => hasChildren && toggle(node.id)}
         className="w-full rounded-lg border border-gray-700/40 bg-surface-light/70 px-3 py-2 text-left hover:border-gray-600 transition-colors"
-        style={{ marginLeft: `${node.depth * 20}px`, width: `calc(100% - ${node.depth * 20}px)` }}
+        style={{ paddingLeft: `${12 + node.depth * 20}px` }}
       >
         <div className="flex items-start gap-2">
           <div className="mt-0.5 w-4 flex-shrink-0">
             {hasChildren ? (
               isOpen ? <ChevronDown className="w-4 h-4 text-gray-400" /> : <ChevronRight className="w-4 h-4 text-gray-400" />
-            ) : null}
+            ) : (
+              <span className="block w-4" />
+            )}
           </div>
           <StatusIcon status={node.status} />
           <Cpu className={`w-4 h-4 mt-0.5 ${agentColors[node.agentType] || 'text-gray-400'}`} />
@@ -97,6 +99,18 @@ function TreeRow({ node, expanded, toggle }: { node: SessionNode; expanded: Set<
 
 export function SessionTree({ sessions }: SessionTreeProps) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set(sessions.map((s) => s.id)));
+
+  useEffect(() => {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      sessions.forEach((session) => {
+        if (session.children.length > 0 && !next.has(session.id)) {
+          next.add(session.id);
+        }
+      });
+      return next;
+    });
+  }, [sessions]);
 
   const roots = useMemo(() => sessions.filter((session) => session.parentId === null), [sessions]);
 

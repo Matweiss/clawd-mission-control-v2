@@ -667,7 +667,7 @@ export default function MissionControl() {
               <>
                 <StaggerItem>
                   <div className="flex items-center justify-between">
-                    <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">System Status</h2>
+                    <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Agent Fleet</h2>
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-gray-500">
                         {agentStatus?.openclaw?.sessions || 0} session{agentStatus?.openclaw?.sessions !== 1 ? 's' : ''}

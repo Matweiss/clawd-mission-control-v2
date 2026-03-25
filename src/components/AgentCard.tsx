@@ -123,16 +123,20 @@ export function AgentCard({ agent, onRefresh }: AgentCardProps) {
 
       <div className="flex gap-2 mt-3">
         <button
-          onClick={() => alert(`Agent: ${agent.name}\nStatus: ${status.label}\nContext: ${contextUsed.toLocaleString()} / ${contextMax.toLocaleString()}\nLast Active: ${formatTimeAgo(agent.lastActive)}\nSubagents: ${subagentCount}\n\nFull logs available in OpenClaw session logs.`)}
-          className="flex-1 py-1.5 text-xs bg-surface-light hover:bg-border rounded transition-colors"
+          type="button"
+          disabled
+          className="flex-1 py-1.5 text-xs bg-surface-light text-gray-500 rounded cursor-not-allowed"
+          title="Agent logs will be wired into OpenClaw session history in a follow-up pass"
         >
-          View Logs
+          Logs Soon
         </button>
         <button
-          onClick={() => alert(`Spawn task for ${agent.name}:\n\nThis would create a new task for this agent. Feature coming soon.`)}
-          className="flex-1 py-1.5 text-xs bg-surface-light hover:bg-border rounded transition-colors"
+          type="button"
+          disabled
+          className="flex-1 py-1.5 text-xs bg-surface-light text-gray-500 rounded cursor-not-allowed"
+          title="Task spawning from cards is planned but not yet wired"
         >
-          Spawn Task
+          Spawn Soon
         </button>
       </div>
     </div>
