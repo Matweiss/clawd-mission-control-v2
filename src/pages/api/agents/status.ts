@@ -15,6 +15,8 @@ interface AgentStatus {
   contextUsed: number;
   contextMax: number;
   subagentCount: number;
+  sourceAgentId?: string;
+  model?: string;
 }
 
 interface OpenClawRecentSession {
@@ -157,7 +159,8 @@ function mapAgentType(session: OpenClawRecentSession): SessionNode['agentType'] 
   const key = session.key || '';
   if (key.includes('cron:')) return 'orchestrator';
   if (key.includes('subagent:')) return 'build';
-  if (key.includes('telegram:')) return 'work';
+  if (key.includes('telegram:direct:')) return (session.agentId || '') === 'sarah' ? 'lifestyle' : 'work';
+  if (key.includes('telegram:slash:')) return 'research';
   if ((session.agentId || '') === 'sarah') return 'lifestyle';
   return 'orchestrator';
 }
@@ -172,37 +175,82 @@ function mapSessionStatus(session: OpenClawRecentSession): SessionNode['status']
 
 function inferParentId(session: OpenClawRecentSession) {
   const key = session.key || '';
-  if (key.includes('subagent:')) return 'session-root-main';
-  if (key.startsWith('agent:sarah:')) return 'session-root-sarah';
-  if (key.startsWith('agent:main:') && !key.includes(':main') && !key.includes('subagent:')) return 'session-root-main';
-  return null;
+  if (key.includes('subagent:')) return 'session-root-build';
+  if (key.includes('cron:')) return 'session-root-orchestrator';
+  if (key.startsWith('agent:sarah:')) return 'session-root-lifestyle';
+  if (key.includes('telegram:direct:')) return 'session-root-work';
+  if (key.includes('telegram:slash:')) return 'session-root-research';
+  if (key.startsWith('agent:main:')) return 'session-root-main';
+  return 'session-root-main';
 }
 
 function buildSessionTree(status: OpenClawStatusPayload): SessionNode[] {
-  const roots: SessionNode[] = [];
-  const mainRoot: SessionNode = {
-    id: 'session-root-main',
-    parentId: null,
-    name: 'Main Agent Sessions',
-    agentType: 'orchestrator',
-    status: 'streaming',
-    startTime: new Date().toISOString(),
-    children: [],
-    depth: 0,
-  };
-  const sarahRoot: SessionNode = {
-    id: 'session-root-sarah',
-    parentId: null,
-    name: 'Sarah Agent Sessions',
-    agentType: 'lifestyle',
-    status: 'idle',
-    startTime: new Date().toISOString(),
-    children: [],
-    depth: 0,
-  };
+  const roots: SessionNode[] = [
+    {
+      id: 'session-root-orchestrator',
+      parentId: null,
+      name: 'Orchestrator Sessions',
+      agentType: 'orchestrator',
+      status: 'idle',
+      startTime: new Date().toISOString(),
+      children: [],
+      depth: 0,
+    },
+    {
+      id: 'session-root-work',
+      parentId: null,
+      name: 'Work Sessions',
+      agentType: 'work',
+      status: 'idle',
+      startTime: new Date().toISOString(),
+      children: [],
+      depth: 0,
+    },
+    {
+      id: 'session-root-build',
+      parentId: null,
+      name: 'Build Sessions',
+      agentType: 'build',
+      status: 'idle',
+      startTime: new Date().toISOString(),
+      children: [],
+      depth: 0,
+    },
+    {
+      id: 'session-root-lifestyle',
+      parentId: null,
+      name: 'Lifestyle Sessions',
+      agentType: 'lifestyle',
+      status: 'idle',
+      startTime: new Date().toISOString(),
+      children: [],
+      depth: 0,
+    },
+    {
+      id: 'session-root-research',
+      parentId: null,
+      name: 'Research Sessions',
+      agentType: 'research',
+      status: 'idle',
+      startTime: new Date().toISOString(),
+      children: [],
+      depth: 0,
+    },
+    {
+      id: 'session-root-main',
+      parentId: null,
+      name: 'Other Main Sessions',
+      agentType: 'orchestrator',
+      status: 'idle',
+      startTime: new Date().toISOString(),
+      children: [],
+      depth: 0,
+    },
+  ];
 
+  const rootMap = new Map(roots.map((root) => [root.id, root]));
   const recent = status.sessions?.recent || [];
-  const nodes = recent.slice(0, 12).map((session, index): SessionNode => ({
+  const nodes = recent.slice(0, 16).map((session, index): SessionNode => ({
     id: session.sessionId || session.key || `session-${index}`,
     parentId: inferParentId(session),
     name: session.key || session.sessionId || `Session ${index + 1}`,
@@ -214,14 +262,14 @@ function buildSessionTree(status: OpenClawStatusPayload): SessionNode[] {
   }));
 
   for (const node of nodes) {
-    if (node.parentId === 'session-root-sarah') sarahRoot.children.push(node);
-    else mainRoot.children.push(node);
+    const parent = rootMap.get(node.parentId || 'session-root-main');
+    if (parent) {
+      parent.children.push(node);
+      if (node.status === 'streaming' || node.status === 'thinking') parent.status = node.status;
+    }
   }
 
-  if (mainRoot.children.length > 0) roots.push(mainRoot);
-  if (sarahRoot.children.length > 0) roots.push(sarahRoot);
-
-  return roots;
+  return roots.filter((root) => root.children.length > 0);
 }
 
 function countChildSessions(agentId: string, status: OpenClawStatusPayload) {
@@ -272,6 +320,8 @@ function deriveAgentStatus(agentId: string, status: OpenClawStatusPayload): Agen
     contextUsed: context.used,
     contextMax: context.max,
     subagentCount: countChildSessions(agentId, status),
+    sourceAgentId: agentId,
+    model: latest?.model,
   };
 }
 

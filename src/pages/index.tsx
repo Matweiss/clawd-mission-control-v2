@@ -78,6 +78,11 @@ export default function MissionControl() {
       updated_at: agent.lastActive,
       success_rate: agent.status === 'error' ? 62 : agent.status === 'running' ? 96 : 88,
       last_task: agent.role,
+      model: agent.model,
+      source_agent_id: agent.sourceAgentId,
+      context_used: agent.contextUsed,
+      context_max: agent.contextMax,
+      subagent_count: agent.subagentCount,
     });
     setShowAgentCommandCenter(true);
   };

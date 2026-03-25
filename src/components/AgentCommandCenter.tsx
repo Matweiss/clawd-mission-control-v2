@@ -1,5 +1,16 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Activity, CheckCircle, AlertCircle, RefreshCw, Play, FileText, BarChart3, Zap } from 'lucide-react';
+
+interface AgentHistoryItem {
+  id: string;
+  title: string;
+  timestamp: string;
+  status: string;
+  model?: string;
+  tokens?: number | null;
+  percentUsed?: number | null;
+  kind?: string;
+}
 
 interface Agent {
   agent_id: string;
@@ -7,6 +18,11 @@ interface Agent {
   success_rate?: number;
   last_task?: string;
   updated_at: string;
+  model?: string;
+  source_agent_id?: string;
+  context_used?: number;
+  context_max?: number;
+  subagent_count?: number;
 }
 
 interface AgentCommandCenterProps {
@@ -80,9 +96,33 @@ export function AgentCommandCenter({ isOpen, onClose, agent, onRefresh, onRestar
     capabilities: ['Standard operations']
   };
 
-  const isOnline = agent.status === 'online' || agent.status === 'idle';
+  const isOnline = agent.status === 'online' || agent.status === 'idle' || agent.status === 'running';
   const lastUpdate = new Date(agent.updated_at);
   const timeSinceUpdate = Math.floor((Date.now() - lastUpdate.getTime()) / 1000 / 60);
+  const [history, setHistory] = useState<AgentHistoryItem[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+
+  useEffect(() => {
+    if (!agent) return;
+    let active = true;
+    const agentId = agent.agent_id;
+    async function loadHistory() {
+      setHistoryLoading(true);
+      try {
+        const res = await fetch(`/api/agents/${agentId}`);
+        const data = await res.json();
+        if (active) setHistory(data.history || []);
+      } catch {
+        if (active) setHistory([]);
+      } finally {
+        if (active) setHistoryLoading(false);
+      }
+    }
+    loadHistory();
+    return () => {
+      active = false;
+    };
+  }, [agent]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
@@ -135,6 +175,14 @@ export function AgentCommandCenter({ isOpen, onClose, agent, onRefresh, onRestar
                     <span className="text-gray-400">Current Task</span>
                     <span className="text-gray-300 truncate max-w-[150px]">{agent.last_task || 'Idle'}</span>
                   </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-400">Model</span>
+                    <span className="text-gray-300 truncate max-w-[150px]">{agent.model || 'Unknown'}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-400">Context</span>
+                    <span className="text-gray-300">{agent.context_used || 0} / {agent.context_max || 0}</span>
+                  </div>
                 </div>
               </div>
 
@@ -186,6 +234,34 @@ export function AgentCommandCenter({ isOpen, onClose, agent, onRefresh, onRestar
                     </li>
                   ))}
                 </ul>
+              </div>
+
+              <div className="bg-surface-light rounded-xl p-4">
+                <h3 className="text-sm font-semibold text-gray-400 mb-4">Recent Sessions / History</h3>
+                {historyLoading ? (
+                  <div className="text-sm text-gray-500">Loading history…</div>
+                ) : history.length === 0 ? (
+                  <div className="text-sm text-gray-500">No recent session history.</div>
+                ) : (
+                  <div className="space-y-2 max-h-[240px] overflow-y-auto">
+                    {history.map((item) => (
+                      <div key={item.id} className="rounded-lg border border-border bg-surface px-3 py-2 text-xs">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-white truncate">{item.title}</span>
+                          <span className="text-gray-500 uppercase">{item.status}</span>
+                        </div>
+                        <div className="mt-1 flex items-center justify-between gap-2 text-gray-400">
+                          <span>{item.model || 'unknown model'}</span>
+                          <span>{new Date(item.timestamp).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</span>
+                        </div>
+                        <div className="mt-1 text-gray-500">
+                          {item.tokens != null ? `${item.tokens} tokens` : 'tokens unavailable'}
+                          {item.percentUsed != null ? ` • ${item.percentUsed}% used` : ''}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>
