@@ -101,6 +101,8 @@ export function AgentCommandCenter({ isOpen, onClose, agent, onRefresh, onRestar
   const timeSinceUpdate = Math.floor((Date.now() - lastUpdate.getTime()) / 1000 / 60);
   const [history, setHistory] = useState<AgentHistoryItem[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [actionResult, setActionResult] = useState<string>('');
 
   useEffect(() => {
     if (!agent) return;
@@ -123,6 +125,35 @@ export function AgentCommandCenter({ isOpen, onClose, agent, onRefresh, onRestar
       active = false;
     };
   }, [agent]);
+
+  async function runAction(action: 'refresh' | 'restart' | 'inspect') {
+    if (!agent) return;
+    setActionLoading(action);
+    setActionResult('');
+    try {
+      const res = await fetch('/api/agents/action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ agentId: agent.agent_id, action }),
+      });
+      const data = await res.json();
+      if (action === 'refresh') {
+        await onRefresh(agent.agent_id);
+        const historyRes = await fetch(`/api/agents/${agent.agent_id}`);
+        const historyData = await historyRes.json();
+        setHistory(historyData.history || []);
+      }
+      if (action === 'inspect' && Array.isArray(data.sessions)) {
+        setActionResult(`${data.sessions.length} session(s) inspected for ${data.normalizedAgentId}.`);
+      } else {
+        setActionResult(data.message || `${action} completed.`);
+      }
+    } catch {
+      setActionResult(`${action} failed.`);
+    } finally {
+      setActionLoading(null);
+    }
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
@@ -192,19 +223,22 @@ export function AgentCommandCenter({ isOpen, onClose, agent, onRefresh, onRestar
                   <Zap className="w-4 h-4" /> Quick Actions
                 </h3>
                 <div className="grid grid-cols-2 gap-2">
-                  <button onClick={() => onRefresh(agent.agent_id)} className="flex items-center gap-2 px-4 py-2 bg-surface hover:bg-border rounded-lg text-sm">
-                    <RefreshCw className="w-4 h-4" /> Refresh
+                  <button onClick={() => runAction('refresh')} disabled={actionLoading !== null} className="flex items-center gap-2 px-4 py-2 bg-surface hover:bg-border rounded-lg text-sm disabled:opacity-50">
+                    <RefreshCw className={`w-4 h-4 ${actionLoading === 'refresh' ? 'animate-spin' : ''}`} /> Refresh
                   </button>
-                  <button onClick={() => onRestart(agent.agent_id)} className="flex items-center gap-2 px-4 py-2 bg-surface hover:bg-border rounded-lg text-sm">
+                  <button onClick={async () => { await runAction('restart'); await onRestart(agent.agent_id); }} disabled={actionLoading !== null} className="flex items-center gap-2 px-4 py-2 bg-surface hover:bg-border rounded-lg text-sm disabled:opacity-50">
                     <Play className="w-4 h-4" /> Restart
                   </button>
-                  <button className="flex items-center gap-2 px-4 py-2 bg-surface hover:bg-border rounded-lg text-sm">
-                    <FileText className="w-4 h-4" /> View Logs
+                  <button onClick={() => runAction('inspect')} disabled={actionLoading !== null} className="flex items-center gap-2 px-4 py-2 bg-surface hover:bg-border rounded-lg text-sm disabled:opacity-50">
+                    <FileText className="w-4 h-4" /> Inspect
                   </button>
-                  <button className="flex items-center gap-2 px-4 py-2 bg-surface hover:bg-border rounded-lg text-sm">
+                  <button className="flex items-center gap-2 px-4 py-2 bg-surface hover:bg-border rounded-lg text-sm opacity-60 cursor-default">
                     <BarChart3 className="w-4 h-4" /> Analytics
                   </button>
                 </div>
+                {actionResult ? (
+                  <div className="mt-3 text-xs text-cyan-300">{actionResult}</div>
+                ) : null}
               </div>
             </div>
 

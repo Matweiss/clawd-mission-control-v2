@@ -159,9 +159,43 @@ export function useAgentActions() {
   };
 
   const refreshAgent = async (agentId: string) => {
-    console.log('Refresh agent:', agentId);
-    return true;
+    try {
+      await fetch('/api/agents/action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ agentId, action: 'refresh' }),
+      });
+      return true;
+    } catch {
+      return false;
+    }
   };
 
-  return { spawnAgent, refreshAgent };
+  const restartAgent = async (agentId: string) => {
+    try {
+      await fetch('/api/agents/action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ agentId, action: 'restart' }),
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  const inspectAgent = async (agentId: string) => {
+    try {
+      const res = await fetch('/api/agents/action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ agentId, action: 'inspect' }),
+      });
+      return await res.json();
+    } catch {
+      return { ok: false };
+    }
+  };
+
+  return { spawnAgent, refreshAgent, restartAgent, inspectAgent };
 }

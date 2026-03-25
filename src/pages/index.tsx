@@ -64,7 +64,7 @@ const STAGE_COLORS: any = {
 
 export default function MissionControl() {
   const { isOpen, setIsOpen } = useCommandPalette();
-  const { spawnAgent, refreshAgent } = useAgentActions();
+  const { spawnAgent, refreshAgent, restartAgent } = useAgentActions();
   const { 
     emails, pipeline, calendarEvents,
     loading, lastRefresh, refresh 
@@ -344,8 +344,8 @@ export default function MissionControl() {
         isOpen={showAgentCommandCenter}
         onClose={() => setShowAgentCommandCenter(false)}
         agent={selectedAgent}
-        onRefresh={(agentId) => console.log('Refresh', agentId)}
-        onRestart={(agentId) => console.log('Restart', agentId)}
+        onRefresh={refreshAgent}
+        onRestart={restartAgent}
       />
 
       <SalesIntelligenceHub
