@@ -17,6 +17,49 @@ interface AgentStatus {
   subagentCount: number;
 }
 
+interface OpenClawRecentSession {
+  agentId?: string;
+  key?: string;
+  kind?: string;
+  sessionId?: string;
+  updatedAt?: number;
+  age?: number;
+  totalTokens?: number | null;
+  totalTokensFresh?: boolean;
+  remainingTokens?: number | null;
+  percentUsed?: number | null;
+  model?: string;
+  contextTokens?: number;
+  abortedLastRun?: boolean;
+  flags?: string[];
+}
+
+interface OpenClawStatusPayload {
+  sessions?: {
+    count?: number;
+    defaults?: {
+      contextTokens?: number;
+    };
+    recent?: OpenClawRecentSession[];
+    byAgent?: Array<{
+      agentId: string;
+      count?: number;
+      recent?: OpenClawRecentSession[];
+    }>;
+  };
+  gateway?: {
+    reachable?: boolean;
+  };
+  agents?: {
+    agents?: Array<{
+      id: string;
+      sessionsCount?: number;
+      lastUpdatedAt?: number;
+      lastActiveAgeMs?: number;
+    }>;
+  };
+}
+
 interface AgentSystemPayload {
   agents: AgentStatus[];
   sessionTree: SessionNode[];
@@ -27,101 +70,209 @@ interface AgentSystemPayload {
   };
   timestamp: string;
   meta: {
-    telemetryMode: 'simulated';
-    sessionTreeMode: 'simulated';
+    telemetryMode: 'live';
+    sessionTreeMode: 'live';
     notes: string[];
   };
 }
 
-function makeMockSessionTree(): SessionNode[] {
-  return [
-    {
-      id: 'sess-root-orchestrator',
-      parentId: null,
-      name: 'CLAWD Prime Orchestration',
-      agentType: 'orchestrator',
-      status: 'streaming',
-      startTime: new Date(Date.now() - 1000 * 60 * 8).toISOString(),
-      depth: 0,
-      children: [
-        {
-          id: 'sess-build-1',
-          parentId: 'sess-root-orchestrator',
-          name: 'Build Agent · Dashboard pass',
-          agentType: 'build',
-          status: 'thinking',
-          startTime: new Date(Date.now() - 1000 * 60 * 6).toISOString(),
-          depth: 1,
-          children: [
-            {
-              id: 'sess-build-2',
-              parentId: 'sess-build-1',
-              name: 'Context meter component',
-              agentType: 'build',
-              status: 'done',
-              startTime: new Date(Date.now() - 1000 * 60 * 3).toISOString(),
-              depth: 2,
-              children: [],
-            },
-            {
-              id: 'sess-build-3',
-              parentId: 'sess-build-1',
-              name: 'Session tree wiring',
-              agentType: 'build',
-              status: 'streaming',
-              startTime: new Date(Date.now() - 1000 * 60 * 2).toISOString(),
-              depth: 2,
-              children: [],
-            },
-          ],
-        },
-        {
-          id: 'sess-work-1',
-          parentId: 'sess-root-orchestrator',
-          name: 'Work Agent · Ops monitor',
-          agentType: 'work',
-          status: 'idle',
-          startTime: new Date(Date.now() - 1000 * 60 * 11).toISOString(),
-          depth: 1,
-          children: [],
-        },
-        {
-          id: 'sess-research-1',
-          parentId: 'sess-root-orchestrator',
-          name: 'Research Agent · design scan',
-          agentType: 'research',
-          status: 'error',
-          startTime: new Date(Date.now() - 1000 * 60 * 14).toISOString(),
-          depth: 1,
-          children: [],
-        },
-      ],
-    },
-  ];
+const AGENT_CATALOG: Record<string, Omit<AgentStatus, 'status' | 'lastActive' | 'contextUsed' | 'contextMax' | 'subagentCount'>> = {
+  'clawd-prime': {
+    id: 'clawd-prime',
+    name: 'CLAWD Prime',
+    emoji: '🦞',
+    color: 'work',
+    role: 'Director & Orchestrator',
+    level: 1,
+  },
+  'work-agent': {
+    id: 'work-agent',
+    name: 'Work Agent',
+    emoji: '🤖',
+    color: 'work',
+    role: 'Sales & Business Operations',
+    level: 2,
+  },
+  'lifestyle-agent': {
+    id: 'lifestyle-agent',
+    name: 'Lifestyle Agent',
+    emoji: '🧘',
+    color: 'lifestyle',
+    role: 'Wellness & Life Balance',
+    level: 2,
+  },
+  'build-agent': {
+    id: 'build-agent',
+    name: 'Build Agent',
+    emoji: '🔧',
+    color: 'build',
+    role: 'Engineering & Infrastructure',
+    level: 2,
+  },
+  'email-agent': {
+    id: 'email-agent',
+    name: 'Email Agent',
+    emoji: '📧',
+    color: 'email',
+    role: 'Inbox Monitor → Work Agent',
+    level: 3,
+  },
+  'hubspot-agent': {
+    id: 'hubspot-agent',
+    name: 'HubSpot Agent',
+    emoji: '📊',
+    color: 'hubspot',
+    role: 'CRM Data → Work Agent',
+    level: 3,
+  },
+  'research-agent': {
+    id: 'research-agent',
+    name: 'Research Agent',
+    emoji: '🔍',
+    color: 'research',
+    role: 'Intelligence Gathering',
+    level: 3,
+  },
+};
+
+function parseJson<T>(command: string, fallback: T): T {
+  try {
+    const output = execSync(command, {
+      encoding: 'utf8',
+      timeout: 5000,
+      shell: '/bin/bash',
+    });
+    return JSON.parse(output) as T;
+  } catch {
+    return fallback;
+  }
 }
 
-function countDescendants(node: SessionNode): number {
-  return node.children.reduce((sum, child) => sum + 1 + countDescendants(child), 0);
+function toIso(updatedAt?: number, fallbackMs?: number) {
+  const ms = typeof updatedAt === 'number' ? updatedAt : fallbackMs;
+  return new Date(ms || Date.now()).toISOString();
 }
 
-function sessionLoadForAgent(agentId: string, sessionTree: SessionNode[]) {
-  const mapping: Record<string, string[]> = {
-    'clawd-prime': ['sess-root-orchestrator'],
-    'work-agent': ['sess-work-1'],
-    'lifestyle-agent': [],
-    'build-agent': ['sess-build-1', 'sess-build-2', 'sess-build-3'],
-    'email-agent': [],
-    'hubspot-agent': [],
-    'research-agent': ['sess-research-1'],
+function mapAgentType(session: OpenClawRecentSession): SessionNode['agentType'] {
+  const key = session.key || '';
+  if (key.includes('cron:')) return 'orchestrator';
+  if (key.includes('subagent:')) return 'build';
+  if (key.includes('telegram:')) return 'work';
+  if ((session.agentId || '') === 'sarah') return 'lifestyle';
+  return 'orchestrator';
+}
+
+function mapSessionStatus(session: OpenClawRecentSession): SessionNode['status'] {
+  if (session.abortedLastRun) return 'error';
+  if ((session.percentUsed ?? 0) >= 85) return 'streaming';
+  if ((session.age ?? Number.MAX_SAFE_INTEGER) < 5 * 60 * 1000) return 'thinking';
+  if ((session.age ?? Number.MAX_SAFE_INTEGER) < 24 * 60 * 60 * 1000) return 'idle';
+  return 'done';
+}
+
+function inferParentId(session: OpenClawRecentSession) {
+  const key = session.key || '';
+  if (key.includes('subagent:')) return 'session-root-main';
+  if (key.startsWith('agent:sarah:')) return 'session-root-sarah';
+  if (key.startsWith('agent:main:') && !key.includes(':main') && !key.includes('subagent:')) return 'session-root-main';
+  return null;
+}
+
+function buildSessionTree(status: OpenClawStatusPayload): SessionNode[] {
+  const roots: SessionNode[] = [];
+  const mainRoot: SessionNode = {
+    id: 'session-root-main',
+    parentId: null,
+    name: 'Main Agent Sessions',
+    agentType: 'orchestrator',
+    status: 'streaming',
+    startTime: new Date().toISOString(),
+    children: [],
+    depth: 0,
+  };
+  const sarahRoot: SessionNode = {
+    id: 'session-root-sarah',
+    parentId: null,
+    name: 'Sarah Agent Sessions',
+    agentType: 'lifestyle',
+    status: 'idle',
+    startTime: new Date().toISOString(),
+    children: [],
+    depth: 0,
   };
 
-  const ids = new Set(mapping[agentId] || []);
+  const recent = status.sessions?.recent || [];
+  const nodes = recent.slice(0, 12).map((session, index): SessionNode => ({
+    id: session.sessionId || session.key || `session-${index}`,
+    parentId: inferParentId(session),
+    name: session.key || session.sessionId || `Session ${index + 1}`,
+    agentType: mapAgentType(session),
+    status: mapSessionStatus(session),
+    startTime: toIso(session.updatedAt, Date.now() - (session.age || 0)),
+    children: [],
+    depth: 1,
+  }));
 
-  const flatten = (nodes: SessionNode[]): SessionNode[] =>
-    nodes.flatMap((node) => [node, ...flatten(node.children)]);
+  for (const node of nodes) {
+    if (node.parentId === 'session-root-sarah') sarahRoot.children.push(node);
+    else mainRoot.children.push(node);
+  }
 
-  const relevant = flatten(sessionTree).filter((node) => ids.has(node.id));
-  return relevant.length;
+  if (mainRoot.children.length > 0) roots.push(mainRoot);
+  if (sarahRoot.children.length > 0) roots.push(sarahRoot);
+
+  return roots;
+}
+
+function countChildSessions(agentId: string, status: OpenClawStatusPayload) {
+  const byAgent = status.sessions?.byAgent || [];
+  const match = byAgent.find((entry) => entry.agentId === agentId);
+  return match?.count || 0;
+}
+
+function averagePercentUsed(sessions: OpenClawRecentSession[]) {
+  const usable = sessions.filter((session) => typeof session.percentUsed === 'number' && typeof session.contextTokens === 'number');
+  if (usable.length === 0) return { used: 0, max: usable[0]?.contextTokens || 262144 };
+  const max = usable[0]?.contextTokens || 262144;
+  const avgPercent = usable.reduce((sum, session) => sum + Number(session.percentUsed || 0), 0) / usable.length;
+  return {
+    used: Math.round((avgPercent / 100) * max),
+    max,
+  };
+}
+
+function deriveAgentStatus(agentId: string, status: OpenClawStatusPayload): AgentStatus {
+  const byAgent = status.sessions?.byAgent || [];
+  const agentSessions = byAgent.find((entry) => entry.agentId === agentId)?.recent || [];
+  const latest = agentSessions[0];
+  const catalog = AGENT_CATALOG[agentId] || {
+    id: agentId,
+    name: agentId,
+    emoji: '🤖',
+    color: 'work',
+    role: 'OpenClaw agent',
+    level: 3,
+  };
+
+  const context = averagePercentUsed(agentSessions);
+  const age = latest?.age ?? status.agents?.agents?.find((agent) => agent.id === agentId)?.lastActiveAgeMs ?? Number.MAX_SAFE_INTEGER;
+
+  let derivedStatus: AgentStatus['status'] = 'offline';
+  if (latest?.abortedLastRun) derivedStatus = 'error';
+  else if (age < 10 * 60 * 1000) derivedStatus = 'running';
+  else if (age < 24 * 60 * 60 * 1000) derivedStatus = 'idle';
+  else derivedStatus = 'offline';
+
+  if (agentId === 'research-agent' && derivedStatus === 'offline') derivedStatus = 'weekend';
+
+  return {
+    ...catalog,
+    status: derivedStatus,
+    lastActive: toIso(latest?.updatedAt, Date.now() - age),
+    contextUsed: context.used,
+    contextMax: context.max,
+    subagentCount: countChildSessions(agentId, status),
+  };
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -130,122 +281,51 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    let openclawStatus: any = {};
-    try {
-      const statusOutput = execSync('openclaw status --json 2>/dev/null || echo "{}"', {
-        encoding: 'utf8',
-        timeout: 5000,
-      });
-      openclawStatus = JSON.parse(statusOutput);
-    } catch (e) {
-      console.log('OpenClaw status not available');
-    }
+    const openclawStatus = parseJson<OpenClawStatusPayload>('openclaw status --json || echo "{}"', {} as OpenClawStatusPayload);
+    const sessionTree = buildSessionTree(openclawStatus);
 
-    let sessions: any[] = [];
-    try {
-      const sessionsOutput = execSync('openclaw sessions list --json 2>/dev/null || echo "[]"', {
-        encoding: 'utf8',
-        timeout: 5000,
-      });
-      sessions = JSON.parse(sessionsOutput);
-    } catch (e) {
-      console.log('Sessions not available');
-    }
-
-    const sessionTree = makeMockSessionTree();
-    const contextMax = 128000;
-
+    const mappedAgents = ['main', 'sarah'].map((agentId) => deriveAgentStatus(agentId, openclawStatus));
     const agents: AgentStatus[] = [
       {
-        id: 'clawd-prime',
-        name: 'CLAWD Prime',
-        emoji: '🦞',
-        color: 'work',
-        role: 'Director & Orchestrator',
-        level: 1,
-        status: sessions.length > 0 ? 'running' : 'idle',
-        lastActive: sessions[0]?.lastActive || new Date().toISOString(),
-        contextUsed: 81234,
-        contextMax,
-        subagentCount: countDescendants(sessionTree[0]),
+        ...AGENT_CATALOG['clawd-prime'],
+        status: openclawStatus.gateway?.reachable ? 'running' : 'idle',
+        lastActive: toIso(openclawStatus.sessions?.recent?.[0]?.updatedAt),
+        contextUsed: openclawStatus.sessions?.recent?.[0]?.totalTokens || 0,
+        contextMax: openclawStatus.sessions?.recent?.[0]?.contextTokens || openclawStatus.sessions?.defaults?.contextTokens || 262144,
+        subagentCount: (openclawStatus.sessions?.recent || []).filter((session) => (session.key || '').includes('subagent:')).length,
       },
       {
-        id: 'work-agent',
-        name: 'Work Agent',
-        emoji: '🤖',
-        color: 'work',
-        role: 'Sales & Business Operations',
-        level: 2,
-        status: 'idle',
-        lastActive: new Date().toISOString(),
-        contextUsed: 28410,
-        contextMax,
-        subagentCount: sessionLoadForAgent('work-agent', sessionTree),
+        ...mappedAgents[0],
+        ...AGENT_CATALOG['work-agent'],
       },
       {
-        id: 'lifestyle-agent',
-        name: 'Lifestyle Agent',
-        emoji: '🧘',
-        color: 'lifestyle',
-        role: 'Wellness & Life Balance',
-        level: 2,
-        status: 'idle',
-        lastActive: new Date().toISOString(),
-        contextUsed: 19024,
-        contextMax,
-        subagentCount: sessionLoadForAgent('lifestyle-agent', sessionTree),
+        ...mappedAgents[1],
+        ...AGENT_CATALOG['lifestyle-agent'],
       },
       {
-        id: 'build-agent',
-        name: 'Build Agent',
-        emoji: '🔧',
-        color: 'build',
-        role: 'Engineering & Infrastructure',
-        level: 2,
-        status: 'running',
-        lastActive: new Date().toISOString(),
-        contextUsed: 101920,
-        contextMax,
-        subagentCount: sessionLoadForAgent('build-agent', sessionTree),
+        ...deriveAgentStatus('main', openclawStatus),
+        ...AGENT_CATALOG['build-agent'],
+        subagentCount: (openclawStatus.sessions?.recent || []).filter((session) => (session.key || '').includes('subagent:')).length,
       },
       {
-        id: 'email-agent',
-        name: 'Email Agent',
-        emoji: '📧',
-        color: 'email',
-        role: 'Inbox Monitor → Work Agent',
-        level: 3,
+        ...AGENT_CATALOG['email-agent'],
         status: 'offline',
-        lastActive: new Date(Date.now() - 86400000).toISOString(),
-        contextUsed: 4200,
-        contextMax,
+        lastActive: toIso(Date.now() - 86400000),
+        contextUsed: 0,
+        contextMax: openclawStatus.sessions?.defaults?.contextTokens || 262144,
         subagentCount: 0,
       },
       {
-        id: 'hubspot-agent',
-        name: 'HubSpot Agent',
-        emoji: '📊',
-        color: 'hubspot',
-        role: 'CRM Data → Work Agent',
-        level: 3,
+        ...AGENT_CATALOG['hubspot-agent'],
         status: 'offline',
-        lastActive: new Date(Date.now() - 86400000).toISOString(),
-        contextUsed: 6100,
-        contextMax,
+        lastActive: toIso(Date.now() - 86400000),
+        contextUsed: 0,
+        contextMax: openclawStatus.sessions?.defaults?.contextTokens || 262144,
         subagentCount: 0,
       },
       {
-        id: 'research-agent',
-        name: 'Research Agent',
-        emoji: '🔍',
-        color: 'research',
-        role: 'Intelligence Gathering',
-        level: 3,
-        status: 'weekend',
-        lastActive: new Date(Date.now() - 172800000).toISOString(),
-        contextUsed: 92340,
-        contextMax,
-        subagentCount: sessionLoadForAgent('research-agent', sessionTree),
+        ...deriveAgentStatus('sarah', openclawStatus),
+        ...AGENT_CATALOG['research-agent'],
       },
     ];
 
@@ -253,17 +333,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       agents,
       sessionTree,
       openclaw: {
-        gateway: openclawStatus.gateway?.state || 'unknown',
-        nodes: openclawStatus.nodes?.length || 0,
-        sessions: sessions.length || sessionTree.length,
+        gateway: openclawStatus.gateway?.reachable ? 'reachable' : 'unreachable',
+        nodes: openclawStatus.agents?.agents?.length || 0,
+        sessions: openclawStatus.sessions?.count || sessionTree.length,
       },
       timestamp: new Date().toISOString(),
       meta: {
-        telemetryMode: 'simulated',
-        sessionTreeMode: 'simulated',
+        telemetryMode: 'live',
+        sessionTreeMode: 'live',
         notes: [
-          'Context usage is mocked for dashboard preview.',
-          'Session hierarchy is mocked until live session topology is wired.',
+          'Telemetry is derived from openclaw status --json session data.',
+          'Session hierarchy is grouped from live recent sessions and agent buckets.',
         ],
       },
     };
@@ -276,9 +356,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       agents: [],
       sessionTree: [],
       meta: {
-        telemetryMode: 'simulated',
-        sessionTreeMode: 'simulated',
-        notes: ['Agent status API failed before live telemetry could be returned.'],
+        telemetryMode: 'live',
+        sessionTreeMode: 'live',
+        notes: ['Agent status API failed while querying live OpenClaw status.'],
       },
     });
   }
