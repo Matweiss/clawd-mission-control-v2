@@ -9,6 +9,7 @@ import {
 import { useCommandPalette, useRealtimeData, useAgentActions } from '../hooks/useMissionControl';
 import { useAgentStatus } from '../hooks/useAgentStatus';
 import { AgentCard } from '../components/AgentCard';
+import { SessionTree } from '../components/SessionTree';
 import { CommandPalette } from '../components/CommandPalette';
 import { LifestyleHealthPanel } from '../components/LifestyleHealthPanel';
 import { QuickActionsPalette } from '../components/QuickActionsPalette';
@@ -763,7 +764,7 @@ export default function MissionControl() {
                 </StaggerItem>
                 <StaggerItem>
                   <AnimatedCard>
-                    <ActivityPanel activities={[]} />
+                    <SessionTree sessions={agentStatus?.sessionTree || []} />
                   </AnimatedCard>
                 </StaggerItem>
 

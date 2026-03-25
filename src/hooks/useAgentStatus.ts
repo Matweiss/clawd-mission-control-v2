@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import type { SessionNode } from '../components/SessionTree';
 
 interface Agent {
   id: string;
@@ -9,6 +10,9 @@ interface Agent {
   level: number;
   status: 'running' | 'idle' | 'error' | 'offline' | 'weekend';
   lastActive: string;
+  contextUsed?: number;
+  contextMax?: number;
+  subagentCount?: number;
 }
 
 interface AgentSystemStatus {
@@ -18,6 +22,7 @@ interface AgentSystemStatus {
     nodes: number;
     sessions: number;
   };
+  sessionTree: SessionNode[];
   timestamp: string;
 }
 
@@ -46,7 +51,7 @@ export function useAgentStatus() {
 
   useEffect(() => {
     fetchStatus();
-    const interval = setInterval(fetchStatus, 30000);
+    const interval = setInterval(fetchStatus, 5000);
     return () => clearInterval(interval);
   }, [fetchStatus]);
 

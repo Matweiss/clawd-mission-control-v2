@@ -1,5 +1,6 @@
 import React from 'react';
-import { RefreshCw, Activity } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
+import { ContextPressureMeter } from './ContextPressureMeter';
 
 interface AgentConfig {
   id: string;
@@ -10,6 +11,9 @@ interface AgentConfig {
   level: number;
   status: 'running' | 'idle' | 'error' | 'offline' | 'weekend';
   lastActive: string;
+  contextUsed?: number;
+  contextMax?: number;
+  subagentCount?: number;
 }
 
 const colorMap: Record<string, { border: string; text: string; bg: string }> = {
@@ -51,6 +55,9 @@ interface AgentCardProps {
 export function AgentCard({ agent, onRefresh }: AgentCardProps) {
   const colors = colorMap[agent.color] || colorMap.work;
   const status = statusConfig[agent.status] || statusConfig.offline;
+  const contextUsed = agent.contextUsed ?? 0;
+  const contextMax = agent.contextMax ?? 128000;
+  const subagentCount = agent.subagentCount ?? 0;
 
   return (
     <div
@@ -94,21 +101,30 @@ export function AgentCard({ agent, onRefresh }: AgentCardProps) {
         )}
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-3">
         <div className="flex items-center justify-between text-xs">
           <span className="text-gray-500">Status</span>
           <span className={`font-medium ${status.color.replace('bg-', 'text-')}`}>{status.label}</span>
         </div>
 
-        <div className="flex items-center justify-between text-xs">
-          <span className="text-gray-500">Last Active</span>
-          <span className="font-mono text-gray-400">{formatTimeAgo(agent.lastActive)}</span>
+        <ContextPressureMeter used={contextUsed} max={contextMax} size="sm" />
+
+        <div className="grid grid-cols-2 gap-2 text-xs">
+          <div className="rounded-lg bg-surface-light px-2.5 py-2">
+            <div className="text-gray-500">Last Active</div>
+            <div className="font-mono text-gray-300 mt-1">{formatTimeAgo(agent.lastActive)}</div>
+          </div>
+          <div className="rounded-lg bg-surface-light px-2.5 py-2" title={`${subagentCount} child sessions`}>
+            <div className="text-gray-500">Subagents</div>
+            <div className="font-mono text-gray-300 mt-1">{subagentCount}</div>
+          </div>
         </div>
       </div>
 
       <div className="flex gap-2 mt-3">
         <button
-          onClick={() => alert(`Agent: ${agent.name}\nStatus: ${status.label}\nLast Active: ${formatTimeAgo(agent.lastActive)}\n\nFull logs available in OpenClaw session logs.`)}          className="flex-1 py-1.5 text-xs bg-surface-light hover:bg-border rounded transition-colors"
+          onClick={() => alert(`Agent: ${agent.name}\nStatus: ${status.label}\nContext: ${contextUsed.toLocaleString()} / ${contextMax.toLocaleString()}\nLast Active: ${formatTimeAgo(agent.lastActive)}\nSubagents: ${subagentCount}\n\nFull logs available in OpenClaw session logs.`)}
+          className="flex-1 py-1.5 text-xs bg-surface-light hover:bg-border rounded transition-colors"
         >
           View Logs
         </button>
