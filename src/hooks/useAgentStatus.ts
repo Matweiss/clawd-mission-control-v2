@@ -24,6 +24,11 @@ interface AgentSystemStatus {
   };
   sessionTree: SessionNode[];
   timestamp: string;
+  meta?: {
+    telemetryMode: 'simulated' | 'live';
+    sessionTreeMode: 'simulated' | 'live';
+    notes: string[];
+  };
 }
 
 export function useAgentStatus() {

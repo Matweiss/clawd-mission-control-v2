@@ -70,6 +70,17 @@ export default function MissionControl() {
     loading, lastRefresh, refresh 
   } = useRealtimeData();
   const { data: agentStatus, refresh: refreshAgents } = useAgentStatus();
+
+  const openAgentCommandCenter = (agent: any) => {
+    setSelectedAgent({
+      agent_id: agent.id,
+      status: agent.status,
+      updated_at: agent.lastActive,
+      success_rate: agent.status === 'error' ? 62 : agent.status === 'running' ? 96 : 88,
+      last_task: agent.role,
+    });
+    setShowAgentCommandCenter(true);
+  };
   const [activeAction, setActiveAction] = useState('');
   const [showPipelineModal, setShowPipelineModal] = useState(false);
   const [showEmailModal, setShowEmailModal] = useState(false);
@@ -595,6 +606,9 @@ export default function MissionControl() {
             <div>
               <div className="text-sm font-semibold text-white">System Status</div>
               <div className="text-xs text-gray-400">Core systems are operational, with a few known warnings still on the board.</div>
+              {agentStatus?.meta?.telemetryMode === 'simulated' && (
+                <div className="mt-1 text-[11px] text-blue-300">Agent telemetry and session hierarchy are currently simulated for preview.</div>
+              )}
             </div>
 
             <div className="flex flex-wrap items-center gap-2 text-xs">
@@ -689,6 +703,8 @@ export default function MissionControl() {
                         <AgentCard 
                           agent={agent}
                           onRefresh={refreshAgents}
+                          onOpenDetails={openAgentCommandCenter}
+                          telemetryMode={agentStatus?.meta?.telemetryMode === 'simulated' ? 'simulated' : 'live'}
                         />
                       </AnimatedCard>
                     </StaggerItem>
@@ -762,6 +778,13 @@ export default function MissionControl() {
                 <StaggerItem>
                   <SectionLabel title="Recent Events" />
                 </StaggerItem>
+                {agentStatus?.meta?.sessionTreeMode === 'simulated' && (
+                  <StaggerItem>
+                    <div className="rounded-xl border border-blue-500/20 bg-blue-500/10 px-4 py-3 text-xs text-blue-200">
+                      Session tree is currently simulated to preview orchestration UX. Wire to live OpenClaw session topology next.
+                    </div>
+                  </StaggerItem>
+                )}
                 <StaggerItem>
                   <AnimatedCard>
                     <SessionTree sessions={agentStatus?.sessionTree || []} />

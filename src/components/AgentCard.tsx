@@ -50,9 +50,11 @@ function formatTimeAgo(dateString: string): string {
 interface AgentCardProps {
   agent: AgentConfig;
   onRefresh?: () => void;
+  onOpenDetails?: (agent: AgentConfig) => void;
+  telemetryMode?: 'live' | 'simulated';
 }
 
-export function AgentCard({ agent, onRefresh }: AgentCardProps) {
+export function AgentCard({ agent, onRefresh, onOpenDetails, telemetryMode = 'live' }: AgentCardProps) {
   const colors = colorMap[agent.color] || colorMap.work;
   const status = statusConfig[agent.status] || statusConfig.offline;
   const contextUsed = agent.contextUsed ?? 0;
@@ -60,8 +62,10 @@ export function AgentCard({ agent, onRefresh }: AgentCardProps) {
   const subagentCount = agent.subagentCount ?? 0;
 
   return (
-    <div
-      className={`bg-surface border ${
+    <button
+      type="button"
+      onClick={() => onOpenDetails?.(agent)}
+      className={`w-full text-left bg-surface border ${
         agent.status === 'error' ? 'border-red-500' : agent.level === 1 ? 'border-red-500/50' : 'border-border'
       } rounded-xl p-4 hover:border-gray-600 transition-colors ${
         agent.level === 1 ? 'ring-1 ring-red-500/20' : ''
@@ -92,9 +96,13 @@ export function AgentCard({ agent, onRefresh }: AgentCardProps) {
         </div>
         {onRefresh && (
           <button
-            onClick={onRefresh}
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onRefresh();
+            }}
             className="p-1 hover:bg-surface-light rounded transition-colors"
-            title="Refresh"
+            title="Refresh all agent status"
           >
             <RefreshCw className="w-4 h-4 text-gray-500" />
           </button>
@@ -102,6 +110,11 @@ export function AgentCard({ agent, onRefresh }: AgentCardProps) {
       </div>
 
       <div className="space-y-3">
+        {telemetryMode === 'simulated' && (
+          <div className="rounded-lg border border-blue-500/20 bg-blue-500/10 px-2.5 py-2 text-[11px] text-blue-200">
+            Simulated telemetry shown for context + session load.
+          </div>
+        )}
         <div className="flex items-center justify-between text-xs">
           <span className="text-gray-500">Status</span>
           <span className={`font-medium ${status.color.replace('bg-', 'text-')}`}>{status.label}</span>
@@ -122,23 +135,19 @@ export function AgentCard({ agent, onRefresh }: AgentCardProps) {
       </div>
 
       <div className="flex gap-2 mt-3">
-        <button
-          type="button"
-          disabled
-          className="flex-1 py-1.5 text-xs bg-surface-light text-gray-500 rounded cursor-not-allowed"
-          title="Agent logs will be wired into OpenClaw session history in a follow-up pass"
+        <div
+          className="flex-1 py-1.5 text-xs bg-surface-light text-gray-400 rounded text-center"
+          title="Open the card to inspect agent details"
         >
-          Logs Soon
-        </button>
-        <button
-          type="button"
-          disabled
-          className="flex-1 py-1.5 text-xs bg-surface-light text-gray-500 rounded cursor-not-allowed"
+          Open Details
+        </div>
+        <div
+          className="flex-1 py-1.5 text-xs bg-surface-light text-gray-500 rounded text-center"
           title="Task spawning from cards is planned but not yet wired"
         >
           Spawn Soon
-        </button>
+        </div>
       </div>
-    </div>
+    </button>
   );
 }

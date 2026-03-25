@@ -17,6 +17,22 @@ interface AgentStatus {
   subagentCount: number;
 }
 
+interface AgentSystemPayload {
+  agents: AgentStatus[];
+  sessionTree: SessionNode[];
+  openclaw: {
+    gateway: string;
+    nodes: number;
+    sessions: number;
+  };
+  timestamp: string;
+  meta: {
+    telemetryMode: 'simulated';
+    sessionTreeMode: 'simulated';
+    notes: string[];
+  };
+}
+
 function makeMockSessionTree(): SessionNode[] {
   return [
     {
@@ -233,7 +249,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       },
     ];
 
-    return res.status(200).json({
+    const payload: AgentSystemPayload = {
       agents,
       sessionTree,
       openclaw: {
@@ -242,13 +258,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         sessions: sessions.length || sessionTree.length,
       },
       timestamp: new Date().toISOString(),
-    });
+      meta: {
+        telemetryMode: 'simulated',
+        sessionTreeMode: 'simulated',
+        notes: [
+          'Context usage is mocked for dashboard preview.',
+          'Session hierarchy is mocked until live session topology is wired.',
+        ],
+      },
+    };
+
+    return res.status(200).json(payload);
   } catch (error) {
     console.error('Agent status API error:', error);
     return res.status(500).json({
       error: 'Failed to fetch agent status',
       agents: [],
       sessionTree: [],
+      meta: {
+        telemetryMode: 'simulated',
+        sessionTreeMode: 'simulated',
+        notes: ['Agent status API failed before live telemetry could be returned.'],
+      },
     });
   }
 }
