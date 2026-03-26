@@ -86,26 +86,43 @@ const AGENT_CONFIG: Record<string, { name: string; emoji: string; color: string;
 };
 
 export function AgentCommandCenter({ isOpen, onClose, agent, onRefresh, onRestart }: AgentCommandCenterProps) {
-  if (!isOpen || !agent) return null;
+  const [history, setHistory] = useState<AgentHistoryItem[]>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [actionResult, setActionResult] = useState<string>('');
 
-  const config = AGENT_CONFIG[agent.agent_id] || {
-    name: agent.agent_id,
+  const safeAgent = agent || {
+    agent_id: 'unknown',
+    status: 'offline',
+    updated_at: new Date(0).toISOString(),
+    success_rate: 0,
+    last_task: '',
+    model: undefined,
+    source_agent_id: undefined,
+    context_used: 0,
+    context_max: 0,
+    subagent_count: 0,
+  };
+
+  const config = AGENT_CONFIG[safeAgent.agent_id] || {
+    name: safeAgent.agent_id,
     emoji: '🤖',
     color: '#6B7280',
     responsibilities: ['General agent tasks'],
     capabilities: ['Standard operations']
   };
 
-  const isOnline = agent.status === 'online' || agent.status === 'idle' || agent.status === 'running';
-  const lastUpdate = new Date(agent.updated_at);
+  const isOnline = safeAgent.status === 'online' || safeAgent.status === 'idle' || safeAgent.status === 'running';
+  const lastUpdate = new Date(safeAgent.updated_at);
   const timeSinceUpdate = Math.floor((Date.now() - lastUpdate.getTime()) / 1000 / 60);
-  const [history, setHistory] = useState<AgentHistoryItem[]>([]);
-  const [historyLoading, setHistoryLoading] = useState(false);
-  const [actionLoading, setActionLoading] = useState<string | null>(null);
-  const [actionResult, setActionResult] = useState<string>('');
 
   useEffect(() => {
-    if (!agent) return;
+    if (!isOpen || !agent) {
+      setHistory([]);
+      setHistoryLoading(false);
+      return;
+    }
+
     let active = true;
     const agentId = agent.agent_id;
     async function loadHistory() {
@@ -124,7 +141,7 @@ export function AgentCommandCenter({ isOpen, onClose, agent, onRefresh, onRestar
     return () => {
       active = false;
     };
-  }, [agent]);
+  }, [isOpen, agent]);
 
   async function runAction(action: 'refresh' | 'restart' | 'inspect') {
     if (!agent) return;
@@ -154,6 +171,8 @@ export function AgentCommandCenter({ isOpen, onClose, agent, onRefresh, onRestar
       setActionLoading(null);
     }
   }
+
+  if (!isOpen || !agent) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">

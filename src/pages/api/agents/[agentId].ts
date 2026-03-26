@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { execSync } from 'child_process';
+import { normalizeOpenClawAgentId, runOpenClawJson } from '../../../lib/openclaw-cli';
 
 interface OpenClawRecentSession {
   agentId?: string;
@@ -27,24 +27,6 @@ interface OpenClawStatusPayload {
   };
 }
 
-function parseJson<T>(command: string, fallback: T): T {
-  try {
-    const output = execSync(command, {
-      encoding: 'utf8',
-      timeout: 5000,
-      shell: '/bin/bash',
-    });
-    return JSON.parse(output) as T;
-  } catch {
-    return fallback;
-  }
-}
-
-function normalizeAgentId(agentId: string) {
-  if (agentId === 'clawd-prime' || agentId === 'work-agent' || agentId === 'build-agent' || agentId === 'email-agent' || agentId === 'hubspot-agent') return 'main';
-  if (agentId === 'lifestyle-agent' || agentId === 'research-agent') return 'sarah';
-  return agentId;
-}
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'GET') {
@@ -52,8 +34,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const rawAgentId = String(req.query.agentId || '');
-  const openclawAgentId = normalizeAgentId(rawAgentId);
-  const status = parseJson<OpenClawStatusPayload>('openclaw status --json || echo "{}"', {} as OpenClawStatusPayload);
+  const openclawAgentId = normalizeOpenClawAgentId(rawAgentId);
+  const status = runOpenClawJson<OpenClawStatusPayload>(['status'], {} as OpenClawStatusPayload);
 
   const byAgent = status.sessions?.byAgent || [];
   const recent = byAgent.find((entry) => entry.agentId === openclawAgentId)?.recent || [];

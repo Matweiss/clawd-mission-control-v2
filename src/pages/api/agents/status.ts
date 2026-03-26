@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { execSync } from 'child_process';
 import type { SessionNode } from '../../../components/SessionTree';
+import { runOpenClawJson } from '../../../lib/openclaw-cli';
 
 interface AgentStatus {
   id: string;
@@ -137,18 +137,6 @@ const AGENT_CATALOG: Record<string, Omit<AgentStatus, 'status' | 'lastActive' | 
   },
 };
 
-function parseJson<T>(command: string, fallback: T): T {
-  try {
-    const output = execSync(command, {
-      encoding: 'utf8',
-      timeout: 5000,
-      shell: '/bin/bash',
-    });
-    return JSON.parse(output) as T;
-  } catch {
-    return fallback;
-  }
-}
 
 function toIso(updatedAt?: number, fallbackMs?: number) {
   const ms = typeof updatedAt === 'number' ? updatedAt : fallbackMs;
@@ -331,7 +319,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const openclawStatus = parseJson<OpenClawStatusPayload>('openclaw status --json || echo "{}"', {} as OpenClawStatusPayload);
+    const openclawStatus = runOpenClawJson<OpenClawStatusPayload>(['status'], {} as OpenClawStatusPayload);
     const sessionTree = buildSessionTree(openclawStatus);
 
     const mappedAgents = ['main', 'sarah'].map((agentId) => deriveAgentStatus(agentId, openclawStatus));

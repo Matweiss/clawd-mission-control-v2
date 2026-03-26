@@ -1,24 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { execSync } from 'child_process';
-
-function normalizeAgentId(agentId: string) {
-  if (['clawd-prime', 'work-agent', 'build-agent', 'email-agent', 'hubspot-agent'].includes(agentId)) return 'main';
-  if (['lifestyle-agent', 'research-agent'].includes(agentId)) return 'sarah';
-  return agentId;
-}
-
-function runJson(command: string, fallback: any) {
-  try {
-    const out = execSync(command, {
-      encoding: 'utf8',
-      timeout: 8000,
-      shell: '/bin/bash',
-    });
-    return JSON.parse(out);
-  } catch {
-    return fallback;
-  }
-}
+import { normalizeOpenClawAgentId, runOpenClawJson } from '../../../lib/openclaw-cli';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -26,24 +7,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const { agentId, action } = req.body || {};
-  const normalized = normalizeAgentId(String(agentId || ''));
+  const normalized = normalizeOpenClawAgentId(String(agentId || ''));
 
   if (!agentId || !action) {
     return res.status(400).json({ error: 'agentId and action are required' });
   }
 
   if (action === 'refresh') {
-    const status = runJson('openclaw status --json || echo "{}"', {});
+    const status = runOpenClawJson(['status'], {});
     return res.status(200).json({ ok: true, action, agentId, normalizedAgentId: normalized, status });
   }
 
   if (action === 'inspect') {
-    const sessions = runJson(`openclaw sessions --agent ${normalized} --json || echo "[]"`, []);
+    const sessions = runOpenClawJson(['sessions', '--agent', normalized], [], 8000);
     return res.status(200).json({ ok: true, action, agentId, normalizedAgentId: normalized, sessions });
   }
 
   if (action === 'restart') {
-    const sessions = runJson(`openclaw sessions --agent ${normalized} --json || echo "[]"`, []);
+    const sessions = runOpenClawJson(['sessions', '--agent', normalized], [], 8000);
     return res.status(200).json({
       ok: true,
       action,

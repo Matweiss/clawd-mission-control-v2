@@ -174,32 +174,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }));
       }
     } catch (e) {
-      console.log('Calendar fetch failed, using mock data');
+      console.warn('Calendar fetch failed', e);
     }
 
-    // Fallback to mock events if no calendar data
     if (events.length === 0) {
-      const now = new Date();
-      events = [
-        {
-          id: '1',
-          summary: 'Team Standup',
-          start: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 10, 0).toISOString(),
-          end: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 10, 30).toISOString(),
-        },
-        {
-          id: '2',
-          summary: 'Client Call',
-          start: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 14, 0).toISOString(),
-          end: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 15, 0).toISOString(),
-        },
-        {
-          id: '3',
-          summary: 'Dinner with Sarah',
-          start: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 19, 0).toISOString(),
-          end: new Date(now.getFullYear(), now.getMonth(), now.getDate(), 21, 0).toISOString(),
-        },
-      ];
+      return res.status(200).json({
+        recommendations: [],
+        freeSlots: 0,
+        eventsToday: 0,
+        timestamp: new Date().toISOString(),
+        mode: 'empty-calendar',
+      });
     }
 
     const freeSlots = findFreeTimeSlots(events);
@@ -210,6 +195,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       freeSlots: freeSlots.length,
       eventsToday: events.length,
       timestamp: new Date().toISOString(),
+      mode: 'live-calendar',
     });
   } catch (error) {
     console.error('Recommendation engine error:', error);
