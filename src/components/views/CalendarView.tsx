@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Calendar as CalendarIcon, Clock, Users, FileText, ExternalLink, ChevronLeft, ChevronRight, X, MapPin, Video, RefreshCw } from 'lucide-react';
 import { fetchCalendarEvents, CalendarEvent as GoogleCalendarEvent } from '../../lib/google-calendar';
 
@@ -147,12 +147,7 @@ export function CalendarView({ events = [] }: { events?: CalendarEvent[] }) {
   const [calendarEvents, setCalendarEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch real calendar data on mount
-  useEffect(() => {
-    loadCalendarEvents();
-  }, []);
-
-  const loadCalendarEvents = async () => {
+  const loadCalendarEvents = useCallback(async () => {
     setLoading(true);
     try {
       // Get events for the current week
@@ -178,7 +173,12 @@ export function CalendarView({ events = [] }: { events?: CalendarEvent[] }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentDate]);
+
+  // Fetch real calendar data on mount and when week changes
+  useEffect(() => {
+    loadCalendarEvents();
+  }, [loadCalendarEvents]);
 
   const formatTime = (isoString: string) => {
     return new Date(isoString).toLocaleTimeString('en-US', { 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Brain, 
   FileText, 
@@ -53,11 +53,7 @@ export function BrainDataPanel() {
   const [showExport, setShowExport] = useState(false);
   const [showEmailImport, setShowEmailImport] = useState(false);
 
-  useEffect(() => {
-    fetchBrainData();
-  }, [activeTab]);
-
-  const fetchBrainData = async () => {
+  const fetchBrainData = useCallback(async () => {
     setLoading(true);
     try {
       const response = await fetch(`/api/brain-data?type=${activeTab}&limit=20`);
@@ -78,7 +74,11 @@ export function BrainDataPanel() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [activeTab]);
+
+  useEffect(() => {
+    fetchBrainData();
+  }, [fetchBrainData]);
 
   const getGitHubUrl = (path: string) => {
     return `https://github.com/Matweiss/clawd-brain-data/blob/main/${path}`;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Network, Search, ZoomIn, ZoomOut, RotateCcw, X } from 'lucide-react';
 
 interface MemoryNode {
@@ -32,11 +32,7 @@ export function MemoryGraph({ onSelectMemory, onClose }: MemoryGraphProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    fetchGraphData();
-  }, []);
-
-  const fetchGraphData = async () => {
+  const fetchGraphData = useCallback(async () => {
     try {
       const response = await fetch('/api/brain-data?limit=100');
       if (response.ok) {
@@ -90,7 +86,11 @@ export function MemoryGraph({ onSelectMemory, onClose }: MemoryGraphProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchGraphData();
+  }, [fetchGraphData]);
 
   const calculatePositions = (nodes: MemoryNode[], links: GraphLink[]): MemoryNode[] => {
     const width = 800;

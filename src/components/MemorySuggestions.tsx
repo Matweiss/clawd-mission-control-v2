@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Lightbulb, X, Link2, Sparkles } from 'lucide-react';
 
 interface RelatedMemory {
@@ -26,21 +26,7 @@ export function MemorySuggestions({
   const [loading, setLoading] = useState(false);
   const [dismissed, setDismissed] = useState(false);
 
-  useEffect(() => {
-    if (!currentTitle && !currentContent) {
-      setSuggestions([]);
-      return;
-    }
-
-    // Debounce the search
-    const timer = setTimeout(() => {
-      findRelatedMemories();
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, [currentTitle, currentContent, currentTags]);
-
-  const findRelatedMemories = async () => {
+  const findRelatedMemories = useCallback(async () => {
     if (currentTitle.length < 3 && currentContent.length < 10) return;
 
     setLoading(true);
@@ -97,7 +83,20 @@ export function MemorySuggestions({
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentContent, currentTags, currentTitle]);
+
+  useEffect(() => {
+    if (!currentTitle && !currentContent) {
+      setSuggestions([]);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      findRelatedMemories();
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [currentTitle, currentContent, currentTags, findRelatedMemories]);
 
   const getTypeColor = (type: string) => {
     switch (type) {

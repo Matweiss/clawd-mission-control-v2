@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { Film, Star, Clock, RefreshCw, MapPin, Plus, Check, Eye, Trash2 } from 'lucide-react';
 
 interface Movie {
@@ -208,10 +209,13 @@ export function MovieCard() {
               data.movies.map((movie) => (
                 <div key={movie.id} className="flex gap-3 p-2 bg-surface-light rounded-lg group">
                   {movie.poster_path ? (
-                    <img 
-                      src={movie.poster_path} 
+                    <Image
+                      src={movie.poster_path}
                       alt={movie.title}
+                      width={64}
+                      height={96}
                       className="w-16 h-24 object-cover rounded"
+                      unoptimized
                     />
                   ) : (
                     <div className="w-16 h-24 bg-surface flex items-center justify-center rounded">
@@ -276,7 +280,7 @@ export function MovieCard() {
               watchlistData.watchlist.map((movie) => (
                 <div key={movie.id} className="flex gap-3 p-2 bg-surface-light rounded-lg group">
                   {movie.poster_path ? (
-                    <img src={movie.poster_path} alt={movie.title} className="w-16 h-24 object-cover rounded" />
+                    <Image src={movie.poster_path} alt={movie.title} width={64} height={96} className="w-16 h-24 object-cover rounded" unoptimized />
                   ) : (
                     <div className="w-16 h-24 bg-surface flex items-center justify-center rounded">
                       <Film className="w-6 h-6 text-gray-600" />
@@ -323,7 +327,7 @@ export function MovieCard() {
               watchlistData.seenList.map((movie) => (
                 <div key={movie.id} className="flex gap-3 p-2 bg-surface-light rounded-lg group">
                   {movie.poster_path ? (
-                    <img src={movie.poster_path} alt={movie.title} className="w-16 h-24 object-cover rounded" />
+                    <Image src={movie.poster_path} alt={movie.title} width={64} height={96} className="w-16 h-24 object-cover rounded" unoptimized />
                   ) : (
                     <div className="w-16 h-24 bg-surface flex items-center justify-center rounded">
                       <Film className="w-6 h-6 text-gray-600" />

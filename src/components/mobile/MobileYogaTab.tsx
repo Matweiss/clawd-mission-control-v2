@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Dumbbell, Clock, MapPin, ExternalLink, Flame } from 'lucide-react';
 
 interface YogaClass {
@@ -20,11 +20,7 @@ export function MobileYogaTab() {
   const [activeDay, setActiveDay] = useState<'sun' | 'mon'>('sun');
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchYoga();
-  }, []);
-
-  const fetchYoga = async (day: 'sun' | 'mon' = activeDay) => {
+  const fetchYoga = useCallback(async (day: 'sun' | 'mon' = activeDay) => {
     try {
       const response = await fetch(`/api/yoga/schedule?day=${day}`);
       if (response.ok) {
@@ -37,7 +33,11 @@ export function MobileYogaTab() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [activeDay]);
+
+  useEffect(() => {
+    fetchYoga();
+  }, [fetchYoga]);
 
   const currentStudio = studios.find(s => s.name === activeStudio);
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Film, Clock, MapPin, ExternalLink, Star, Plus, Check } from 'lucide-react';
 
 interface Movie {
@@ -13,11 +13,7 @@ export function MobileMoviesTab() {
   const [watchlist, setWatchlist] = useState<string[]>([]);
   const [activeDay, setActiveDay] = useState<'sun' | 'mon'>('sun');
 
-  useEffect(() => {
-    fetchMovies();
-  }, []);
-
-  const fetchMovies = async (day: 'sun' | 'mon' = activeDay) => {
+  const fetchMovies = useCallback(async (day: 'sun' | 'mon' = activeDay) => {
     try {
       const response = await fetch(`/api/movies/regal-sherman-oaks?day=${day}`);
       if (response.ok) {
@@ -30,7 +26,11 @@ export function MobileMoviesTab() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [activeDay]);
+
+  useEffect(() => {
+    fetchMovies();
+  }, [fetchMovies]);
 
   const toggleWatchlist = (title: string) => {
     setWatchlist(prev => 

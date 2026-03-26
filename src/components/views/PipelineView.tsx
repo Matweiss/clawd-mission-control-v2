@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   TrendingUp, DollarSign, Calendar, Target, ExternalLink,
   Filter, Search, MoreHorizontal, AlertCircle, CheckCircle2,
@@ -57,16 +57,16 @@ export function PipelineView() {
   const [isEditing, setIsEditing] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
 
-  useEffect(() => {
-    loadDeals();
-  }, []);
-
-  const loadDeals = async () => {
+  const loadDeals = useCallback(async () => {
     setLoading(true);
     const data = await fetchDealsFromSheet();
     setDeals(data.length > 0 ? data : getSampleDeals());
     setLoading(false);
-  };
+  }, []);
+
+  useEffect(() => {
+    loadDeals();
+  }, [loadDeals]);
 
   const getSampleDeals = (): Deal[] => [
     // Your ACTUAL deals from Google Sheet
