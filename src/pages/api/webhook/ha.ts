@@ -3,9 +3,14 @@
 
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-const HA_SECRET = process.env.HA_WEBHOOK_SECRET || 'your-secret-here';
+const HA_SECRET = process.env.HA_WEBHOOK_SECRET;
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (!HA_SECRET) {
+    console.error('HA_WEBHOOK_SECRET is not configured');
+    return res.status(500).json({ error: 'Webhook secret not configured' });
+  }
+
   // Verify Home Assistant secret
   const authHeader = req.headers['x-ha-secret'];
   if (authHeader !== HA_SECRET) {

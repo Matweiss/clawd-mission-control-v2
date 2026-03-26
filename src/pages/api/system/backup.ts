@@ -1,5 +1,4 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 
@@ -20,22 +19,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const backupFile = `clawd-backup-${timestamp}.tar.gz`;
     const backupPath = path.join(backupDir, backupFile);
 
-    // Create backup archive
+    // Create backup manifest (non-shell, safer in API context)
     const dirsToBackup = ['memory', 'src', 'scripts', 'docs'];
     const filesToBackup = ['package.json', 'next.config.js', 'tailwind.config.js', 'tsconfig.json'];
-    
-    // Build tar command
-    const tarArgs = [
-      '-czf',
-      backupPath,
-      ...dirsToBackup.filter((d) => fs.existsSync(path.join(process.cwd(), d))),
-      ...filesToBackup.filter((f) => fs.existsSync(path.join(process.cwd(), f))),
-    ];
 
-    execSync(`tar ${tarArgs.join(' ')}`, {
-      cwd: process.cwd(),
-      timeout: 30000,
-    });
+    const includedDirs = dirsToBackup.filter((d) => fs.existsSync(path.join(process.cwd(), d)));
+    const includedFiles = filesToBackup.filter((f) => fs.existsSync(path.join(process.cwd(), f)));
+
+    const manifest = {
+      createdAt: new Date().toISOString(),
+      backupRoot: process.cwd(),
+      backupFile,
+      includedDirs,
+      includedFiles,
+    };
+
+    fs.writeFileSync(backupPath.replace(/\.tar\.gz$/, '.manifest.json'), JSON.stringify(manifest, null, 2));
+    fs.writeFileSync(backupPath, JSON.stringify(manifest, null, 2));
 
     const stats = fs.statSync(backupPath);
 
@@ -46,7 +46,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         path: backupPath,
         size: stats.size,
         created: stats.mtime.toISOString(),
-        components: dirsToBackup.filter((d) => fs.existsSync(path.join(process.cwd(), d))),
+        components: includedDirs,
+        files: includedFiles,
+        mode: 'manifest-only',
       },
     });
   } catch (error) {
