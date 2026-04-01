@@ -1,136 +1,746 @@
 {
-  "updatedAt": "2026-03-21T06:45:00Z",
+  "updatedAt": "2026-04-01T22:53:25Z",
   "window": {
-    "start": "2026-03-21",
-    "end": "2026-03-22",
-    "label": "Sat Mar 21 – Sun Mar 22, 2026"
+    "start": "2026-04-02",
+    "end": "2026-04-05",
+    "label": "Thu-Sun"
   },
   "sources": {
     "corepower": {
       "name": "CorePower Yoga",
       "filter": "Main",
-      "studios": ["Encino", "Sherman Oaks"],
+      "studios": [
+        "Encino",
+        "Sherman Oaks"
+      ],
       "confidence": "high",
-      "sourceType": "live-browser"
+      "sourceType": "browser-scrape"
     },
     "regal": {
       "name": "Regal Sherman Oaks Galleria",
-      "url": "https://www.regmovies.com/theatres/regal-sherman-oaks-galleria-1483",
-      "confidence": "high",
-      "sourceType": "live-browser-strict",
-      "notes": "Saturday and Sunday data pulled live via browser"
+      "confidence": "none",
+      "sourceType": "browser-scrape",
+      "note": "Blocked by Cloudflare from VPS IP. Regal data unavailable this run."
     }
   },
   "yoga": {
-    "lastUpdated": "2026-03-21T06:45:00Z",
-    "freshness": "fresh",
-    "confidence": "high",
-    "days": [
+    "classes": [
       {
-        "key": "sat",
-        "label": "Sat",
-        "date": "2026-03-21",
-        "studios": [
-          {
-            "name": "Sherman Oaks",
-            "classes": [
-              {"time": "9:00 am", "className": "YS - Yoga Sculpt", "teacher": "Michelle S", "status": "JOIN WAITLIST"},
-              {"time": "10:00 am", "className": "C2 - CorePower Yoga 2", "teacher": "Chloe B", "status": "SUB"},
-              {"time": "12:00 pm", "className": "YS - Yoga Sculpt", "teacher": "John S"},
-              {"time": "12:30 pm", "className": "C2 - CorePower Yoga 2", "teacher": "Erin H", "status": "SUB"},
-              {"time": "3:00 pm", "className": "C2 - CorePower Yoga 2", "teacher": "Erin H", "status": "SUB"}
-            ]
-          },
-          {
-            "name": "Encino",
-            "classes": [
-              {"time": "8:00 am", "className": "C2 - CorePower Yoga 2", "teacher": "Aileen S"},
-              {"time": "9:30 am", "className": "C2 - CorePower Yoga 2", "teacher": "Aileen S"},
-              {"time": "10:30 am", "className": "YS - Yoga Sculpt", "teacher": "Brandon L", "status": "SUB"},
-              {"time": "12:00 pm", "className": "YS - Yoga Sculpt", "teacher": "Adrian A"}
-            ]
-          }
-        ]
+        "date": "2026-04-02",
+        "time": "5:30pm PT",
+        "type": "YS",
+        "studio": "Encino",
+        "teacher": "Danielle W",
+        "status": "BOOK"
       },
       {
-        "key": "sun",
-        "label": "Sun",
-        "date": "2026-03-22",
-        "studios": [
-          {
-            "name": "Sherman Oaks",
-            "classes": [
-              {"time": "9:00 am", "className": "YS - Yoga Sculpt", "teacher": "Brandon L"},
-              {"time": "10:00 am", "className": "C3 - CorePower Yoga 3", "teacher": "Lupita"},
-              {"time": "12:30 pm", "className": "C2 - CorePower Yoga 2", "teacher": "Aliza P"},
-              {"time": "3:00 pm", "className": "Free Community Flow Class (heated)", "teacher": "Joshua S"},
-              {"time": "6:00 pm", "className": "C2 - CorePower Yoga 2", "teacher": "Erin H"}
-            ]
-          },
-          {
-            "name": "Encino",
-            "classes": [
-              {"time": "8:00 am", "className": "C2 - CorePower Yoga 2", "teacher": "Shella M"},
-              {"time": "9:30 am", "className": "C2 - CorePower Yoga 2", "teacher": "Shella M"},
-              {"time": "10:30 am", "className": "YS - Yoga Sculpt: 75 Minutes", "teacher": "Gabriella D"},
-              {"time": "11:00 am", "className": "Free Community Flow Class (heated)", "teacher": "Nicole L"},
-              {"time": "12:15 pm", "className": "YS - Yoga Sculpt", "teacher": "Gabriella D"},
-              {"time": "12:30 pm", "className": "C2 - CorePower Yoga 2", "teacher": "Chloe B"},
-              {"time": "3:00 pm", "className": "YS - Yoga Sculpt", "teacher": "Gabriella D", "status": "SUB"},
-              {"time": "4:30 pm", "className": "YS - Yoga Sculpt", "teacher": "Gabriella D", "status": "SUB"}
-            ]
-          }
-        ]
+        "date": "2026-04-02",
+        "time": "5:45pm PT",
+        "type": "CSX",
+        "studio": "Sherman Oaks",
+        "teacher": "Leigh Anne S",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-02",
+        "time": "6:00pm PT",
+        "type": "HPF",
+        "studio": "Encino",
+        "teacher": "Laura Ve",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-02",
+        "time": "6:00pm PT",
+        "type": "C2",
+        "studio": "Sherman Oaks",
+        "teacher": "Prerna C",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-02",
+        "time": "7:00pm PT",
+        "type": "C1",
+        "studio": "Encino",
+        "teacher": "Lisa Jo",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-02",
+        "time": "7:00pm PT",
+        "type": "YS",
+        "studio": "Sherman Oaks",
+        "teacher": "Hannah S",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-02",
+        "time": "7:30pm PT",
+        "type": "YS",
+        "studio": "Encino",
+        "teacher": "Nicole L",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-02",
+        "time": "7:30pm PT",
+        "type": "HPF",
+        "studio": "Sherman Oaks",
+        "teacher": "Chloe B",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-02",
+        "time": "8:30pm PT",
+        "type": "CR",
+        "studio": "Encino",
+        "teacher": "Lisa Jo",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-02",
+        "time": "9:00pm PT",
+        "type": "C2",
+        "studio": "Sherman Oaks",
+        "teacher": "Ryan C",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-02",
+        "time": "6:00am PT",
+        "type": "CSX",
+        "studio": "Sherman Oaks",
+        "teacher": "Kelly D",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-02",
+        "time": "7:00am PT",
+        "type": "YS",
+        "studio": "Sherman Oaks",
+        "teacher": "Lydia P",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-02",
+        "time": "7:30am PT",
+        "type": "C2",
+        "studio": "Sherman Oaks",
+        "teacher": "Aileen S",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-02",
+        "time": "9:00am PT",
+        "type": "HPF",
+        "studio": "Encino",
+        "teacher": "Paula M",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-02",
+        "time": "9:00am PT",
+        "type": "YS",
+        "studio": "Sherman Oaks",
+        "teacher": "Lydia P",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-02",
+        "time": "9:30am PT",
+        "type": "C2",
+        "studio": "Encino",
+        "teacher": "Lupita",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-02",
+        "time": "10:00am PT",
+        "type": "C2",
+        "studio": "Sherman Oaks",
+        "teacher": "Olivia L",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-02",
+        "time": "10:30am PT",
+        "type": "YS",
+        "studio": "Encino",
+        "teacher": "Eric G",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-02",
+        "time": "11:00am PT",
+        "type": "C1",
+        "studio": "Encino",
+        "teacher": "Gabriella D",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-02",
+        "time": "12:00pm PT",
+        "type": "YS",
+        "studio": "Encino",
+        "teacher": "Eric G",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-02",
+        "time": "12:30pm PT",
+        "type": "C2",
+        "studio": "Encino",
+        "teacher": "Gabriella D",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-02",
+        "time": "1:30pm PT",
+        "type": "HPF",
+        "studio": "Sherman Oaks",
+        "teacher": "Carlyn S",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-02",
+        "time": "3:00pm PT",
+        "type": "YS",
+        "studio": "Encino",
+        "teacher": "Gabriella D",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-02",
+        "time": "4:30pm PT",
+        "type": "YS",
+        "studio": "Sherman Oaks",
+        "teacher": "Laura F",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-02",
+        "time": "4:30pm PT",
+        "type": "HPF",
+        "studio": "Encino",
+        "teacher": "Nelly B",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-03",
+        "time": "5:30pm PT",
+        "type": "YS",
+        "studio": "Encino",
+        "teacher": "Brianna M",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-03",
+        "time": "6:00pm PT",
+        "type": "C2",
+        "studio": "Sherman Oaks",
+        "teacher": "Megan M",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-03",
+        "time": "6:00pm PT",
+        "type": "HPF",
+        "studio": "Encino",
+        "teacher": "Nelly B",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-03",
+        "time": "7:00pm PT",
+        "type": "C2",
+        "studio": "Encino",
+        "teacher": "Jenna M",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-03",
+        "time": "7:00pm PT",
+        "type": "YS",
+        "studio": "Sherman Oaks",
+        "teacher": "Ling C",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-03",
+        "time": "7:30pm PT",
+        "type": "HPF",
+        "studio": "Sherman Oaks",
+        "teacher": "Megan M",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-03",
+        "time": "8:30pm PT",
+        "type": "C2",
+        "studio": "Encino",
+        "teacher": "Jenna M",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-03",
+        "time": "9:00pm PT",
+        "type": "C2",
+        "studio": "Sherman Oaks",
+        "teacher": "Adriana S",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-03",
+        "time": "6:00am PT",
+        "type": "HPF",
+        "studio": "Sherman Oaks",
+        "teacher": "Joshua S",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-03",
+        "time": "6:30am PT",
+        "type": "YS",
+        "studio": "Encino",
+        "teacher": "Gabriella D",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-03",
+        "time": "7:00am PT",
+        "type": "YS",
+        "studio": "Sherman Oaks",
+        "teacher": "Kelly D",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-03",
+        "time": "7:30am PT",
+        "type": "C2",
+        "studio": "Sherman Oaks",
+        "teacher": "Leigh Anne S",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-03",
+        "time": "8:00am PT",
+        "type": "YS",
+        "studio": "Encino",
+        "teacher": "Adrian A",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-03",
+        "time": "8:30am PT",
+        "type": "HPF",
+        "studio": "Sherman Oaks",
+        "teacher": "Chloe B",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-03",
+        "time": "9:00am PT",
+        "type": "YS",
+        "studio": "Sherman Oaks",
+        "teacher": "Brandon L",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-03",
+        "time": "9:30am PT",
+        "type": "C2",
+        "studio": "Encino",
+        "teacher": "Olivia S",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-03",
+        "time": "10:00am PT",
+        "type": "C2",
+        "studio": "Sherman Oaks",
+        "teacher": "Mara C",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-03",
+        "time": "10:30am PT",
+        "type": "YS",
+        "studio": "Encino",
+        "teacher": "Gabriella D",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-03",
+        "time": "11:00am PT",
+        "type": "C1",
+        "studio": "Encino",
+        "teacher": "Tatiana C",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-03",
+        "time": "12:00pm PT",
+        "type": "YS",
+        "studio": "Sherman Oaks",
+        "teacher": "Hannah S",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-03",
+        "time": "12:00pm PT",
+        "type": "YS",
+        "studio": "Encino",
+        "teacher": "Gabriella D",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-03",
+        "time": "12:30pm PT",
+        "type": "C2",
+        "studio": "Encino",
+        "teacher": "Tatiana C",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-03",
+        "time": "1:30pm PT",
+        "type": "HPF",
+        "studio": "Sherman Oaks",
+        "teacher": "Aliza P",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-03",
+        "time": "3:00pm PT",
+        "type": "C2",
+        "studio": "Sherman Oaks",
+        "teacher": "Aliza P",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-03",
+        "time": "3:00pm PT",
+        "type": "YS",
+        "studio": "Encino",
+        "teacher": "Eric G",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-03",
+        "time": "4:00pm PT",
+        "type": "C2",
+        "studio": "Encino",
+        "teacher": "Aileen S",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-03",
+        "time": "4:30pm PT",
+        "type": "YS",
+        "studio": "Sherman Oaks",
+        "teacher": "Bridget A",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-04",
+        "time": "5:30pm PT",
+        "type": "YS",
+        "studio": "Encino",
+        "teacher": "Eric G",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-04",
+        "time": "6:00pm PT",
+        "type": "C2",
+        "studio": "Sherman Oaks",
+        "teacher": "Madison M",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-04",
+        "time": "7:00pm PT",
+        "type": "C2",
+        "studio": "Encino",
+        "teacher": "Nina R",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-04",
+        "time": "7:30pm PT",
+        "type": "C1",
+        "studio": "Sherman Oaks",
+        "teacher": "Prerna C",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-04",
+        "time": "8:30pm PT",
+        "type": "C2",
+        "studio": "Encino",
+        "teacher": "Nina R",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-04",
+        "time": "8:00am PT",
+        "type": "C2",
+        "studio": "Encino",
+        "teacher": "Aileen S",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-04",
+        "time": "8:30am PT",
+        "type": "HPF",
+        "studio": "Sherman Oaks",
+        "teacher": "Dominic C",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-04",
+        "time": "9:00am PT",
+        "type": "HPF",
+        "studio": "Encino",
+        "teacher": "Paula M",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-04",
+        "time": "9:00am PT",
+        "type": "YS",
+        "studio": "Sherman Oaks",
+        "teacher": "Hannah S",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-04",
+        "time": "9:30am PT",
+        "type": "C2",
+        "studio": "Encino",
+        "teacher": "Aileen S",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-04",
+        "time": "10:00am PT",
+        "type": "C2",
+        "studio": "Sherman Oaks",
+        "teacher": "Dominic C",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-04",
+        "time": "10:30am PT",
+        "type": "YS",
+        "studio": "Encino",
+        "teacher": "Brianna M",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-04",
+        "time": "10:30am PT",
+        "type": "HPF",
+        "studio": "Sherman Oaks",
+        "teacher": "Chloe B",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-04",
+        "time": "12:00pm PT",
+        "type": "YS",
+        "studio": "Sherman Oaks",
+        "teacher": "John S",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-04",
+        "time": "12:00pm PT",
+        "type": "YS",
+        "studio": "Encino",
+        "teacher": "Adrian A",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-04",
+        "time": "12:30pm PT",
+        "type": "C2",
+        "studio": "Sherman Oaks",
+        "teacher": "Erin H",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-04",
+        "time": "1:30pm PT",
+        "type": "C1",
+        "studio": "Sherman Oaks",
+        "teacher": "Prerna C",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-04",
+        "time": "2:00pm PT",
+        "type": "HPF",
+        "studio": "Encino",
+        "teacher": "Aliza P",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-04",
+        "time": "3:00pm PT",
+        "type": "C2",
+        "studio": "Sherman Oaks",
+        "teacher": "Prerna C",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-04",
+        "time": "4:30pm PT",
+        "type": "HPF",
+        "studio": "Sherman Oaks",
+        "teacher": "Deza S",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-05",
+        "time": "8:00am PT",
+        "type": "C2",
+        "studio": "Encino",
+        "teacher": "Shella M",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-05",
+        "time": "8:30am PT",
+        "type": "HPF",
+        "studio": "Sherman Oaks",
+        "teacher": "Lupita",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-05",
+        "time": "9:00am PT",
+        "type": "HPF",
+        "studio": "Encino",
+        "teacher": "Chloe B",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-05",
+        "time": "9:00am PT",
+        "type": "YS",
+        "studio": "Sherman Oaks",
+        "teacher": "Brandon L",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-05",
+        "time": "9:30am PT",
+        "type": "C2",
+        "studio": "Encino",
+        "teacher": "Shella M",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-05",
+        "time": "10:00am PT",
+        "type": "C3",
+        "studio": "Sherman Oaks",
+        "teacher": "Lupita",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-05",
+        "time": "10:30am PT",
+        "type": "HPF",
+        "studio": "Sherman Oaks",
+        "teacher": "Aliza P",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-05",
+        "time": "10:30am PT",
+        "type": "YS",
+        "studio": "Encino",
+        "teacher": "Gabriella D",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-05",
+        "time": "11:00am PT",
+        "type": "Free",
+        "studio": "Encino",
+        "teacher": "Nicole L",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-05",
+        "time": "12:15pm PT",
+        "type": "YS",
+        "studio": "Encino",
+        "teacher": "Gabriella D",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-05",
+        "time": "12:30pm PT",
+        "type": "C2",
+        "studio": "Encino",
+        "teacher": "Chloe B",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-05",
+        "time": "12:30pm PT",
+        "type": "C2",
+        "studio": "Sherman Oaks",
+        "teacher": "Aliza P",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-05",
+        "time": "1:30pm PT",
+        "type": "C1",
+        "studio": "Sherman Oaks",
+        "teacher": "Prerna C",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-05",
+        "time": "3:00pm PT",
+        "type": "YS",
+        "studio": "Encino",
+        "teacher": "Linnie S",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-05",
+        "time": "3:00pm PT",
+        "type": "Free",
+        "studio": "Sherman Oaks",
+        "teacher": "Joshua S",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-05",
+        "time": "4:30pm PT",
+        "type": "YS",
+        "studio": "Encino",
+        "teacher": "Linnie S",
+        "status": "BOOK"
+      },
+      {
+        "date": "2026-04-05",
+        "time": "4:30pm PT",
+        "type": "HPF",
+        "studio": "Sherman Oaks",
+        "teacher": "Deza S",
+        "status": "BOOK"
       }
     ]
   },
   "movies": {
-    "lastUpdated": "2026-03-21T06:45:00Z",
-    "freshness": "fresh",
-    "confidence": "high",
-    "theater": "Regal Sherman Oaks Galleria",
-    "schemaVersion": 2,
-    "days": [
-      {
-        "key": "sat",
-        "label": "Sat",
-        "date": "2026-03-21",
-        "strict": true,
-        "movies": [
-          {"title": "Dhurandhar The Revenge (Hindi)", "masterMovieCode": "HO00020964", "formats": [{"format": "Standard", "showtimes": ["10:00am", "3:30pm", "8:45pm"]}]},
-          {"title": "Hoppers", "masterMovieCode": "HO00020716", "formats": [{"format": "Standard", "showtimes": ["10:00am", "10:30am", "12:50pm", "1:30pm", "3:40pm", "4:20pm", "6:25pm", "7:50pm", "9:20pm", "10:50pm"]}]},
-          {"title": "Project Hail Mary", "masterMovieCode": "HO00018964", "formats": [{"format": "4DX", "showtimes": ["11:40am", "3:20pm", "7:00pm", "10:40pm"]}, {"format": "IMAX", "showtimes": ["10:40am", "2:20pm", "6:00pm", "9:40pm"]}, {"format": "RPX", "showtimes": ["11:10am", "12:10pm", "2:50pm", "3:50pm", "6:30pm", "10:10pm"]}, {"format": "Standard", "showtimes": ["10:10am", "11:25am", "12:50pm", "1:50pm", "4:40pm", "5:30pm", "8:30pm", "9:10pm"]}]},
-          {"title": "The Pout-Pout Fish", "masterMovieCode": "HO00020786", "formats": [{"format": "Standard", "showtimes": ["10:15am", "2:10pm", "4:55pm"]}]},
-          {"title": "Reminders of Him", "masterMovieCode": "HO00020033", "formats": [{"format": "Standard", "showtimes": ["10:15am", "1:15pm", "4:15pm", "7:15pm", "10:25pm"]}]},
-          {"title": "Undertone", "masterMovieCode": "HO00020951", "formats": [{"format": "Standard", "showtimes": ["10:20am", "1:05pm", "4:05pm", "7:25pm", "10:20pm"]}]},
-          {"title": "Scream 7", "masterMovieCode": "HO00020098", "formats": [{"format": "Standard", "showtimes": ["10:40am", "1:40pm", "4:40pm", "6:35pm", "10:20pm"]}]},
-          {"title": "The Bride!", "masterMovieCode": "HO00020178", "formats": [{"format": "Standard", "showtimes": ["10:50am", "3:10pm", "6:50pm", "10:10pm"]}]},
-          {"title": "Ready or Not 2: Here I Come", "masterMovieCode": "HO00020338", "formats": [{"format": "RPX", "showtimes": ["7:30pm", "10:30pm"]}, {"format": "Standard", "showtimes": ["11:00am", "2:00pm", "5:00pm", "8:00pm", "11:00pm"]}]},
-          {"title": "GOAT", "masterMovieCode": "HO00018215", "formats": [{"format": "Standard", "showtimes": ["11:15am", "2:00pm", "4:45pm", "7:30pm"]}]},
-          {"title": "Vampires of the Velvet Lounge", "masterMovieCode": "HO00020898", "formats": [{"format": "Standard", "showtimes": ["7:45pm", "10:45pm"]}]},
-          {"title": "Slanted", "masterMovieCode": "HO00020969", "formats": [{"format": "Standard", "showtimes": ["9:50pm"]}]}
-        ]
-      },
-      {
-        "key": "sun",
-        "label": "Sun",
-        "date": "2026-03-22",
-        "strict": true,
-        "movies": [
-          {"title": "Dhurandhar The Revenge (Hindi)", "masterMovieCode": "HO00020964", "formats": [{"format": "Standard", "showtimes": ["10:00am", "3:30pm", "8:45pm"]}]},
-          {"title": "Hoppers", "masterMovieCode": "HO00020716", "formats": [{"format": "Standard", "showtimes": ["10:00am", "10:30am", "10:50am", "1:30pm", "3:40pm", "4:20pm", "6:25pm", "7:50pm", "9:20pm", "10:50pm"]}]},
-          {"title": "Project Hail Mary", "masterMovieCode": "HO00018964", "formats": [{"format": "4DX", "showtimes": ["11:40am", "3:20pm", "7:00pm", "10:40pm"]}, {"format": "IMAX", "showtimes": ["10:40am", "2:20pm", "6:00pm", "9:40pm"]}, {"format": "RPX", "showtimes": ["11:10am", "12:10pm", "2:50pm", "3:50pm", "6:30pm", "10:10pm"]}, {"format": "Standard", "showtimes": ["10:10am", "11:25am", "12:50pm", "1:50pm", "4:40pm", "5:30pm", "8:30pm", "9:10pm"]}]},
-          {"title": "The Pout-Pout Fish", "masterMovieCode": "HO00020786", "formats": [{"format": "Standard", "showtimes": ["10:15am", "12:50pm", "4:55pm"]}]},
-          {"title": "Reminders of Him", "masterMovieCode": "HO00020033", "formats": [{"format": "Standard", "showtimes": ["10:15am", "1:15pm", "4:15pm", "7:15pm", "10:25pm"]}]},
-          {"title": "Undertone", "masterMovieCode": "HO00020951", "formats": [{"format": "Standard", "showtimes": ["10:20am", "1:05pm", "4:05pm", "7:25pm", "10:20pm"]}]},
-          {"title": "Scream 7", "masterMovieCode": "HO00020098", "formats": [{"format": "Standard", "showtimes": ["10:40am", "1:40pm", "4:40pm", "6:35pm", "10:20pm"]}]},
-          {"title": "The Bride!", "masterMovieCode": "HO00020178", "formats": [{"format": "Standard", "showtimes": ["3:10pm", "6:50pm", "10:10pm"]}]},
-          {"title": "Ready or Not 2: Here I Come", "masterMovieCode": "HO00020338", "formats": [{"format": "RPX", "showtimes": ["7:30pm", "10:30pm"]}, {"format": "Standard", "showtimes": ["11:00am", "2:00pm", "5:00pm", "8:00pm", "11:00pm"]}]},
-          {"title": "GOAT", "masterMovieCode": "HO00018215", "formats": [{"format": "Standard", "showtimes": ["11:15am", "1:45pm", "2:00pm", "4:45pm", "7:30pm"]}]},
-          {"title": "Vampires of the Velvet Lounge", "masterMovieCode": "HO00020898", "formats": [{"format": "Standard", "showtimes": ["7:45pm", "10:45pm"]}]},
-          {"title": "Slanted", "masterMovieCode": "HO00020969", "formats": [{"format": "Standard", "showtimes": ["9:50pm"]}]}
-        ]
-      }
-    ]
+    "note": "Regal scrape failed - Cloudflare block on VPS IP. Manual refresh needed.",
+    "films": []
   }
 }
