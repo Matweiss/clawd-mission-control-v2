@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-04-01T22:53:25Z",
+  "updatedAt": "2026-04-02T03:25:00Z",
   "window": {
     "start": "2026-04-02",
     "end": "2026-04-05",
@@ -18,9 +18,9 @@
     },
     "regal": {
       "name": "Regal Sherman Oaks Galleria",
-      "confidence": "none",
-      "sourceType": "browser-scrape",
-      "note": "Blocked by Cloudflare from VPS IP. Regal data unavailable this run."
+      "confidence": "high",
+      "sourceType": "browser-scrape-mac-chrome",
+      "note": "VPS IP blocked by Cloudflare; used Mac Chrome CDP tunnel"
     }
   },
   "yoga": {
@@ -740,7 +740,987 @@
     ]
   },
   "movies": {
-    "note": "Regal scrape failed - Cloudflare block on VPS IP. Manual refresh needed.",
-    "films": []
+    "byDay": {
+      "Thu Apr 2": [
+        {
+          "title": "The Super Mario Galaxy Movie",
+          "runtime": "1HR 38MINS",
+          "formats": [
+            "LASER",
+            "IMAX",
+            "NO PASSES"
+          ],
+          "showtimes": [
+            "8:00am",
+            "8:30am",
+            "9:00am",
+            "9:30am",
+            "10:00am",
+            "10:40am",
+            "11:10am",
+            "11:40am",
+            "12:10pm",
+            "12:40pm",
+            "1:20pm",
+            "1:50pm",
+            "2:20pm",
+            "2:50pm",
+            "3:20pm",
+            "4:00pm",
+            "4:30pm",
+            "5:00pm",
+            "5:30pm",
+            "6:00pm",
+            "6:40pm",
+            "7:10pm",
+            "7:40pm",
+            "8:10pm",
+            "8:40pm",
+            "9:20pm",
+            "9:50pm",
+            "10:20pm",
+            "10:50pm"
+          ],
+          "noPassesFlag": true,
+          "notes": ""
+        },
+        {
+          "title": "Project Hail Mary",
+          "runtime": "2HR 36MINS",
+          "formats": [
+            "LASER",
+            "NO PASSES"
+          ],
+          "showtimes": [
+            "8:00am",
+            "9:55am",
+            "10:55am",
+            "11:45am",
+            "12:45pm",
+            "2:35pm",
+            "3:30pm",
+            "3:45pm",
+            "6:15pm",
+            "7:20pm",
+            "8:15pm",
+            "9:55pm",
+            "11:00pm"
+          ],
+          "noPassesFlag": true,
+          "notes": ""
+        },
+        {
+          "title": "A Magnificent Life",
+          "runtime": "1HR 31MINS",
+          "formats": [
+            "LASER"
+          ],
+          "showtimes": [
+            "8:25am",
+            "5:00pm"
+          ],
+          "noPassesFlag": false,
+          "notes": ""
+        },
+        {
+          "title": "Alpha",
+          "runtime": "2HR 8MINS",
+          "formats": [
+            "LASER"
+          ],
+          "showtimes": [
+            "9:00am",
+            "12:15pm",
+            "3:35pm"
+          ],
+          "noPassesFlag": false,
+          "notes": ""
+        },
+        {
+          "title": "Reminders of Him",
+          "runtime": "1HR 54MINS",
+          "formats": [
+            "LASER"
+          ],
+          "showtimes": [
+            "9:15am",
+            "12:45pm"
+          ],
+          "noPassesFlag": false,
+          "notes": ""
+        },
+        {
+          "title": "Hoppers",
+          "runtime": "1HR 45MINS",
+          "formats": [
+            "LASER"
+          ],
+          "showtimes": [
+            "9:45am",
+            "2:05pm",
+            "4:40pm",
+            "6:50pm",
+            "10:05pm"
+          ],
+          "noPassesFlag": false,
+          "notes": ""
+        },
+        {
+          "title": "LOL: The Bad News Bears",
+          "runtime": "1HR 42MINS",
+          "formats": [
+            "LASER"
+          ],
+          "showtimes": [
+            "10:15am",
+            "1:10pm",
+            "4:00pm",
+            "6:50pm",
+            "9:40pm"
+          ],
+          "noPassesFlag": false,
+          "notes": ""
+        },
+        {
+          "title": "They Will Kill You",
+          "runtime": "1HR 34MINS",
+          "formats": [
+            "LASER"
+          ],
+          "showtimes": [
+            "10:20am",
+            "10:40am",
+            "1:20pm",
+            "4:20pm",
+            "7:20pm",
+            "10:20pm"
+          ],
+          "noPassesFlag": false,
+          "notes": ""
+        },
+        {
+          "title": "Ready or Not 2: Here I Come",
+          "runtime": "1HR 48MINS",
+          "formats": [
+            "LASER"
+          ],
+          "showtimes": [
+            "10:45am",
+            "1:45pm",
+            "8:00pm",
+            "11:00pm"
+          ],
+          "noPassesFlag": false,
+          "notes": ""
+        },
+        {
+          "title": "The AI Doc",
+          "runtime": "1HR 44MINS",
+          "formats": [
+            "LASER"
+          ],
+          "showtimes": [
+            "11:20am",
+            "2:15pm"
+          ],
+          "noPassesFlag": false,
+          "notes": ""
+        },
+        {
+          "title": "A Great Awakening",
+          "runtime": "2HR 9MINS",
+          "formats": [
+            "LASER"
+          ],
+          "showtimes": [
+            "4:15pm",
+            "7:30pm",
+            "10:45pm"
+          ],
+          "noPassesFlag": false,
+          "notes": ""
+        },
+        {
+          "title": "The Drama",
+          "runtime": "1HR 46MINS",
+          "formats": [
+            "LASER"
+          ],
+          "showtimes": [
+            "4:50pm",
+            "7:50pm",
+            "10:25pm"
+          ],
+          "noPassesFlag": false,
+          "notes": ""
+        },
+        {
+          "title": "Fantasy Life",
+          "runtime": "1HR 31MINS",
+          "formats": [
+            "LASER"
+          ],
+          "showtimes": [
+            "5:25pm",
+            "7:50pm"
+          ],
+          "noPassesFlag": false,
+          "notes": ""
+        },
+        {
+          "title": "Stand By Me 40th Anniversary",
+          "runtime": "1HR 29MINS",
+          "formats": [
+            "LASER"
+          ],
+          "showtimes": [
+            "7:40pm"
+          ],
+          "noPassesFlag": false,
+          "notes": ""
+        }
+      ],
+      "Fri Apr 3": [
+        {
+          "title": "The Drama",
+          "runtime": "1HR 46MINS",
+          "formats": [
+            "LASER"
+          ],
+          "showtimes": [
+            "8:00am",
+            "10:50am",
+            "1:40pm",
+            "4:50pm",
+            "7:50pm",
+            "9:30pm",
+            "10:50pm"
+          ],
+          "noPassesFlag": false,
+          "notes": ""
+        },
+        {
+          "title": "The Super Mario Galaxy Movie",
+          "runtime": "1HR 38MINS",
+          "formats": [
+            "LASER",
+            "IMAX",
+            "NO PASSES"
+          ],
+          "showtimes": [
+            "8:00am",
+            "8:30am",
+            "9:00am",
+            "9:30am",
+            "10:00am",
+            "10:20am",
+            "10:55am",
+            "11:10am",
+            "12:10pm",
+            "12:40pm",
+            "1:00pm",
+            "1:20pm",
+            "1:50pm",
+            "2:00pm",
+            "2:50pm",
+            "3:20pm",
+            "3:40pm",
+            "4:00pm",
+            "4:30pm",
+            "5:30pm",
+            "6:00pm",
+            "6:25pm",
+            "6:40pm",
+            "7:10pm",
+            "8:10pm",
+            "8:40pm",
+            "9:05pm",
+            "9:20pm",
+            "9:50pm",
+            "10:20pm",
+            "10:50pm"
+          ],
+          "noPassesFlag": true,
+          "notes": ""
+        },
+        {
+          "title": "A Great Awakening",
+          "runtime": "2HR 9MINS",
+          "formats": [
+            "LASER"
+          ],
+          "showtimes": [
+            "8:15am",
+            "11:35am",
+            "3:00pm",
+            "6:15pm"
+          ],
+          "noPassesFlag": false,
+          "notes": ""
+        },
+        {
+          "title": "They Will Kill You",
+          "runtime": "1HR 34MINS",
+          "formats": [
+            "LASER"
+          ],
+          "showtimes": [
+            "9:20am",
+            "12:00pm",
+            "2:40pm",
+            "5:20pm",
+            "8:00pm",
+            "10:40pm"
+          ],
+          "noPassesFlag": false,
+          "notes": ""
+        },
+        {
+          "title": "Project Hail Mary",
+          "runtime": "2HR 36MINS",
+          "formats": [
+            "LASER",
+            "IMAX",
+            "70mm",
+            "NO PASSES"
+          ],
+          "showtimes": [
+            "7:20am",
+            "9:20am",
+            "10:00am",
+            "11:00am",
+            "1:00pm",
+            "2:00pm",
+            "4:45pm",
+            "6:00pm",
+            "8:30pm",
+            "9:40pm",
+            "9:45pm",
+            "11:00pm"
+          ],
+          "noPassesFlag": true,
+          "notes": ""
+        },
+        {
+          "title": "Hoppers",
+          "runtime": "1HR 45MINS",
+          "formats": [
+            "LASER"
+          ],
+          "showtimes": [
+            "9:45am",
+            "12:45pm",
+            "3:45pm",
+            "6:45pm",
+            "9:35pm"
+          ],
+          "noPassesFlag": false,
+          "notes": ""
+        },
+        {
+          "title": "LOL: Peter Rabbit",
+          "runtime": "1HR 35MINS",
+          "formats": [
+            "LASER"
+          ],
+          "showtimes": [
+            "10:30am"
+          ],
+          "noPassesFlag": false,
+          "notes": ""
+        },
+        {
+          "title": "LOL: Blazing Saddles",
+          "runtime": "1HR 33MINS",
+          "formats": [
+            "LASER"
+          ],
+          "showtimes": [
+            "11:00am"
+          ],
+          "noPassesFlag": false,
+          "notes": ""
+        },
+        {
+          "title": "Ready or Not 2: Here I Come",
+          "runtime": "1HR 48MINS",
+          "formats": [
+            "LASER"
+          ],
+          "showtimes": [
+            "10:45am",
+            "1:45pm",
+            "4:45pm",
+            "8:00pm",
+            "11:00pm"
+          ],
+          "noPassesFlag": false,
+          "notes": ""
+        },
+        {
+          "title": "A Magnificent Life",
+          "runtime": "1HR 31MINS",
+          "formats": [
+            "LASER"
+          ],
+          "showtimes": [
+            "11:20am",
+            "5:00pm"
+          ],
+          "noPassesFlag": false,
+          "notes": ""
+        },
+        {
+          "title": "Reminders of Him",
+          "runtime": "1HR 54MINS",
+          "formats": [
+            "LASER"
+          ],
+          "showtimes": [
+            "9:15am",
+            "12:45pm"
+          ],
+          "noPassesFlag": false,
+          "notes": ""
+        },
+        {
+          "title": "Alpha",
+          "runtime": "2HR 8MINS",
+          "formats": [
+            "LASER"
+          ],
+          "showtimes": [
+            "9:00am",
+            "12:15pm",
+            "3:35pm"
+          ],
+          "noPassesFlag": false,
+          "notes": ""
+        },
+        {
+          "title": "Fantasy Life",
+          "runtime": "1HR 31MINS",
+          "formats": [
+            "LASER"
+          ],
+          "showtimes": [
+            "5:25pm",
+            "7:50pm"
+          ],
+          "noPassesFlag": false,
+          "notes": ""
+        },
+        {
+          "title": "The AI Doc",
+          "runtime": "1HR 44MINS",
+          "formats": [
+            "LASER"
+          ],
+          "showtimes": [
+            "11:20am",
+            "2:15pm"
+          ],
+          "noPassesFlag": false,
+          "notes": ""
+        },
+        {
+          "title": "Stand By Me 40th Anniversary",
+          "runtime": "1HR 29MINS",
+          "formats": [
+            "LASER"
+          ],
+          "showtimes": [
+            "7:40pm"
+          ],
+          "noPassesFlag": false,
+          "notes": ""
+        }
+      ],
+      "Sat Apr 4": [
+        {
+          "title": "The Drama",
+          "runtime": "1HR 46MINS",
+          "formats": [
+            "LASER"
+          ],
+          "showtimes": [
+            "8:00am",
+            "10:50am",
+            "1:40pm",
+            "4:50pm",
+            "7:50pm",
+            "9:30pm",
+            "10:50pm"
+          ],
+          "noPassesFlag": false,
+          "notes": ""
+        },
+        {
+          "title": "The Super Mario Galaxy Movie",
+          "runtime": "1HR 38MINS",
+          "formats": [
+            "LASER",
+            "IMAX",
+            "NO PASSES"
+          ],
+          "showtimes": [
+            "8:00am",
+            "9:00am",
+            "9:15am",
+            "9:30am",
+            "10:00am",
+            "10:55am",
+            "11:40am",
+            "12:00pm",
+            "12:40pm",
+            "1:20pm",
+            "2:00pm",
+            "2:50pm",
+            "3:20pm",
+            "3:40pm",
+            "4:00pm",
+            "5:30pm",
+            "6:00pm",
+            "6:25pm",
+            "6:40pm",
+            "7:10pm",
+            "7:40pm",
+            "8:10pm",
+            "8:40pm",
+            "9:05pm",
+            "9:20pm",
+            "9:50pm",
+            "10:20pm",
+            "10:50pm"
+          ],
+          "noPassesFlag": true,
+          "notes": "12:00pm SOLD OUT"
+        },
+        {
+          "title": "Project Hail Mary",
+          "runtime": "2HR 36MINS",
+          "formats": [
+            "LASER",
+            "IMAX",
+            "70mm",
+            "NO PASSES"
+          ],
+          "showtimes": [
+            "8:00am",
+            "9:20am",
+            "10:00am",
+            "11:40am",
+            "1:00pm",
+            "2:00pm",
+            "3:30pm",
+            "4:45pm",
+            "6:00pm",
+            "7:20pm",
+            "8:30pm",
+            "9:40pm",
+            "9:45pm",
+            "11:00pm"
+          ],
+          "noPassesFlag": true,
+          "notes": ""
+        },
+        {
+          "title": "A Great Awakening",
+          "runtime": "2HR 9MINS",
+          "formats": [
+            "LASER"
+          ],
+          "showtimes": [
+            "8:15am",
+            "11:35am",
+            "3:00pm",
+            "6:15pm"
+          ],
+          "noPassesFlag": false,
+          "notes": ""
+        },
+        {
+          "title": "They Will Kill You",
+          "runtime": "1HR 34MINS",
+          "formats": [
+            "LASER"
+          ],
+          "showtimes": [
+            "9:20am",
+            "12:00pm",
+            "2:40pm",
+            "5:20pm",
+            "8:00pm",
+            "10:40pm"
+          ],
+          "noPassesFlag": false,
+          "notes": ""
+        },
+        {
+          "title": "Hoppers",
+          "runtime": "1HR 45MINS",
+          "formats": [
+            "LASER"
+          ],
+          "showtimes": [
+            "9:45am",
+            "12:45pm",
+            "3:45pm",
+            "6:45pm",
+            "9:35pm"
+          ],
+          "noPassesFlag": false,
+          "notes": ""
+        },
+        {
+          "title": "LOL: National Lampoon's Animal House",
+          "runtime": "1HR 49MINS",
+          "formats": [
+            "LASER"
+          ],
+          "showtimes": [
+            "10:30am"
+          ],
+          "noPassesFlag": false,
+          "notes": ""
+        },
+        {
+          "title": "Ready or Not 2: Here I Come",
+          "runtime": "1HR 48MINS",
+          "formats": [
+            "LASER"
+          ],
+          "showtimes": [
+            "10:45am",
+            "1:45pm",
+            "4:45pm",
+            "8:00pm",
+            "11:00pm"
+          ],
+          "noPassesFlag": false,
+          "notes": ""
+        },
+        {
+          "title": "A Magnificent Life",
+          "runtime": "1HR 31MINS",
+          "formats": [
+            "LASER"
+          ],
+          "showtimes": [
+            "11:20am",
+            "5:00pm"
+          ],
+          "noPassesFlag": false,
+          "notes": ""
+        },
+        {
+          "title": "Reminders of Him",
+          "runtime": "1HR 54MINS",
+          "formats": [
+            "LASER"
+          ],
+          "showtimes": [
+            "9:15am",
+            "12:45pm"
+          ],
+          "noPassesFlag": false,
+          "notes": ""
+        },
+        {
+          "title": "Alpha",
+          "runtime": "2HR 8MINS",
+          "formats": [
+            "LASER"
+          ],
+          "showtimes": [
+            "9:00am",
+            "12:15pm",
+            "3:35pm"
+          ],
+          "noPassesFlag": false,
+          "notes": ""
+        },
+        {
+          "title": "Fantasy Life",
+          "runtime": "1HR 31MINS",
+          "formats": [
+            "LASER"
+          ],
+          "showtimes": [
+            "5:25pm",
+            "7:50pm"
+          ],
+          "noPassesFlag": false,
+          "notes": ""
+        },
+        {
+          "title": "The AI Doc",
+          "runtime": "1HR 44MINS",
+          "formats": [
+            "LASER"
+          ],
+          "showtimes": [
+            "11:20am",
+            "2:15pm"
+          ],
+          "noPassesFlag": false,
+          "notes": ""
+        },
+        {
+          "title": "Stand By Me 40th Anniversary",
+          "runtime": "1HR 29MINS",
+          "formats": [
+            "LASER"
+          ],
+          "showtimes": [
+            "7:40pm"
+          ],
+          "noPassesFlag": false,
+          "notes": ""
+        }
+      ],
+      "Sun Apr 5": [
+        {
+          "title": "The Drama",
+          "runtime": "1HR 46MINS",
+          "formats": [
+            "LASER"
+          ],
+          "showtimes": [
+            "8:00am",
+            "10:50am",
+            "1:40pm",
+            "4:50pm",
+            "7:50pm",
+            "9:30pm",
+            "10:50pm"
+          ],
+          "noPassesFlag": false,
+          "notes": ""
+        },
+        {
+          "title": "The Super Mario Galaxy Movie",
+          "runtime": "1HR 38MINS",
+          "formats": [
+            "LASER",
+            "IMAX",
+            "NO PASSES"
+          ],
+          "showtimes": [
+            "8:00am",
+            "9:00am",
+            "9:30am",
+            "10:00am",
+            "10:20am",
+            "10:55am",
+            "11:40am",
+            "12:40pm",
+            "1:00pm",
+            "1:20pm",
+            "2:00pm",
+            "2:50pm",
+            "3:20pm",
+            "3:40pm",
+            "4:00pm",
+            "5:30pm",
+            "6:00pm",
+            "6:25pm",
+            "6:40pm",
+            "7:10pm",
+            "8:10pm",
+            "8:40pm",
+            "9:05pm",
+            "9:20pm",
+            "9:50pm",
+            "10:20pm",
+            "10:50pm"
+          ],
+          "noPassesFlag": true,
+          "notes": ""
+        },
+        {
+          "title": "Project Hail Mary",
+          "runtime": "2HR 36MINS",
+          "formats": [
+            "LASER",
+            "IMAX",
+            "70mm",
+            "NO PASSES"
+          ],
+          "showtimes": [
+            "8:00am",
+            "9:20am",
+            "10:00am",
+            "11:40am",
+            "1:00pm",
+            "2:00pm",
+            "3:30pm",
+            "4:45pm",
+            "6:00pm",
+            "7:20pm",
+            "8:30pm",
+            "9:40pm",
+            "9:45pm",
+            "11:00pm"
+          ],
+          "noPassesFlag": true,
+          "notes": ""
+        },
+        {
+          "title": "A Great Awakening",
+          "runtime": "2HR 9MINS",
+          "formats": [
+            "LASER"
+          ],
+          "showtimes": [
+            "8:15am",
+            "11:35am",
+            "3:00pm",
+            "6:15pm"
+          ],
+          "noPassesFlag": false,
+          "notes": ""
+        },
+        {
+          "title": "They Will Kill You",
+          "runtime": "1HR 34MINS",
+          "formats": [
+            "LASER"
+          ],
+          "showtimes": [
+            "9:20am",
+            "12:00pm",
+            "2:40pm",
+            "5:20pm",
+            "8:00pm",
+            "10:40pm"
+          ],
+          "noPassesFlag": false,
+          "notes": ""
+        },
+        {
+          "title": "Hoppers",
+          "runtime": "1HR 45MINS",
+          "formats": [
+            "LASER"
+          ],
+          "showtimes": [
+            "9:45am",
+            "12:45pm",
+            "3:45pm",
+            "6:45pm",
+            "9:35pm"
+          ],
+          "noPassesFlag": false,
+          "notes": ""
+        },
+        {
+          "title": "LOL: The Muppet Movie",
+          "runtime": "1HR 35MINS",
+          "formats": [
+            "LASER"
+          ],
+          "showtimes": [
+            "10:30am"
+          ],
+          "noPassesFlag": false,
+          "notes": ""
+        },
+        {
+          "title": "Ready or Not 2: Here I Come",
+          "runtime": "1HR 48MINS",
+          "formats": [
+            "LASER"
+          ],
+          "showtimes": [
+            "10:45am",
+            "1:45pm",
+            "4:45pm",
+            "8:00pm",
+            "11:00pm"
+          ],
+          "noPassesFlag": false,
+          "notes": ""
+        },
+        {
+          "title": "A Magnificent Life",
+          "runtime": "1HR 31MINS",
+          "formats": [
+            "LASER"
+          ],
+          "showtimes": [
+            "11:20am",
+            "5:00pm"
+          ],
+          "noPassesFlag": false,
+          "notes": ""
+        },
+        {
+          "title": "Reminders of Him",
+          "runtime": "1HR 54MINS",
+          "formats": [
+            "LASER"
+          ],
+          "showtimes": [
+            "9:15am",
+            "12:45pm"
+          ],
+          "noPassesFlag": false,
+          "notes": ""
+        },
+        {
+          "title": "Alpha",
+          "runtime": "2HR 8MINS",
+          "formats": [
+            "LASER"
+          ],
+          "showtimes": [
+            "9:00am",
+            "12:15pm",
+            "3:35pm"
+          ],
+          "noPassesFlag": false,
+          "notes": ""
+        },
+        {
+          "title": "Fantasy Life",
+          "runtime": "1HR 31MINS",
+          "formats": [
+            "LASER"
+          ],
+          "showtimes": [
+            "5:25pm",
+            "7:50pm"
+          ],
+          "noPassesFlag": false,
+          "notes": ""
+        },
+        {
+          "title": "The AI Doc",
+          "runtime": "1HR 44MINS",
+          "formats": [
+            "LASER"
+          ],
+          "showtimes": [
+            "11:20am",
+            "2:15pm"
+          ],
+          "noPassesFlag": false,
+          "notes": ""
+        },
+        {
+          "title": "Stand By Me 40th Anniversary",
+          "runtime": "1HR 29MINS",
+          "formats": [
+            "LASER"
+          ],
+          "showtimes": [
+            "7:40pm"
+          ],
+          "noPassesFlag": false,
+          "notes": ""
+        }
+      ]
+    }
   }
 }
