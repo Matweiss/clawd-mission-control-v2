@@ -55,12 +55,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "context/MAT.md",
+                "file": "Sarah's interview with AI Agent.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "MAT"
+              "title": "Sarah's interview with AI Agent"
             }
           }
         ],
@@ -230,12 +230,15 @@
   },
   "active": "a11d7573f5146803",
   "lastOpenFiles": [
+    "Obsidian Sync Test.md",
+    "MEMORY-SOP.md",
+    "INDEX.md",
+    "context/STATE.md",
+    "context/STACK.md",
+    "context/MAT.md",
     "Sarah's interview with AI Agent.md",
     "data/schedule-current.md",
     "Unknown.txt",
-    "INDEX.md",
-    "MEMORY-SOP.md",
-    "context/MAT.md",
     "logs/2026-03-18-sarah-integration-setup.md",
     "projects/yoga-fitness-tracking.md",
     "sops/schedule-scraper-workflow.md",
@@ -254,9 +257,6 @@
     "projects/camera-integration.md",
     "guides/youtube-analysis.md",
     "guides/vlm-video-analysis.md",
-    "guides/smart-model-router.md",
-    "guides/gpt4v-auto-video-analyzer.md",
-    "guides/auto-video-analyzer-setup.md",
     "guides"
   ]
 }
