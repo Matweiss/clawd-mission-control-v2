@@ -36,6 +36,7 @@ import { QuickStatsBar } from '../components/QuickStatsBar';
 import { TodayNeedsAttention } from '../components/TodayNeedsAttention';
 import { SmartRecommendationsV2 } from '../components/SmartRecommendationsV2';
 import { NotificationCenter } from '../components/NotificationCenter';
+import { FirstTimeCollectorLadderCard } from '../components/FirstTimeCollectorLadderCard';
 import { AnimatedCard, StaggerContainer, StaggerItem, FadeIn, SlideIn } from '../components/animations';
 
 // Agent configuration - 3-Tier Architecture
@@ -874,6 +875,12 @@ export default function MissionControl() {
 
                 <StaggerItem>
                   <AnimatedCard delay={0.2}>
+                    <FirstTimeCollectorLadderCard />
+                  </AnimatedCard>
+                </StaggerItem>
+
+                <StaggerItem>
+                  <AnimatedCard delay={0.225}>
                     <TaskPanel 
                       tasks={tasks}
                       onViewDetails={() => setShowTaskModal(true)}
