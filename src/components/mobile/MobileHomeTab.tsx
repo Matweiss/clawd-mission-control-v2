@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Home, Dog, Navigation, Lock, Unlock, Eye } from 'lucide-react';
 import { hapticFeedback } from '../../lib/ios-utils';
@@ -21,25 +21,38 @@ interface PetLocation {
   battery?: number;
 }
 
+interface CareSummary {
+  totals: {
+    feedings: number;
+    walks: number;
+  };
+  byPet: Record<'Theo' | 'Diggy', {
+    feedings: number;
+    walks: number;
+    lastEventLabel: string | null;
+  }>;
+  recentEvents: Array<{
+    id: string;
+    label: string;
+    timestamp: string;
+  }>;
+}
+
 export function MobileHomeTab() {
   const [entities, setEntities] = useState<Record<string, HAEntity>>({});
   const [sarah, setSarah] = useState<SarahState | null>(null);
   const [pets, setPets] = useState<PetLocation[]>([]);
   const [loading, setLoading] = useState(true);
   const [runningAction, setRunningAction] = useState<string | null>(null);
+  const [careSummary, setCareSummary] = useState<CareSummary | null>(null);
 
-  useEffect(() => {
-    fetchHomeData();
-    const interval = setInterval(fetchHomeData, 30000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const fetchHomeData = async () => {
+  const fetchHomeData = useCallback(async function fetchHomeData() {
     try {
-      const [statesRes, petsRes, sarahRes] = await Promise.all([
+      const [statesRes, petsRes, sarahRes, careRes] = await Promise.all([
         fetch('/api/ha/states'),
         fetch('/api/ha/pets'),
         fetch('/api/ha/sarah'),
+        fetch('/api/ha/care-log'),
       ]);
 
       if (statesRes.ok) {
@@ -64,12 +77,23 @@ export function MobileHomeTab() {
           location: data.location || 'Unknown location',
         });
       }
+
+      if (careRes.ok) {
+        const data = await careRes.json();
+        setCareSummary(data.summary || null);
+      }
     } catch (err) {
       console.error('Error fetching mobile HA data:', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchHomeData();
+    const interval = setInterval(fetchHomeData, 30000);
+    return () => clearInterval(interval);
+  }, [fetchHomeData]);
 
   const runCommand = async (command: string, actionKey: string) => {
     hapticFeedback('medium');
@@ -80,6 +104,13 @@ export function MobileHomeTab() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ command }),
       });
+      if (actionKey === 'feed_theo') {
+        await fetch('/api/ha/care-log', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'feeding', pets: ['Theo'], source: 'mobile-home' }),
+        });
+      }
       setTimeout(fetchHomeData, 700);
     } catch (err) {
       console.error('Error running HA command:', err);
@@ -116,6 +147,23 @@ export function MobileHomeTab() {
   const garageState = entities['cover.garage_door']?.state || entities['lock.garage_door']?.state || 'unknown';
 
   const watchArea = entities['sensor.watch_area']?.state || 'Unknown';
+
+  const logCareEvent = async (type: 'feeding' | 'walk', pets: Array<'Theo' | 'Diggy'>, actionKey: string) => {
+    hapticFeedback('medium');
+    setRunningAction(actionKey);
+    try {
+      await fetch('/api/ha/care-log', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type, pets, source: 'mobile-home' }),
+      });
+      setTimeout(fetchHomeData, 500);
+    } catch (err) {
+      console.error('Error logging pet care:', err);
+    } finally {
+      setRunningAction(null);
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -272,6 +320,53 @@ export function MobileHomeTab() {
         >
           {runningAction === 'feed_theo' ? 'Feeding Theo…' : 'Feed Theo'}
         </button>
+      </motion.div>
+
+      <motion.div
+        className="bg-surface-light rounded-2xl p-4 border border-border"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.11 }}
+      >
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-medium">Care log</h3>
+          <span className="text-xs text-gray-500">
+            {careSummary?.totals.feedings ?? 0} feedings • {careSummary?.totals.walks ?? 0} walks
+          </span>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2 mb-3">
+          <button
+            onClick={() => logCareEvent('feeding', ['Diggy'], 'feed_diggy')}
+            disabled={!!runningAction}
+            className="px-3 py-2 rounded-xl bg-emerald-500/20 text-emerald-300 text-xs disabled:opacity-50"
+          >
+            Feed Diggy
+          </button>
+          <button
+            onClick={() => logCareEvent('walk', ['Theo', 'Diggy'], 'walk_both')}
+            disabled={!!runningAction}
+            className="px-3 py-2 rounded-xl bg-orange-500/20 text-orange-300 text-xs disabled:opacity-50"
+          >
+            Walk both
+          </button>
+        </div>
+
+        <div className="space-y-2">
+          {(['Theo', 'Diggy'] as const).map((pet) => (
+            <div key={pet} className="bg-surface rounded-xl p-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">{pet}</span>
+                <span className="text-xs text-gray-400">
+                  {careSummary?.byPet?.[pet]?.feedings ?? 0} feedings, {careSummary?.byPet?.[pet]?.walks ?? 0} walks
+                </span>
+              </div>
+              <div className="text-xs text-gray-500 mt-1">
+                {careSummary?.byPet?.[pet]?.lastEventLabel || 'No events logged yet'}
+              </div>
+            </div>
+          ))}
+        </div>
       </motion.div>
 
       {pets.length > 0 && (

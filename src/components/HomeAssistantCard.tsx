@@ -18,6 +18,8 @@ import {
   Wifi,
   Headphones,
   Car,
+  Soup,
+  TimerReset,
 } from 'lucide-react';
 
 type Status = 'live' | 'stale' | 'disconnected';
@@ -60,6 +62,27 @@ interface PresenceState {
   lastUpdated: string;
 }
 
+interface CareSummary {
+  date: string;
+  totals: {
+    feedings: number;
+    walks: number;
+  };
+  byPet: Record<'Theo' | 'Diggy', {
+    feedings: number;
+    walks: number;
+    lastEventLabel: string | null;
+  }>;
+  recentEvents: Array<{
+    id: string;
+    type: 'feeding' | 'walk';
+    pets: Array<'Theo' | 'Diggy'>;
+    timestamp: string;
+    note?: string;
+    label: string;
+  }>;
+}
+
 const fallbackState: PresenceState = {
   iphoneBattery: 82,
   iphoneCharging: false,
@@ -100,6 +123,7 @@ export function HomeAssistantCard() {
   const [haConfigured, setHaConfigured] = useState(true);
   const [controllingLock, setControllingLock] = useState<string | null>(null);
   const [runningAction, setRunningAction] = useState<string | null>(null);
+  const [careSummary, setCareSummary] = useState<CareSummary | null>(null);
 
   const sameRoom = useMemo(() => {
     return state.diggyLocation.trim().toLowerCase() === state.theoLocation.trim().toLowerCase();
@@ -117,10 +141,46 @@ export function HomeAssistantCard() {
         const error = await response.json().catch(() => ({ error: 'Unknown error' }));
         alert(`Command failed: ${error.error || 'Unknown error'}`);
       } else {
+        if (actionKey === 'feed_theo') {
+          await logCareEvent('feeding', ['Theo'], 'home-assistant');
+        }
         setTimeout(() => load(), 800);
       }
     } catch (err) {
       alert(`Command failed: ${err}`);
+    } finally {
+      setRunningAction(null);
+    }
+  };
+
+  const loadCareLog = async () => {
+    try {
+      const response = await fetch('/api/ha/care-log');
+      if (!response.ok) return;
+      const data = await response.json();
+      setCareSummary(data.summary || null);
+    } catch {
+      // ignore, keep UI usable without care log data
+    }
+  };
+
+  const logCareEvent = async (type: 'feeding' | 'walk', pets: Array<'Theo' | 'Diggy'>, source = 'mission-control') => {
+    setRunningAction(`${type}_${pets.join('_').toLowerCase()}`);
+    try {
+      const response = await fetch('/api/ha/care-log', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type, pets, source }),
+      });
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+        alert(`Care log failed: ${error.error || 'Unknown error'}`);
+        return;
+      }
+      const data = await response.json();
+      setCareSummary(data.summary || null);
+    } catch (err) {
+      alert(`Care log failed: ${err}`);
     } finally {
       setRunningAction(null);
     }
@@ -212,6 +272,7 @@ export function HomeAssistantCard() {
 
   useEffect(() => {
     load();
+    loadCareLog();
   }, []);
 
   const statusColor = status === 'live' ? 'text-green-400' : status === 'stale' ? 'text-yellow-400' : 'text-red-400';
@@ -290,6 +351,63 @@ export function HomeAssistantCard() {
         >
           {runningAction === 'lock_it_down' ? 'Locking…' : 'Lock It Down'}
         </button>
+      </div>
+
+      <div className="border border-border rounded-xl p-3 mb-3 bg-surface-light/60 space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Soup className="w-4 h-4 text-emerald-300" />
+            <span className="text-sm font-medium text-white">Theo + Diggy care log</span>
+          </div>
+          <span className="text-xs text-gray-500">Daily summary</span>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            onClick={() => logCareEvent('feeding', ['Diggy'])}
+            disabled={!!runningAction}
+            className="px-3 py-2 rounded-lg bg-emerald-500/15 text-emerald-300 text-xs hover:bg-emerald-500/25 disabled:opacity-50"
+          >
+            Log Diggy feeding
+          </button>
+          <button
+            onClick={() => logCareEvent('walk', ['Theo', 'Diggy'])}
+            disabled={!!runningAction}
+            className="px-3 py-2 rounded-lg bg-orange-500/15 text-orange-300 text-xs hover:bg-orange-500/25 disabled:opacity-50"
+          >
+            Log walk for both
+          </button>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          {(['Theo', 'Diggy'] as const).map((pet) => (
+            <div key={pet} className="rounded-lg bg-[#161616] px-3 py-2 border border-border/60">
+              <div className="text-sm font-medium text-white">{pet}</div>
+              <div className="mt-1 text-xs text-gray-400">{careSummary?.byPet?.[pet]?.feedings ?? 0} feedings, {careSummary?.byPet?.[pet]?.walks ?? 0} walks</div>
+              <div className="mt-1 text-[11px] text-gray-500">{careSummary?.byPet?.[pet]?.lastEventLabel || 'No events logged yet'}</div>
+            </div>
+          ))}
+        </div>
+
+        <div className="flex items-center gap-3 text-xs">
+          <span className="rounded-full bg-emerald-500/10 text-emerald-300 px-2 py-1">{careSummary?.totals?.feedings ?? 0} feedings today</span>
+          <span className="rounded-full bg-orange-500/10 text-orange-300 px-2 py-1">{careSummary?.totals?.walks ?? 0} walks today</span>
+        </div>
+
+        <div className="space-y-2">
+          {(careSummary?.recentEvents || []).slice(0, 4).map((event) => (
+            <div key={event.id} className="flex items-center justify-between rounded-lg bg-[#161616] px-3 py-2 border border-border/60 text-xs">
+              <div className="flex items-center gap-2 text-gray-300">
+                {event.type === 'feeding' ? <Soup className="w-3 h-3 text-emerald-300" /> : <TimerReset className="w-3 h-3 text-orange-300" />}
+                <span>{event.label}</span>
+              </div>
+              <span className="text-gray-500">{new Date(event.timestamp).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</span>
+            </div>
+          ))}
+          {!careSummary?.recentEvents?.length && (
+            <div className="text-xs text-gray-500">No pet care events logged today yet.</div>
+          )}
+        </div>
       </div>
 
       <div className={`border rounded-xl p-3 mb-3 ${state.away ? 'border-red-500/40 bg-red-500/5' : 'border-border bg-surface-light/60'}`}>
