@@ -103,6 +103,13 @@ export function WeekendPlannerCard() {
             </div>
           </div>
         ))}
+
+        <div className="px-1 text-[11px] text-gray-500">
+          Updated {new Date(data.generatedAt).toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+          })}
+        </div>
       </div>
     </div>
   );
