@@ -30,6 +30,7 @@ import LucraROICalculatorCard from '../components/LucraROICalculatorCard';
 import { LifestyleGoalTrackerCard } from '../components/LifestyleGoalTrackerCard';
 import { UnifiedMovieCard } from '../components/UnifiedMovieCard';
 import { YogaCard } from '../components/YogaCard';
+import { TravelPrepAssistantCard } from '../components/TravelPrepAssistantCard';
 import { RecommendationsCard } from '../components/RecommendationsCard';
 import { HeroSection } from '../components/HeroSection';
 import { QuickStatsBar } from '../components/QuickStatsBar';
@@ -821,6 +822,12 @@ export default function MissionControl() {
             <StaggerItem>
               <AnimatedCard>
                 <HomeAssistantCard />
+              </AnimatedCard>
+            </StaggerItem>
+
+            <StaggerItem>
+              <AnimatedCard>
+                <TravelPrepAssistantCard />
               </AnimatedCard>
             </StaggerItem>
 
