@@ -37,6 +37,7 @@ import { TodayNeedsAttention } from '../components/TodayNeedsAttention';
 import { SmartRecommendationsV2 } from '../components/SmartRecommendationsV2';
 import { NotificationCenter } from '../components/NotificationCenter';
 import { FirstTimeCollectorLadderCard } from '../components/FirstTimeCollectorLadderCard';
+import { CollectorReengagementRadarCard } from '../components/CollectorReengagementRadarCard';
 import { AnimatedCard, StaggerContainer, StaggerItem, FadeIn, SlideIn } from '../components/animations';
 
 // Agent configuration - 3-Tier Architecture
@@ -875,12 +876,18 @@ export default function MissionControl() {
 
                 <StaggerItem>
                   <AnimatedCard delay={0.2}>
-                    <FirstTimeCollectorLadderCard />
+                    <CollectorReengagementRadarCard />
                   </AnimatedCard>
                 </StaggerItem>
 
                 <StaggerItem>
                   <AnimatedCard delay={0.225}>
+                    <FirstTimeCollectorLadderCard />
+                  </AnimatedCard>
+                </StaggerItem>
+
+                <StaggerItem>
+                  <AnimatedCard delay={0.25}>
                     <TaskPanel 
                       tasks={tasks}
                       onViewDetails={() => setShowTaskModal(true)}
@@ -889,7 +896,7 @@ export default function MissionControl() {
                 </StaggerItem>
 
                 <StaggerItem>
-                  <AnimatedCard delay={0.25}>
+                  <AnimatedCard delay={0.275}>
                     <div className="bg-surface border border-border rounded-xl p-4">
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-2">

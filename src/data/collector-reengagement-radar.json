@@ -1,0 +1,57 @@
+{
+  "lastUpdated": "2026-04-12",
+  "collectors": [
+    {
+      "name": "Ashley Wall",
+      "segment": "VIP",
+      "lifetimeOrders": 13,
+      "lifetimeSpend": 18420,
+      "lastPurchaseDate": "2025-10-18",
+      "lastTouchDate": "2026-01-09",
+      "favoriteThemes": ["bold color", "statement originals"],
+      "notes": "Largest collector. Loves high-energy originals and responds well to first-look access.",
+      "reasons": ["180+ days since purchase", "90+ days since personal touch", "VIP collector worth protecting"],
+      "recommendedAction": "Send a personal first-look note with 2 pieces that feel like her strongest color-forward lane.",
+      "priority": "high"
+    },
+    {
+      "name": "Jordan Silver",
+      "segment": "Repeat",
+      "lifetimeOrders": 4,
+      "lifetimeSpend": 3920,
+      "lastPurchaseDate": "2025-11-22",
+      "lastTouchDate": "2026-02-03",
+      "favoriteThemes": ["soft neutrals", "gifts"],
+      "notes": "Has bought multiple times, often around gifting moments.",
+      "reasons": ["150+ days since purchase", "collector historically converts around personal milestones"],
+      "recommendedAction": "Warm check-in around gifting season or new small-format work that is easy to place.",
+      "priority": "medium"
+    },
+    {
+      "name": "Maya Chen",
+      "segment": "Warm",
+      "lifetimeOrders": 2,
+      "lifetimeSpend": 1480,
+      "lastPurchaseDate": "2025-12-14",
+      "lastTouchDate": "2026-02-28",
+      "favoriteThemes": ["playful minis", "graphic abstracts"],
+      "notes": "Engaged twice, likely responsive to fresh minis or under-$1.5k shortlist.",
+      "reasons": ["120+ days since purchase", "No recent concierge touch"],
+      "recommendedAction": "Share a tight mini-drop shortlist with one low-friction reply prompt.",
+      "priority": "medium"
+    },
+    {
+      "name": "Erin Patel",
+      "segment": "First-time",
+      "lifetimeOrders": 1,
+      "lifetimeSpend": 720,
+      "lastPurchaseDate": "2025-09-04",
+      "lastTouchDate": "2025-09-20",
+      "favoriteThemes": ["small originals", "home styling help"],
+      "notes": "First purchase went well, but relationship never graduated into collector rhythm.",
+      "reasons": ["200+ days since purchase", "No follow-up ladder completed"],
+      "recommendedAction": "Reconnect with a styling-led note and invite her to reply with a room photo for recommendations.",
+      "priority": "high"
+    }
+  ]
+}
