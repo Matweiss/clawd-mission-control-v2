@@ -30,13 +30,16 @@ import LucraROICalculatorCard from '../components/LucraROICalculatorCard';
 import { LifestyleGoalTrackerCard } from '../components/LifestyleGoalTrackerCard';
 import { UnifiedMovieCard } from '../components/UnifiedMovieCard';
 import { YogaCard } from '../components/YogaCard';
+import { DateNightMemoryBankCard } from '../components/DateNightMemoryBankCard';
 import { TravelPrepAssistantCard } from '../components/TravelPrepAssistantCard';
 import { RecommendationsCard } from '../components/RecommendationsCard';
 import { HeroSection } from '../components/HeroSection';
 import { QuickStatsBar } from '../components/QuickStatsBar';
 import { TodayNeedsAttention } from '../components/TodayNeedsAttention';
 import { SmartRecommendationsV2 } from '../components/SmartRecommendationsV2';
+import { WeekendPlannerCard } from '../components/WeekendPlannerCard';
 import { NotificationCenter } from '../components/NotificationCenter';
+import { ErrandsOptimizerCard } from '../components/ErrandsOptimizerCard';
 import { FirstTimeCollectorLadderCard } from '../components/FirstTimeCollectorLadderCard';
 import { CollectorReengagementRadarCard } from '../components/CollectorReengagementRadarCard';
 import { AnimatedCard, StaggerContainer, StaggerItem, FadeIn, SlideIn } from '../components/animations';
@@ -804,6 +807,11 @@ export default function MissionControl() {
                     <SmartRecommendationsV2 />
                   </AnimatedCard>
                 </StaggerItem>
+                <StaggerItem>
+                  <AnimatedCard>
+                    <WeekendPlannerCard />
+                  </AnimatedCard>
+                </StaggerItem>
               </>
             )}
 
@@ -827,7 +835,19 @@ export default function MissionControl() {
 
             <StaggerItem>
               <AnimatedCard>
+                <DateNightMemoryBankCard />
+              </AnimatedCard>
+            </StaggerItem>
+
+            <StaggerItem>
+              <AnimatedCard>
                 <TravelPrepAssistantCard />
+              </AnimatedCard>
+            </StaggerItem>
+
+            <StaggerItem>
+              <AnimatedCard>
+                <ErrandsOptimizerCard />
               </AnimatedCard>
             </StaggerItem>
 

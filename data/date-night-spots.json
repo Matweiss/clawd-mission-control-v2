@@ -1,0 +1,48 @@
+{
+  "spots": [
+    {
+      "id": "osteria-la-buca",
+      "name": "Osteria La Buca",
+      "neighborhood": "Sherman Oaks",
+      "category": "Dinner",
+      "vibe": "Cozy pasta spot",
+      "price": "$$$",
+      "createdAt": "2026-04-12T00:00:00.000Z",
+      "lastSuggestedAt": "2026-04-06T00:00:00.000Z",
+      "visits": [
+        {
+          "date": "2026-03-22",
+          "rating": 5,
+          "notes": "Easy win, keep in rotation."
+        }
+      ]
+    },
+    {
+      "id": "mizlala",
+      "name": "Mizlala",
+      "neighborhood": "Sherman Oaks",
+      "category": "Dinner",
+      "vibe": "Casual, lively, shareable plates",
+      "price": "$$",
+      "createdAt": "2026-04-12T00:00:00.000Z",
+      "lastSuggestedAt": "2026-03-25T00:00:00.000Z",
+      "visits": [
+        {
+          "date": "2026-02-14",
+          "rating": 4,
+          "notes": "Good energy, solid fallback."
+        }
+      ]
+    },
+    {
+      "id": "uji-time",
+      "name": "Uji Time",
+      "neighborhood": "Studio City",
+      "category": "Dessert",
+      "vibe": "Short sweet stop",
+      "price": "$$",
+      "createdAt": "2026-04-12T00:00:00.000Z",
+      "visits": []
+    }
+  ]
+}
