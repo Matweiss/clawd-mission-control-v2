@@ -35,6 +35,7 @@ import { DateNightMemoryBankCard } from '../components/DateNightMemoryBankCard';
 import { TravelPrepAssistantCard } from '../components/TravelPrepAssistantCard';
 import { RecommendationsCard } from '../components/RecommendationsCard';
 import { HeroSection } from '../components/HeroSection';
+import { ModeIntroCard } from '../components/ModeIntroCard';
 import { QuickStatsBar } from '../components/QuickStatsBar';
 import { TodayNeedsAttention } from '../components/TodayNeedsAttention';
 import { SmartRecommendationsV2 } from '../components/SmartRecommendationsV2';
@@ -682,14 +683,7 @@ export default function MissionControl() {
         </div>
         )}
 
-        {isSarahMode && (
-          <div className="mb-4 rounded-xl border border-rose-500/20 bg-rose-500/10 px-4 py-3">
-            <div className="text-sm font-semibold text-rose-100">Sarah dashboard mode</div>
-            <div className="text-xs text-rose-200/80 mt-1">
-              Streamlined for Sarah business operations, collector follow-up, and approval-safe workflows.
-            </div>
-          </div>
-        )}
+        <ModeIntroCard mode={dashboardMode} />
 
         {/* Mobile Tab Navigation */}
         <div className="lg:hidden mb-4">
@@ -924,6 +918,24 @@ export default function MissionControl() {
                   </StaggerItem>
                 )}
               </>
+            )}
+
+            {isSarahMode && (
+              <StaggerItem>
+                <AnimatedCard>
+                  <div className="bg-surface border border-border rounded-xl p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="text-sm font-semibold text-white">Sarah operating rules</h3>
+                      <span className="text-[11px] text-rose-300">Human-in-the-loop</span>
+                    </div>
+                    <ul className="space-y-2 text-sm text-gray-300">
+                      <li>• Sarah stays the approver for customer-facing communication.</li>
+                      <li>• Use this as a decision and follow-up workspace, not an auto-send machine.</li>
+                      <li>• Prioritize launches, collector relationships, and sold-piece updates.</li>
+                    </ul>
+                  </div>
+                </AnimatedCard>
+              </StaggerItem>
             )}
           </StaggerContainer>
 

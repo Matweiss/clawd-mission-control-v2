@@ -41,7 +41,7 @@ export const DASHBOARD_CONFIG: Record<DashboardMode, DashboardConfig> = {
     title: 'Mat Mission Control',
     subtitle: 'Operator dashboard for work, life, agents, and infrastructure',
     leftCards: ['agentFleet'],
-    centerCards: ['sessionTree', 'homeAssistant', 'dateNight', 'travelPrep', 'errands', 'movies', 'yoga'],
+    centerCards: ['sessionTree', 'homeAssistant', 'travelPrep', 'errands'],
     rightCards: ['calendar', 'email', 'pipeline', 'lucraCommission', 'lucraRoi', 'tasks', 'amexBenefits'],
   },
   sarah: {
