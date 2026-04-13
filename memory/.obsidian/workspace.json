@@ -230,6 +230,8 @@
   },
   "active": "a11d7573f5146803",
   "lastOpenFiles": [
+    "lifestyle/restaurants.md",
+    "lifestyle",
     "Obsidian Sync Test.md",
     "MEMORY-SOP.md",
     "INDEX.md",
@@ -256,7 +258,6 @@
     "projects/esp32-presence-optimization.md",
     "projects/camera-integration.md",
     "guides/youtube-analysis.md",
-    "guides/vlm-video-analysis.md",
     "guides"
   ]
 }
