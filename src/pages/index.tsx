@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
+import { useRouter } from 'next/router';
 import { 
   Activity, Mail, Database, Cpu, Sparkles, 
   Zap, Calendar, TrendingUp, AlertCircle,
@@ -42,6 +43,8 @@ import { NotificationCenter } from '../components/NotificationCenter';
 import { ErrandsOptimizerCard } from '../components/ErrandsOptimizerCard';
 import { FirstTimeCollectorLadderCard } from '../components/FirstTimeCollectorLadderCard';
 import { CollectorReengagementRadarCard } from '../components/CollectorReengagementRadarCard';
+import { DashboardModeSwitch } from '../components/DashboardModeSwitch';
+import { DASHBOARD_CONFIG, DashboardMode, getDashboardMode } from '../lib/dashboard-config';
 import { AnimatedCard, StaggerContainer, StaggerItem, FadeIn, SlideIn } from '../components/animations';
 
 // Agent configuration - 3-Tier Architecture
@@ -69,6 +72,7 @@ const STAGE_COLORS: any = {
 };
 
 export default function MissionControl() {
+  const router = useRouter();
   const { isOpen, setIsOpen } = useCommandPalette();
   const { spawnAgent, refreshAgent, restartAgent } = useAgentActions();
   const { 
@@ -76,6 +80,7 @@ export default function MissionControl() {
     loading, lastRefresh, refresh 
   } = useRealtimeData();
   const { data: agentStatus, refresh: refreshAgents } = useAgentStatus();
+  const [dashboardMode, setDashboardMode] = useState<DashboardMode>('mat');
 
   const openAgentCommandCenter = (agent: any) => {
     setSelectedAgent({
@@ -105,6 +110,31 @@ export default function MissionControl() {
   const [priorityMode, setPriorityMode] = useState(false);
   const [showUrgentEmails, setShowUrgentEmails] = useState(false);
   const [showReplyNeededEmails, setShowReplyNeededEmails] = useState(false);
+
+  useEffect(() => {
+    if (!router.isReady) return;
+    const nextMode = getDashboardMode(router.query.mode);
+    setDashboardMode(nextMode);
+  }, [router.isReady, router.query.mode]);
+
+  const setMode = (mode: DashboardMode) => {
+    setDashboardMode(mode);
+    router.replace(
+      {
+        pathname: router.pathname,
+        query: mode === 'mat' ? {} : { ...router.query, mode },
+      },
+      undefined,
+      { shallow: true }
+    );
+  };
+
+  const dashboard = DASHBOARD_CONFIG[dashboardMode];
+  const isSarahMode = dashboardMode === 'sarah';
+  const showCard = (id: string) =>
+    dashboard.leftCards.includes(id as any) ||
+    dashboard.centerCards.includes(id as any) ||
+    dashboard.rightCards.includes(id as any);
 
   // Quick Actions keyboard shortcut (Cmd+K or Ctrl+K)
   useEffect(() => {
@@ -307,7 +337,7 @@ export default function MissionControl() {
   return (
     <div className="min-h-screen bg-background text-white">
       <Head>
-        <title>Clawd Mission Control</title>
+        <title>{dashboard.title}</title>
       </Head>
 
       <CommandPalette 
@@ -475,8 +505,8 @@ export default function MissionControl() {
           <div className="flex items-center gap-3">
             <span className="text-2xl">🦞</span>
             <div>
-              <h1 className="font-bold text-base lg:text-lg">Clawd Mission Control</h1>
-              <p className="text-xs text-gray-400 hidden sm:block">AI Agent Command Center</p>
+              <h1 className="font-bold text-base lg:text-lg">{dashboard.title}</h1>
+              <p className="text-xs text-gray-400 hidden sm:block">{dashboard.subtitle}</p>
             </div>
           </div>
           
@@ -501,6 +531,8 @@ export default function MissionControl() {
               <span className="text-xs text-gray-500 hidden sm:inline">⌘K</span>
             </button>
             
+            <DashboardModeSwitch mode={dashboardMode} onChange={setMode} />
+
             <button 
               onClick={refresh}
               disabled={loading}
@@ -509,7 +541,7 @@ export default function MissionControl() {
               <RefreshCw className="w-5 h-5" />
             </button>
 
-            <NotificationCenter />
+            {!isSarahMode && <NotificationCenter />}
 
             {/* Priority Mode Toggle */}
             <button
@@ -544,30 +576,32 @@ export default function MissionControl() {
           </div>
         )}
 
-        {/* Hero Section */}
-        <div className="mb-4">
-          <HeroSection />
-        </div>
+        {!isSarahMode && (
+          <>
+            <div className="mb-4">
+              <HeroSection />
+            </div>
 
-        {/* Quick Stats Bar */}
-        <div className="mb-4 py-2 border-y border-border">
-          <QuickStatsBar 
-            urgentEmails={emails.filter((e: any) => e.category === 'URGENT').length}
-            replyNeededEmails={emails.filter((e: any) => e.category === 'REPLY_NEEDED').length}
-            pipelineMRR={`$${((pipeline?.total || 0) / 1000).toFixed(1)}k`}
-            pipelineARR={`$${(((pipeline?.total || 0) * 12) / 1000).toFixed(1)}k`}
-            yogaClasses={51}
-            watchlistCount={0}
-            buddyPasses={2}
-            buddyPassDays={16}
-            onUrgentClick={() => setShowUrgentEmails(true)}
-            onReplyNeededClick={() => setShowReplyNeededEmails(true)}
-            onPipelineClick={() => setShowSalesHub(true)}
-          />
-        </div>
+            <div className="mb-4 py-2 border-y border-border">
+              <QuickStatsBar 
+                urgentEmails={emails.filter((e: any) => e.category === 'URGENT').length}
+                replyNeededEmails={emails.filter((e: any) => e.category === 'REPLY_NEEDED').length}
+                pipelineMRR={`$${((pipeline?.total || 0) / 1000).toFixed(1)}k`}
+                pipelineARR={`$${(((pipeline?.total || 0) * 12) / 1000).toFixed(1)}k`}
+                yogaClasses={51}
+                watchlistCount={0}
+                buddyPasses={2}
+                buddyPassDays={16}
+                onUrgentClick={() => setShowUrgentEmails(true)}
+                onReplyNeededClick={() => setShowReplyNeededEmails(true)}
+                onPipelineClick={() => setShowSalesHub(true)}
+              />
+            </div>
+          </>
+        )}
 
-        {/* Today Board */}
-        <div className="mb-4 rounded-xl border border-border bg-surface p-4">
+        {!isSarahMode && (
+          <div className="mb-4 rounded-xl border border-border bg-surface p-4">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-semibold text-white">Today Board</h3>
             <span className="text-xs text-gray-400">Focus mode</span>
@@ -590,9 +624,10 @@ export default function MissionControl() {
               <div className="text-white truncate">{todayBoard.nextAction}</div>
             </div>
           </div>
-        </div>
+          </div>
+        )}
 
-        {/* Reliability / Freshness */}
+        {!isSarahMode && (
         <div className="mb-4 rounded-xl border border-border bg-surface px-4 py-3">
           <div className="flex flex-wrap items-center gap-3 text-xs">
             <span className="px-2 py-1 rounded bg-surface-light text-gray-300">
@@ -610,8 +645,9 @@ export default function MissionControl() {
             </button>
           </div>
         </div>
+        )}
 
-        {/* System Status Bar */}
+        {!isSarahMode && (
         <div className="mb-4 rounded-xl border border-border bg-surface px-4 py-3">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div>
@@ -644,6 +680,16 @@ export default function MissionControl() {
             </div>
           </div>
         </div>
+        )}
+
+        {isSarahMode && (
+          <div className="mb-4 rounded-xl border border-rose-500/20 bg-rose-500/10 px-4 py-3">
+            <div className="text-sm font-semibold text-rose-100">Sarah dashboard mode</div>
+            <div className="text-xs text-rose-200/80 mt-1">
+              Streamlined for Sarah business operations, collector follow-up, and approval-safe workflows.
+            </div>
+          </div>
+        )}
 
         {/* Mobile Tab Navigation */}
         <div className="lg:hidden mb-4">
@@ -802,16 +848,20 @@ export default function MissionControl() {
                   </AnimatedCard>
                 </StaggerItem>
 
-                <StaggerItem>
-                  <AnimatedCard>
-                    <SmartRecommendationsV2 />
-                  </AnimatedCard>
-                </StaggerItem>
-                <StaggerItem>
-                  <AnimatedCard>
-                    <WeekendPlannerCard />
-                  </AnimatedCard>
-                </StaggerItem>
+                {!isSarahMode && (
+                  <>
+                    <StaggerItem>
+                      <AnimatedCard>
+                        <SmartRecommendationsV2 />
+                      </AnimatedCard>
+                    </StaggerItem>
+                    <StaggerItem>
+                      <AnimatedCard>
+                        <WeekendPlannerCard />
+                      </AnimatedCard>
+                    </StaggerItem>
+                  </>
+                )}
               </>
             )}
 
@@ -827,104 +877,131 @@ export default function MissionControl() {
               </StaggerItem>
             )}
 
-            <StaggerItem>
-              <AnimatedCard>
-                <HomeAssistantCard />
-              </AnimatedCard>
-            </StaggerItem>
+            {showCard('homeAssistant') && (
+              <StaggerItem>
+                <AnimatedCard>
+                  <HomeAssistantCard />
+                </AnimatedCard>
+              </StaggerItem>
+            )}
 
-            <StaggerItem>
-              <AnimatedCard>
-                <DateNightMemoryBankCard />
-              </AnimatedCard>
-            </StaggerItem>
+            {showCard('dateNight') && (
+              <StaggerItem>
+                <AnimatedCard>
+                  <DateNightMemoryBankCard />
+                </AnimatedCard>
+              </StaggerItem>
+            )}
 
-            <StaggerItem>
-              <AnimatedCard>
-                <TravelPrepAssistantCard />
-              </AnimatedCard>
-            </StaggerItem>
+            {showCard('travelPrep') && (
+              <StaggerItem>
+                <AnimatedCard>
+                  <TravelPrepAssistantCard />
+                </AnimatedCard>
+              </StaggerItem>
+            )}
 
-            <StaggerItem>
-              <AnimatedCard>
-                <ErrandsOptimizerCard />
-              </AnimatedCard>
-            </StaggerItem>
+            {showCard('errands') && (
+              <StaggerItem>
+                <AnimatedCard>
+                  <ErrandsOptimizerCard />
+                </AnimatedCard>
+              </StaggerItem>
+            )}
 
-            {!priorityMode && (
+            {!priorityMode && showCard('movies') && (
               <>
                 <StaggerItem>
                   <AnimatedCard delay={0.1}>
                     <UnifiedMovieCard />
                   </AnimatedCard>
                 </StaggerItem>
-                <StaggerItem>
-                  <AnimatedCard delay={0.15}>
-                    <YogaCard />
-                  </AnimatedCard>
-                </StaggerItem>
+                {showCard('yoga') && (
+                  <StaggerItem>
+                    <AnimatedCard delay={0.15}>
+                      <YogaCard />
+                    </AnimatedCard>
+                  </StaggerItem>
+                )}
               </>
             )}
           </StaggerContainer>
 
           {/* RIGHT: Work / Execution */}
           <StaggerContainer className={`space-y-4 ${mobileTab !== 'work' ? 'hidden lg:block' : ''} ${priorityMode ? '' : ''}`} staggerDelay={0.06}>
-            <StaggerItem>
-              <AnimatedCard>
-                <MergedCalendarCard />
-              </AnimatedCard>
-            </StaggerItem>
+            {showCard('calendar') && (
+              <StaggerItem>
+                <AnimatedCard>
+                  <MergedCalendarCard />
+                </AnimatedCard>
+              </StaggerItem>
+            )}
 
-            <StaggerItem>
-              <AnimatedCard delay={0.05}>
-                <EmailCard />
-              </AnimatedCard>
-            </StaggerItem>
+            {showCard('email') && (
+              <StaggerItem>
+                <AnimatedCard delay={0.05}>
+                  <EmailCard />
+                </AnimatedCard>
+              </StaggerItem>
+            )}
 
             {!priorityMode && (
               <>
-                <StaggerItem>
-                  <AnimatedCard delay={0.1}>
-                    <PipelineSheetCard />
-                  </AnimatedCard>
-                </StaggerItem>
+                {showCard('pipeline') && (
+                  <StaggerItem>
+                    <AnimatedCard delay={0.1}>
+                      <PipelineSheetCard />
+                    </AnimatedCard>
+                  </StaggerItem>
+                )}
 
-                <StaggerItem>
-                  <AnimatedCard delay={0.15}>
-                    <LucraCommissionCard />
-                  </AnimatedCard>
-                </StaggerItem>
+                {showCard('lucraCommission') && (
+                  <StaggerItem>
+                    <AnimatedCard delay={0.15}>
+                      <LucraCommissionCard />
+                    </AnimatedCard>
+                  </StaggerItem>
+                )}
 
-                <StaggerItem>
-                  <AnimatedCard delay={0.175}>
-                    <LucraROICalculatorCard />
-                  </AnimatedCard>
-                </StaggerItem>
+                {showCard('lucraRoi') && (
+                  <StaggerItem>
+                    <AnimatedCard delay={0.175}>
+                      <LucraROICalculatorCard />
+                    </AnimatedCard>
+                  </StaggerItem>
+                )}
 
-                <StaggerItem>
-                  <AnimatedCard delay={0.2}>
-                    <CollectorReengagementRadarCard />
-                  </AnimatedCard>
-                </StaggerItem>
+                {showCard('collectorRadar') && (
+                  <StaggerItem>
+                    <AnimatedCard delay={0.2}>
+                      <CollectorReengagementRadarCard />
+                    </AnimatedCard>
+                  </StaggerItem>
+                )}
 
-                <StaggerItem>
-                  <AnimatedCard delay={0.225}>
-                    <FirstTimeCollectorLadderCard />
-                  </AnimatedCard>
-                </StaggerItem>
+                {showCard('firstTimeCollector') && (
+                  <StaggerItem>
+                    <AnimatedCard delay={0.225}>
+                      <FirstTimeCollectorLadderCard />
+                    </AnimatedCard>
+                  </StaggerItem>
+                )}
 
-                <StaggerItem>
-                  <AnimatedCard delay={0.25}>
-                    <TaskPanel 
-                      tasks={tasks}
-                      onViewDetails={() => setShowTaskModal(true)}
-                    />
-                  </AnimatedCard>
-                </StaggerItem>
+                {showCard('tasks') && (
+                  <StaggerItem>
+                    <AnimatedCard delay={0.25}>
+                      <TaskPanel 
+                        tasks={tasks}
+                        onViewDetails={() => setShowTaskModal(true)}
+                      />
+                    </AnimatedCard>
+                  </StaggerItem>
+                )}
 
-                <StaggerItem>
-                  <AnimatedCard delay={0.275}>
-                    <div className="bg-surface border border-border rounded-xl p-4">
+                {showCard('amexBenefits') && (
+                  <StaggerItem>
+                    <AnimatedCard delay={0.275}>
+                      <div className="bg-surface border border-border rounded-xl p-4">
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-2">
                           <CreditCard className="w-4 h-4 text-blue-300" />
@@ -966,6 +1043,7 @@ export default function MissionControl() {
                     </div>
                   </AnimatedCard>
                 </StaggerItem>
+                )}
               </>
             )}
           </StaggerContainer>
