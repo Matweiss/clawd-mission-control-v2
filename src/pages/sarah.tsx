@@ -4,6 +4,7 @@ import { ArrowRight, Brush, CalendarClock, CheckSquare, HeartHandshake, Mail, Pa
 import { EmailCard } from '../components/EmailCard';
 import { CollectorReengagementRadarCard } from '../components/CollectorReengagementRadarCard';
 import { FirstTimeCollectorLadderCard } from '../components/FirstTimeCollectorLadderCard';
+import { ShopifyOverviewCard } from '../components/ShopifyOverviewCard';
 
 function SarahHero() {
   const stats = [
@@ -186,6 +187,7 @@ export default function SarahDashboard() {
             </div>
 
             <div className="space-y-5">
+              <ShopifyOverviewCard />
               <CollectorReengagementRadarCard />
               <FirstTimeCollectorLadderCard />
             </div>
