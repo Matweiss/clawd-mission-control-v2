@@ -11,3 +11,4 @@ clawd-sync.service
 *.tar.gz
 .vercel
 google_tokens.json
+.env*.local
