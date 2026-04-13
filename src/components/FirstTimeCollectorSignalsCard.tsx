@@ -5,7 +5,7 @@ type FirstTimeSignals = {
   firstTimeCollectors: number;
   repeatCollectors: number;
   conversionPressure: number;
-  strongestSegment: Array<{ id: number; name: string; spent: number; daysSinceTouch: number | null }>;
+  strongestSegment: Array<{ id: number; name: string; spent: number; daysSinceTouch: number | null; tags?: string[] }>;
   recommendation: string;
 };
 
@@ -60,6 +60,7 @@ export function FirstTimeCollectorSignalsCard() {
                 <div>
                   <div className="text-sm text-white">{collector.name}</div>
                   <div className="text-xs text-gray-400">{collector.daysSinceTouch ?? '—'}d since last touch</div>
+                  {!!collector.tags?.length && <div className="text-xs text-gray-500 mt-1">{collector.tags.join(' • ')}</div>}
                 </div>
                 <div className="text-sm text-pink-200">${Math.round(collector.spent).toLocaleString()}</div>
               </div>
