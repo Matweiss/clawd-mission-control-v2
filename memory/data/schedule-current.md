@@ -1,54 +1,100 @@
-# Schedule Update — Mon–Tue, Apr 6–7, 2026
+# Schedule Update — Mon–Tue, Apr 13–14, 2026
 
-**Updated:** 2026-04-05 11:45 PM PDT  
-**Window:** Monday Apr 6 + Tuesday Apr 7  
+**Updated:** 2026-04-12 11:45 PM PDT  
+**Window:** Monday Apr 13 + Tuesday Apr 14  
 **Sources:** CorePower Yoga (Main filter) + Regal Sherman Oaks Galleria (direct Mac Chrome CDP fallback)
 
 ---
 
 ## 🧘 CorePower Yoga — Main Filter (Encino + Sherman Oaks)
 
-**Scrape note:** the normal `chrome-devtools` MCP bridge was offline, so this run used direct Chrome CDP against the already-open CorePower schedule tab.
+**Scrape note:** `chrome-devtools` MCP was offline again, so this run used direct Chrome CDP. The CorePower page was confirmed on the **Main** filter before extraction.
 
-### Monday, Apr 6 — 0 classes shown
-CorePower rendered **Mon, Apr 06 — 0 classes** for the Main filter.
+### Monday, Apr 13 — 22 classes
 
-### Tuesday, Apr 7 — 0 classes shown
-CorePower rendered **Tue, Apr 07 — 0 classes** for the Main filter.
+- 6:30am — **YS** — Encino — Gabriella D
+- 7:00am — **YS** — Sherman Oaks — Kelly D
+- 7:30am — **C2** — Sherman Oaks — Madison M
+- 9:00am — **YS** — Sherman Oaks — Laura F
+- 9:30am — **C2** — Encino — Tatiana C
+- 10:00am — **C2** — Sherman Oaks — Jennifer R
+- 10:30am — **YS** — Encino — Maxwell Sp
+- 12:00pm — **YS** — Encino — Adrian A
+- 12:30pm — **C2** — Encino — Nicole L
+- 12:30pm — **C2** — Sherman Oaks — Madison M
+- 3:00pm — **YS** — Encino — Danielle W
+- 3:00pm — **C2** — Sherman Oaks — Prerna C *(SUB)*
+- 4:00pm — **C2** — Encino — Tatiana C *(SUB)*
+- 4:30pm — **CSX Lower Body** — Encino — Janelle P
+- 4:30pm — **YS** — Sherman Oaks — Hannah S
+- 5:30pm — **YS** — Encino — Anna J
+- 5:45pm — **CSX Lower Body** — Sherman Oaks — Laura F
+- 6:00pm — **C2** — Sherman Oaks — Megan M *(SUB)*
+- 7:00pm — **C2** — Encino — Hector G
+- 7:30pm — **YS** — Encino — Anna J
+- 8:30pm — **C2** — Encino — Hector G
+- 9:00pm — **C2** — Sherman Oaks — Adriana S
+
+### Tuesday, Apr 14 — 17 classes
+
+- 6:00am — **CSX Upper Body** — Sherman Oaks — Janelle P
+- 7:00am — **YS** — Sherman Oaks — Lydia P
+- 7:30am — **C2** — Sherman Oaks — Aileen S
+- 8:00am — **C2** — Encino — Chloe B *(SUB)*
+- 9:00am — **YS** — Sherman Oaks — Lydia P
+- 9:30am — **C2** — Encino — Chloe B *(SUB)*
+- 10:00am — **C2** — Sherman Oaks — Madison M
+- 10:30am — **YS** — Encino — Eric G
+- 12:00pm — **YS** — Encino — Eric G
+- 12:30pm — **C2** — Encino — Aileen S
+- 12:30pm — **C2** — Sherman Oaks — Libby R
+- 4:30pm — **YS** — Sherman Oaks — Ling C
+- 5:30pm — **YS** — Encino — Gabriella D *(SUB)*
+- 7:00pm — **C2** — Encino — Jennifer F — **CANCELLED** (teacher training)
+- 7:00pm — **YS** — Sherman Oaks — John S
+- 7:30pm — **YS** — Encino — Chloe B *(SUB)*
+- 8:30pm — **C2** — Encino — Jennifer F — **CANCELLED** (teacher training)
 
 ---
 
 ## 🎬 Regal Sherman Oaks Galleria
 
-### Monday, Apr 6 — 11 movies
+### Monday, Apr 13 — 15 movies
 
-- **Fantasy Life** — 1hr 31mins — 10:30am, 4:10pm, 6:50pm
-- **A Great Awakening** — 2hr 9mins — 10:35am, 10:50am, 3:40pm, 7:35pm
-- **The Super Mario Galaxy Movie** — 1hr 38mins — multiple LASER / Standard / HDR-Barco screens all day — **NO PASSES**
-- **They Will Kill You** — 1hr 34mins — 10:45am, 2:10pm, 4:50pm, 10:50pm
-- **Project Hail Mary** — 2hr 36mins — LASER + 70mm + Standard/LASER — **NO PASSES**
-- **LOL: Peter Rabbit** — 1hr 35mins — 11:15am
-- **Hoppers** — 1hr 45mins — 12:15pm, 3:15pm, 6:15pm, 9:05pm
-- **The AI Doc: Or How I Became an Apocaloptimist** — 1hr 44mins — 1:20pm
-- **LOL: The Jerk** — 1hr 34mins — 1:55pm, 4:40pm, 7:20pm, 10:00pm
-- **The Drama** — 1hr 46mins — 2:00pm, 4:50pm, 7:50pm, 10:10pm, 10:50pm
-- **Ready or Not 2: Here I Come** — 1hr 48mins — 4:40pm, 7:35pm, 10:25pm
-- **Monday Mystery Movie (04/06)** — 2hr 3mins — 7:00pm — **NO PASSES**
+- **LOL: Spy Kids** — 11:00am
+- **The Super Mario Galaxy Movie** — multiple LASER / Stadium / HDR-Barco / Standard screens all day — **NO PASSES**
+- **Project Hail Mary** — recliner + HDR-Barco + 70mm options — **NO PASSES**
+- **The Drama** — 11:20am, 2:10pm, 5:05pm, 8:00pm, 10:55pm
+- **You, Me & Tuscany** — 11:30am, 1:15pm, 2:15pm, 3:15pm, 4:05pm, 5:15pm, 8:10pm, 9:50pm
+- **Exit 8 (Japanese)** — 11:50am, 2:30pm, 5:10pm, 7:50pm, 10:30pm
+- **Hamlet** — 12:10pm, 3:10pm, 6:10pm, 9:15pm
+- **Hoppers** — 12:30pm, 6:00pm, 8:45pm
+- **LOL: Better Off Dead** — 1:35pm, 4:20pm, 7:05pm, 9:50pm
+- **Monday Mystery Movie (04/13)** — 7:00pm — **NO PASSES**
+- **Fangoria Staff Picks: Sinister** — 7:00pm
+- **ChaO (Sub)** — 7:15pm, 9:55pm
+- **Hunting Matthew Nichols** — 7:40pm, 10:15pm
+- **Faces Of Death** — 10:55pm
+- **Ready or Not 2: Here I Come** — 11:00pm
 
-### Tuesday, Apr 7 — 10 movies
+### Tuesday, Apr 14 — 14 movies
 
-- **A Great Awakening** — 2hr 9mins — 10:35am, 10:50am, 3:30pm, 7:35pm
-- **Fantasy Life** — 1hr 31mins — 10:35am, 4:10pm, 6:50pm
-- **The Super Mario Galaxy Movie** — 1hr 38mins — multiple LASER / Standard / HDR-Barco screens all day — **NO PASSES**
-- **They Will Kill You** — 1hr 34mins — 10:45am, 2:10pm, 4:50pm, 7:10pm, 10:50pm
-- **Project Hail Mary** — 2hr 36mins — LASER + 70mm + Standard/LASER — **NO PASSES**
-- **LOL: Peter Rabbit** — 1hr 35mins — 11:15am
-- **The AI Doc: Or How I Became an Apocaloptimist** — 1hr 44mins — 1:20pm
-- **LOL: Smokey and the Bandit** — 1hr 36mins — 2:00pm, 4:40pm, 7:20pm, 10:00pm
-- **The Drama** — 1hr 46mins — 2:00pm, 4:50pm, 7:50pm, 10:15pm, 10:50pm
-- **Ready or Not 2: Here I Come** — 1hr 48mins — 4:40pm, 7:35pm, 10:25pm
-- **Hoppers** — 1hr 45mins — 6:15pm, 9:05pm
+- **LOL: Spy Kids** — 11:00am
+- **The Super Mario Galaxy Movie** — multiple LASER / Stadium / HDR-Barco / Standard screens all day — **NO PASSES**
+  - notable flag: one standard showing listed **2:30pm SOLD OUT**
+- **Project Hail Mary** — recliner + HDR-Barco + 70mm options — **NO PASSES**
+- **The Drama** — 11:20am, 2:10pm, 5:05pm, 8:00pm, 10:55pm
+- **You, Me & Tuscany** — 11:30am, 1:15pm, 2:15pm, 3:15pm, 4:05pm, 5:15pm, 8:10pm, 9:50pm
+- **Exit 8 (Japanese)** — 11:40am, 2:20pm, 5:00pm, 7:40pm, 10:20pm
+- **Hamlet** — 12:00pm, 3:00pm, 6:55pm, 9:20pm
+- **Hoppers** — 12:30pm, 6:00pm, 8:45pm
+- **LOL: Beverly Hills Cop** — 1:30pm, 4:20pm, 7:05pm, 10:00pm
+- **Jerry Maguire 30th Anniversary** — 6:00pm
+- **ChaO (Sub)** — 7:15pm, 9:55pm
+- **Hunting Matthew Nichols** — 8:20pm, 10:50pm
+- **Faces Of Death** — 10:55pm
+- **Ready or Not 2: Here I Come** — 11:00pm
 
 ---
 
-*Regal scraped through the Mac Chrome CDP tunnel because the normal browser MCP endpoint was offline. CorePower also came through direct CDP; confidence is slightly lower there because the page was read from the existing filtered tab rather than freshly driven through the UI.*
+*Direct CDP fallback worked for both sources. Mission Control files are current even though the normal MCP browser bridge was offline.*

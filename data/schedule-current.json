@@ -1,8 +1,8 @@
 {
-  "updatedAt": "2026-04-06T06:45:18Z",
+  "updatedAt": "2026-04-13T06:45:35Z",
   "window": {
-    "start": "2026-04-06",
-    "end": "2026-04-07",
+    "start": "2026-04-13",
+    "end": "2026-04-14",
     "label": "Mon-Tue"
   },
   "sources": {
@@ -13,9 +13,9 @@
         "Encino",
         "Sherman Oaks"
       ],
-      "confidence": "medium",
+      "confidence": "high",
       "sourceType": "browser-scrape-direct-cdp",
-      "note": "chrome-devtools MCP was offline; used direct Chrome CDP against an existing CorePower tab filtered to Main. Mon Apr 6 and Tue Apr 7 rendered as 0 classes."
+      "note": "chrome-devtools MCP was offline; scraped the Main-filtered CorePower schedule from direct Mac Chrome CDP fallback."
     },
     "regal": {
       "name": "Regal Sherman Oaks Galleria",
@@ -26,173 +26,81 @@
     }
   },
   "yoga": {
-    "classes": []
+    "classes": [
+      {"date":"2026-04-13","time":"6:30am PT","type":"YS","studio":"Encino","teacher":"Gabriella D","status":"BOOK"},
+      {"date":"2026-04-13","time":"7:00am PT","type":"YS","studio":"Sherman Oaks","teacher":"Kelly D","status":"BOOK"},
+      {"date":"2026-04-13","time":"7:30am PT","type":"C2","studio":"Sherman Oaks","teacher":"Madison M","status":"BOOK"},
+      {"date":"2026-04-13","time":"9:00am PT","type":"YS","studio":"Sherman Oaks","teacher":"Laura F","status":"BOOK"},
+      {"date":"2026-04-13","time":"9:30am PT","type":"C2","studio":"Encino","teacher":"Tatiana C","status":"BOOK"},
+      {"date":"2026-04-13","time":"10:00am PT","type":"C2","studio":"Sherman Oaks","teacher":"Jennifer R","status":"BOOK"},
+      {"date":"2026-04-13","time":"10:30am PT","type":"YS","studio":"Encino","teacher":"Maxwell Sp","status":"BOOK"},
+      {"date":"2026-04-13","time":"12:00pm PT","type":"YS","studio":"Encino","teacher":"Adrian A","status":"BOOK"},
+      {"date":"2026-04-13","time":"12:30pm PT","type":"C2","studio":"Encino","teacher":"Nicole L","status":"BOOK"},
+      {"date":"2026-04-13","time":"12:30pm PT","type":"C2","studio":"Sherman Oaks","teacher":"Madison M","status":"BOOK"},
+      {"date":"2026-04-13","time":"3:00pm PT","type":"YS","studio":"Encino","teacher":"Danielle W","status":"BOOK"},
+      {"date":"2026-04-13","time":"3:00pm PT","type":"C2","studio":"Sherman Oaks","teacher":"Prerna C","status":"BOOK","note":"SUB"},
+      {"date":"2026-04-13","time":"4:00pm PT","type":"C2","studio":"Encino","teacher":"Tatiana C","status":"BOOK","note":"SUB"},
+      {"date":"2026-04-13","time":"4:30pm PT","type":"CSX","studio":"Encino","teacher":"Janelle P","status":"BOOK","note":"CorePower Strength X (Lower Body)"},
+      {"date":"2026-04-13","time":"4:30pm PT","type":"YS","studio":"Sherman Oaks","teacher":"Hannah S","status":"BOOK"},
+      {"date":"2026-04-13","time":"5:30pm PT","type":"YS","studio":"Encino","teacher":"Anna J","status":"BOOK"},
+      {"date":"2026-04-13","time":"5:45pm PT","type":"CSX","studio":"Sherman Oaks","teacher":"Laura F","status":"BOOK","note":"CorePower Strength X (Lower Body)"},
+      {"date":"2026-04-13","time":"6:00pm PT","type":"C2","studio":"Sherman Oaks","teacher":"Megan M","status":"BOOK","note":"SUB"},
+      {"date":"2026-04-13","time":"7:00pm PT","type":"C2","studio":"Encino","teacher":"Hector G","status":"BOOK"},
+      {"date":"2026-04-13","time":"7:30pm PT","type":"YS","studio":"Encino","teacher":"Anna J","status":"BOOK"},
+      {"date":"2026-04-13","time":"8:30pm PT","type":"C2","studio":"Encino","teacher":"Hector G","status":"BOOK"},
+      {"date":"2026-04-13","time":"9:00pm PT","type":"C2","studio":"Sherman Oaks","teacher":"Adriana S","status":"BOOK"},
+      {"date":"2026-04-14","time":"6:00am PT","type":"CSX","studio":"Sherman Oaks","teacher":"Janelle P","status":"BOOK","note":"CorePower Strength X (Upper Body)"},
+      {"date":"2026-04-14","time":"7:00am PT","type":"YS","studio":"Sherman Oaks","teacher":"Lydia P","status":"BOOK"},
+      {"date":"2026-04-14","time":"7:30am PT","type":"C2","studio":"Sherman Oaks","teacher":"Aileen S","status":"BOOK"},
+      {"date":"2026-04-14","time":"8:00am PT","type":"C2","studio":"Encino","teacher":"Chloe B","status":"BOOK","note":"SUB"},
+      {"date":"2026-04-14","time":"9:00am PT","type":"YS","studio":"Sherman Oaks","teacher":"Lydia P","status":"BOOK"},
+      {"date":"2026-04-14","time":"9:30am PT","type":"C2","studio":"Encino","teacher":"Chloe B","status":"BOOK","note":"SUB"},
+      {"date":"2026-04-14","time":"10:00am PT","type":"C2","studio":"Sherman Oaks","teacher":"Madison M","status":"BOOK"},
+      {"date":"2026-04-14","time":"10:30am PT","type":"YS","studio":"Encino","teacher":"Eric G","status":"BOOK"},
+      {"date":"2026-04-14","time":"12:00pm PT","type":"YS","studio":"Encino","teacher":"Eric G","status":"BOOK"},
+      {"date":"2026-04-14","time":"12:30pm PT","type":"C2","studio":"Encino","teacher":"Aileen S","status":"BOOK"},
+      {"date":"2026-04-14","time":"12:30pm PT","type":"C2","studio":"Sherman Oaks","teacher":"Libby R","status":"BOOK"},
+      {"date":"2026-04-14","time":"4:30pm PT","type":"YS","studio":"Sherman Oaks","teacher":"Ling C","status":"BOOK"},
+      {"date":"2026-04-14","time":"5:30pm PT","type":"YS","studio":"Encino","teacher":"Gabriella D","status":"BOOK","note":"SUB"},
+      {"date":"2026-04-14","time":"7:00pm PT","type":"C2","studio":"Encino","teacher":"Jennifer F","status":"CANCELLED","note":"Cancelled due to teacher training"},
+      {"date":"2026-04-14","time":"7:00pm PT","type":"YS","studio":"Sherman Oaks","teacher":"John S","status":"BOOK"},
+      {"date":"2026-04-14","time":"7:30pm PT","type":"YS","studio":"Encino","teacher":"Chloe B","status":"BOOK","note":"SUB"},
+      {"date":"2026-04-14","time":"8:30pm PT","type":"C2","studio":"Encino","teacher":"Jennifer F","status":"CANCELLED","note":"Cancelled due to teacher training"}
+    ]
   },
   "movies": {
-    "2026-04-06": [
-      {
-        "title": "Fantasy Life",
-        "runtime": "1hr 31mins",
-        "formats": ["Standard/LASER"],
-        "nopass": false,
-        "showtimes": ["10:30am", "4:10pm", "6:50pm"]
-      },
-      {
-        "title": "A Great Awakening",
-        "runtime": "2hr 9mins",
-        "formats": ["Standard/LASER"],
-        "nopass": false,
-        "showtimes": ["10:35am", "10:50am", "3:40pm", "7:35pm"]
-      },
-      {
-        "title": "The Super Mario Galaxy Movie",
-        "runtime": "1hr 38mins",
-        "formats": ["LASER Recliner", "LASER Stadium", "Standard Recliner", "HDR/BARCO/LASER/MAGNIFY8", "Standard/LASER multi-screen"],
-        "nopass": true,
-        "showtimes": ["4:00pm", "9:20pm (LASER Recliner)", "10:40am", "1:20pm", "4:00pm", "6:40pm", "9:20pm (LASER Stadium)", "11:10am", "1:50pm", "4:30pm", "7:10pm", "9:50pm (Standard Recliner)", "11:40am", "2:20pm", "5:00pm", "7:40pm", "10:20pm (HDR Barco)", "11:15am", "11:45am", "12:40pm", "1:20pm", "2:00pm", "2:25pm", "3:20pm", "5:05pm", "6:00pm", "6:40pm", "7:50pm", "8:40pm", "10:30pm (Standard multi)"]
-      },
-      {
-        "title": "They Will Kill You",
-        "runtime": "1hr 34mins",
-        "formats": ["Standard/LASER"],
-        "nopass": false,
-        "showtimes": ["10:45am", "2:10pm", "4:50pm", "10:50pm"]
-      },
-      {
-        "title": "Project Hail Mary",
-        "runtime": "2hr 36mins",
-        "formats": ["LASER Recliner", "70mm Recliner", "Standard/LASER"],
-        "nopass": true,
-        "showtimes": ["10:45am", "2:45pm", "6:45pm", "10:25pm (LASER Recliner)", "11:40am", "3:30pm", "7:20pm", "11:00pm (70mm)", "12:00pm", "1:30pm", "5:15pm", "9:00pm", "9:45pm (Standard/LASER)"]
-      },
-      {
-        "title": "LOL: Peter Rabbit",
-        "runtime": "1hr 35mins",
-        "formats": ["Standard/LASER"],
-        "nopass": false,
-        "showtimes": ["11:15am"]
-      },
-      {
-        "title": "Hoppers",
-        "runtime": "1hr 45mins",
-        "formats": ["Standard/LASER"],
-        "nopass": false,
-        "showtimes": ["12:15pm", "3:15pm", "6:15pm", "9:05pm"]
-      },
-      {
-        "title": "The AI Doc: Or How I Became an Apocaloptimist",
-        "runtime": "1hr 44mins",
-        "formats": ["Standard/LASER"],
-        "nopass": false,
-        "showtimes": ["1:20pm"]
-      },
-      {
-        "title": "LOL: The Jerk",
-        "runtime": "1hr 34mins",
-        "formats": ["Standard/LASER"],
-        "nopass": false,
-        "showtimes": ["1:55pm", "4:40pm", "7:20pm", "10:00pm"]
-      },
-      {
-        "title": "The Drama",
-        "runtime": "1hr 46mins",
-        "formats": ["Standard/LASER"],
-        "nopass": false,
-        "showtimes": ["2:00pm", "4:50pm", "7:50pm", "10:10pm", "10:50pm"]
-      },
-      {
-        "title": "Ready or Not 2: Here I Come",
-        "runtime": "1hr 48mins",
-        "formats": ["Standard/LASER"],
-        "nopass": false,
-        "showtimes": ["4:40pm", "7:35pm", "10:25pm"]
-      },
-      {
-        "title": "Monday Mystery Movie (04/06)",
-        "runtime": "2hr 3mins",
-        "formats": ["Standard/LASER"],
-        "nopass": true,
-        "showtimes": ["7:00pm"]
-      }
+    "2026-04-13": [
+      {"title":"LOL: Spy Kids","runtime":"1hr 28mins","formats":["Standard/LASER"],"nopass":false,"showtimes":["11:00am"]},
+      {"title":"The Super Mario Galaxy Movie","runtime":"1hr 38mins","formats":["LASER Recliner","LASER Stadium","Standard Recliner","HDR/BARCO/LASER/MAGNIFY8","Standard/LASER multi-screen"],"nopass":true,"showtimes":["2:50pm","8:10pm (LASER Recliner)","1:00pm","3:40pm","6:20pm","9:00pm (LASER Stadium)","11:10am","1:50pm","4:30pm","7:15pm (Standard Recliner)","11:40am","2:20pm","5:00pm","7:40pm","10:20pm (HDR Barco)","11:00am","11:15am","12:10pm","1:00pm","1:40pm","2:00pm","3:55pm","4:20pm","4:45pm","5:30pm","10:00pm (Standard multi)"]},
+      {"title":"Project Hail Mary","runtime":"2hr 36mins","formats":["Recliner","HDR/BARCO/LASER","70mm Recliner"],"nopass":true,"showtimes":["10:00pm (Recliner)","11:45am","3:30pm","7:20pm","11:00pm (HDR Barco)","11:15am","3:00pm","6:45pm","10:30pm (70mm)"]},
+      {"title":"The Drama","runtime":"1hr 46mins","formats":["Standard/LASER"],"nopass":false,"showtimes":["11:20am","2:10pm","5:05pm","8:00pm","10:55pm"]},
+      {"title":"You, Me & Tuscany","runtime":"1hr 44mins","formats":["Standard/LASER"],"nopass":false,"showtimes":["11:30am","1:15pm","2:15pm","3:15pm","4:05pm","5:15pm","8:10pm","9:50pm"]},
+      {"title":"Exit 8 (Japanese)","runtime":"1hr 35mins","formats":["Japanese language","Subtitled","LASER"],"nopass":false,"showtimes":["11:50am","2:30pm","5:10pm","7:50pm","10:30pm"]},
+      {"title":"Hamlet","runtime":"1hr 54mins","formats":["Standard/LASER"],"nopass":false,"showtimes":["12:10pm","3:10pm","6:10pm","9:15pm"]},
+      {"title":"Hoppers","runtime":"1hr 45mins","formats":["Standard/LASER"],"nopass":false,"showtimes":["12:30pm","6:00pm","8:45pm"]},
+      {"title":"LOL: Better Off Dead","runtime":"1hr 37mins","formats":["Standard/LASER"],"nopass":false,"showtimes":["1:35pm","4:20pm","7:05pm","9:50pm"]},
+      {"title":"Monday Mystery Movie (04/13)","runtime":"1hr 50mins","formats":["Standard/LASER"],"nopass":true,"showtimes":["7:00pm"]},
+      {"title":"Fangoria Staff Picks: Sinister","runtime":"1hr 50mins","formats":["Standard/LASER"],"nopass":false,"showtimes":["7:00pm"]},
+      {"title":"ChaO (Sub)","runtime":"1hr 30mins","formats":["Japanese language","Subtitled","LASER"],"nopass":false,"showtimes":["7:15pm","9:55pm"]},
+      {"title":"Hunting Matthew Nichols","runtime":"1hr 29mins","formats":["Standard/LASER"],"nopass":false,"showtimes":["7:40pm","10:15pm"]},
+      {"title":"Faces Of Death","runtime":"1hr 37mins","formats":["Standard/LASER"],"nopass":false,"showtimes":["10:55pm"]},
+      {"title":"Ready or Not 2: Here I Come","runtime":"1hr 48mins","formats":["Standard/LASER"],"nopass":false,"showtimes":["11:00pm"]}
     ],
-    "2026-04-07": [
-      {
-        "title": "A Great Awakening",
-        "runtime": "2hr 9mins",
-        "formats": ["Standard/LASER"],
-        "nopass": false,
-        "showtimes": ["10:35am", "10:50am", "3:30pm", "7:35pm"]
-      },
-      {
-        "title": "Fantasy Life",
-        "runtime": "1hr 31mins",
-        "formats": ["Standard/LASER"],
-        "nopass": false,
-        "showtimes": ["10:35am", "4:10pm", "6:50pm"]
-      },
-      {
-        "title": "The Super Mario Galaxy Movie",
-        "runtime": "1hr 38mins",
-        "formats": ["LASER Recliner", "LASER Stadium", "Standard Recliner", "HDR/BARCO/LASER/MAGNIFY8", "Standard/LASER multi-screen"],
-        "nopass": true,
-        "showtimes": ["4:05pm", "9:20pm (LASER Recliner)", "10:40am", "1:20pm", "4:00pm", "6:40pm", "9:20pm (LASER Stadium)", "11:10am", "1:50pm", "4:30pm", "7:10pm", "9:50pm (Standard Recliner)", "11:40am", "2:20pm", "5:00pm", "7:40pm", "10:20pm (HDR Barco)", "11:15am", "11:45am", "12:40pm", "1:25pm", "2:00pm", "2:25pm", "3:20pm", "5:05pm", "6:00pm", "6:40pm", "7:50pm", "8:40pm", "10:30pm (Standard multi)"]
-      },
-      {
-        "title": "They Will Kill You",
-        "runtime": "1hr 34mins",
-        "formats": ["Standard/LASER"],
-        "nopass": false,
-        "showtimes": ["10:45am", "2:10pm", "4:50pm", "7:10pm", "10:50pm"]
-      },
-      {
-        "title": "Project Hail Mary",
-        "runtime": "2hr 36mins",
-        "formats": ["LASER Recliner", "70mm Recliner", "Standard/LASER"],
-        "nopass": true,
-        "showtimes": ["10:45am", "2:45pm", "6:45pm", "10:25pm (LASER Recliner)", "11:40am", "3:30pm", "7:20pm", "11:00pm (70mm)", "11:50am", "1:30pm", "5:15pm", "9:00pm", "9:45pm (Standard/LASER)"]
-      },
-      {
-        "title": "LOL: Peter Rabbit",
-        "runtime": "1hr 35mins",
-        "formats": ["Standard/LASER"],
-        "nopass": false,
-        "showtimes": ["11:15am"]
-      },
-      {
-        "title": "The AI Doc: Or How I Became an Apocaloptimist",
-        "runtime": "1hr 44mins",
-        "formats": ["Standard/LASER"],
-        "nopass": false,
-        "showtimes": ["1:20pm"]
-      },
-      {
-        "title": "LOL: Smokey and the Bandit",
-        "runtime": "1hr 36mins",
-        "formats": ["Standard/LASER"],
-        "nopass": false,
-        "showtimes": ["2:00pm", "4:40pm", "7:20pm", "10:00pm"]
-      },
-      {
-        "title": "The Drama",
-        "runtime": "1hr 46mins",
-        "formats": ["Standard/LASER"],
-        "nopass": false,
-        "showtimes": ["2:00pm", "4:50pm", "7:50pm", "10:15pm", "10:50pm"]
-      },
-      {
-        "title": "Ready or Not 2: Here I Come",
-        "runtime": "1hr 48mins",
-        "formats": ["Standard/LASER"],
-        "nopass": false,
-        "showtimes": ["4:40pm", "7:35pm", "10:25pm"]
-      },
-      {
-        "title": "Hoppers",
-        "runtime": "1hr 45mins",
-        "formats": ["Standard/LASER"],
-        "nopass": false,
-        "showtimes": ["6:15pm", "9:05pm"]
-      }
+    "2026-04-14": [
+      {"title":"LOL: Spy Kids","runtime":"1hr 28mins","formats":["Standard/LASER"],"nopass":false,"showtimes":["11:00am"]},
+      {"title":"The Super Mario Galaxy Movie","runtime":"1hr 38mins","formats":["LASER Recliner","LASER Stadium","Standard Recliner","HDR/BARCO/LASER/MAGNIFY8","Standard/LASER multi-screen"],"nopass":true,"showtimes":["2:50pm","8:10pm (LASER Recliner)","1:00pm","3:40pm","6:20pm","9:00pm (LASER Stadium)","11:10am","1:50pm","4:30pm","7:10pm (Standard Recliner)","11:40am","2:20pm","5:00pm","7:40pm","10:20pm (HDR Barco)","11:00am","11:15am","12:10pm","1:00pm","1:40pm","2:30pm SOLD OUT","3:55pm","4:20pm","5:30pm","5:40pm","7:00pm","9:40pm (Standard multi)"]},
+      {"title":"Project Hail Mary","runtime":"2hr 36mins","formats":["Recliner","HDR/BARCO/LASER","70mm Recliner"],"nopass":true,"showtimes":["10:00pm (Recliner)","11:45am","3:30pm","7:20pm","11:00pm (HDR Barco)","11:15am","3:00pm","6:45pm","10:30pm (70mm)"]},
+      {"title":"The Drama","runtime":"1hr 46mins","formats":["Standard/LASER"],"nopass":false,"showtimes":["11:20am","2:10pm","5:05pm","8:00pm","10:55pm"]},
+      {"title":"You, Me & Tuscany","runtime":"1hr 44mins","formats":["Standard/LASER"],"nopass":false,"showtimes":["11:30am","1:15pm","2:15pm","3:15pm","4:05pm","5:15pm","8:10pm","9:50pm"]},
+      {"title":"Exit 8 (Japanese)","runtime":"1hr 35mins","formats":["Japanese language","Subtitled","LASER"],"nopass":false,"showtimes":["11:40am","2:20pm","5:00pm","7:40pm","10:20pm"]},
+      {"title":"Hamlet","runtime":"1hr 54mins","formats":["Standard/LASER"],"nopass":false,"showtimes":["12:00pm","3:00pm","6:55pm","9:20pm"]},
+      {"title":"Hoppers","runtime":"1hr 45mins","formats":["Standard/LASER"],"nopass":false,"showtimes":["12:30pm","6:00pm","8:45pm"]},
+      {"title":"LOL: Beverly Hills Cop","runtime":"1hr 45mins","formats":["Standard/LASER"],"nopass":false,"showtimes":["1:30pm","4:20pm","7:05pm","10:00pm"]},
+      {"title":"Jerry Maguire 30th Anniversary","runtime":"2hr 18mins","formats":["Standard/LASER"],"nopass":false,"showtimes":["6:00pm"]},
+      {"title":"ChaO (Sub)","runtime":"1hr 30mins","formats":["Japanese language","Subtitled","LASER"],"nopass":false,"showtimes":["7:15pm","9:55pm"]},
+      {"title":"Hunting Matthew Nichols","runtime":"1hr 29mins","formats":["Standard/LASER"],"nopass":false,"showtimes":["8:20pm","10:50pm"]},
+      {"title":"Faces Of Death","runtime":"1hr 37mins","formats":["Standard/LASER"],"nopass":false,"showtimes":["10:55pm"]},
+      {"title":"Ready or Not 2: Here I Come","runtime":"1hr 48mins","formats":["Standard/LASER"],"nopass":false,"showtimes":["11:00pm"]}
     ]
   }
 }
