@@ -1,9 +1,9 @@
 {
-  "updatedAt": "2026-04-13T13:08:45Z",
+  "updatedAt": "2026-04-16T06:51:12Z",
   "window": {
-    "start": "2026-04-13",
-    "end": "2026-04-15",
-    "label": "Mon-Wed"
+    "start": "2026-04-16",
+    "end": "2026-04-17",
+    "label": "Thu-Fri"
   },
   "sources": {
     "corepower": {
@@ -13,9 +13,9 @@
         "Encino",
         "Sherman Oaks"
       ],
-      "confidence": "high",
+      "confidence": "low",
       "sourceType": "browser-scrape-direct-cdp",
-      "note": "chrome-devtools MCP was offline; scraped via direct Chrome CDP against an existing CorePower tab and switched the in-page date strip to Mon/Tue/Wed."
+      "note": "Mac Chrome CDP was reachable, but the CorePower schedule page rendered 0 classes for every loaded day in the visible grid, so yoga data is flagged incomplete for this run."
     },
     "regal": {
       "name": "Regal Sherman Oaks Galleria",
@@ -26,1097 +26,474 @@
     }
   },
   "yoga": {
-    "classes": [
-      {
-        "date": "2026-04-13",
-        "time": "6:30 am",
-        "classType": "YS - Yoga Sculpt",
-        "studio": "Encino",
-        "teacher": "Gabriella D",
-        "status": "OPEN"
-      },
-      {
-        "date": "2026-04-13",
-        "time": "7:00 am",
-        "classType": "YS - Yoga Sculpt",
-        "studio": "Sherman Oaks",
-        "teacher": "Kelly D",
-        "status": "OPEN"
-      },
-      {
-        "date": "2026-04-13",
-        "time": "7:30 am",
-        "classType": "C2 - CorePower Yoga 2",
-        "studio": "Sherman Oaks",
-        "teacher": "Madison M",
-        "status": "OPEN"
-      },
-      {
-        "date": "2026-04-13",
-        "time": "9:00 am",
-        "classType": "YS - Yoga Sculpt",
-        "studio": "Sherman Oaks",
-        "teacher": "Laura F",
-        "status": "OPEN"
-      },
-      {
-        "date": "2026-04-13",
-        "time": "9:30 am",
-        "classType": "C2 - CorePower Yoga 2",
-        "studio": "Encino",
-        "teacher": "Tatiana C",
-        "status": "OPEN"
-      },
-      {
-        "date": "2026-04-13",
-        "time": "10:00 am",
-        "classType": "C2 - CorePower Yoga 2",
-        "studio": "Sherman Oaks",
-        "teacher": "Jennifer R",
-        "status": "OPEN"
-      },
-      {
-        "date": "2026-04-13",
-        "time": "10:30 am",
-        "classType": "YS - Yoga Sculpt",
-        "studio": "Encino",
-        "teacher": "Maxwell Sp",
-        "status": "OPEN"
-      },
-      {
-        "date": "2026-04-13",
-        "time": "12:00 pm",
-        "classType": "YS - Yoga Sculpt",
-        "studio": "Encino",
-        "teacher": "Adrian A",
-        "status": "OPEN"
-      },
-      {
-        "date": "2026-04-13",
-        "time": "12:30 pm",
-        "classType": "C2 - CorePower Yoga 2",
-        "studio": "Encino",
-        "teacher": "Nicole L",
-        "status": "OPEN"
-      },
-      {
-        "date": "2026-04-13",
-        "time": "12:30 pm",
-        "classType": "C2 - CorePower Yoga 2",
-        "studio": "Sherman Oaks",
-        "teacher": "Madison M",
-        "status": "OPEN"
-      },
-      {
-        "date": "2026-04-13",
-        "time": "3:00 pm",
-        "classType": "YS - Yoga Sculpt",
-        "studio": "Encino",
-        "teacher": "Danielle W",
-        "status": "OPEN"
-      },
-      {
-        "date": "2026-04-13",
-        "time": "3:00 pm",
-        "classType": "C2 - CorePower Yoga 2",
-        "studio": "Sherman Oaks",
-        "teacher": "Prerna C",
-        "status": "SUB"
-      },
-      {
-        "date": "2026-04-13",
-        "time": "4:00 pm",
-        "classType": "C2 - CorePower Yoga 2",
-        "studio": "Encino",
-        "teacher": "Tatiana C",
-        "status": "SUB"
-      },
-      {
-        "date": "2026-04-13",
-        "time": "4:30 pm",
-        "classType": "CSX - CorePower Strength X (Lower Body)",
-        "studio": "Encino",
-        "teacher": "Janelle P",
-        "status": "OPEN"
-      },
-      {
-        "date": "2026-04-13",
-        "time": "4:30 pm",
-        "classType": "YS - Yoga Sculpt",
-        "studio": "Sherman Oaks",
-        "teacher": "Hannah S",
-        "status": "OPEN"
-      },
-      {
-        "date": "2026-04-13",
-        "time": "5:30 pm",
-        "classType": "YS - Yoga Sculpt",
-        "studio": "Encino",
-        "teacher": "Anna J",
-        "status": "OPEN"
-      },
-      {
-        "date": "2026-04-13",
-        "time": "5:45 pm",
-        "classType": "CSX - CorePower Strength X (Lower Body)",
-        "studio": "Sherman Oaks",
-        "teacher": "Laura F",
-        "status": "OPEN"
-      },
-      {
-        "date": "2026-04-13",
-        "time": "6:00 pm",
-        "classType": "C2 - CorePower Yoga 2",
-        "studio": "Sherman Oaks",
-        "teacher": "Megan M",
-        "status": "SUB"
-      },
-      {
-        "date": "2026-04-13",
-        "time": "7:00 pm",
-        "classType": "C2 - CorePower Yoga 2",
-        "studio": "Encino",
-        "teacher": "Hector G",
-        "status": "OPEN"
-      },
-      {
-        "date": "2026-04-13",
-        "time": "7:30 pm",
-        "classType": "YS - Yoga Sculpt",
-        "studio": "Encino",
-        "teacher": "Anna J",
-        "status": "OPEN"
-      },
-      {
-        "date": "2026-04-13",
-        "time": "8:30 pm",
-        "classType": "C2 - CorePower Yoga 2",
-        "studio": "Encino",
-        "teacher": "Hector G",
-        "status": "OPEN"
-      },
-      {
-        "date": "2026-04-13",
-        "time": "9:00 pm",
-        "classType": "C2 - CorePower Yoga 2",
-        "studio": "Sherman Oaks",
-        "teacher": "Adriana S",
-        "status": "OPEN"
-      },
-      {
-        "date": "2026-04-14",
-        "time": "6:00 am",
-        "classType": "CSX - CorePower Strength X (Upper Body)",
-        "studio": "Sherman Oaks",
-        "teacher": "Janelle P",
-        "status": "OPEN"
-      },
-      {
-        "date": "2026-04-14",
-        "time": "7:00 am",
-        "classType": "YS - Yoga Sculpt",
-        "studio": "Sherman Oaks",
-        "teacher": "Lydia P",
-        "status": "OPEN"
-      },
-      {
-        "date": "2026-04-14",
-        "time": "7:30 am",
-        "classType": "C2 - CorePower Yoga 2",
-        "studio": "Sherman Oaks",
-        "teacher": "Aileen S",
-        "status": "OPEN"
-      },
-      {
-        "date": "2026-04-14",
-        "time": "8:00 am",
-        "classType": "C2 - CorePower Yoga 2",
-        "studio": "Encino",
-        "teacher": "Chloe B",
-        "status": "SUB"
-      },
-      {
-        "date": "2026-04-14",
-        "time": "9:00 am",
-        "classType": "YS - Yoga Sculpt",
-        "studio": "Sherman Oaks",
-        "teacher": "Lydia P",
-        "status": "OPEN"
-      },
-      {
-        "date": "2026-04-14",
-        "time": "9:30 am",
-        "classType": "C2 - CorePower Yoga 2",
-        "studio": "Encino",
-        "teacher": "Chloe B",
-        "status": "SUB"
-      },
-      {
-        "date": "2026-04-14",
-        "time": "10:00 am",
-        "classType": "C2 - CorePower Yoga 2",
-        "studio": "Sherman Oaks",
-        "teacher": "Madison M",
-        "status": "OPEN"
-      },
-      {
-        "date": "2026-04-14",
-        "time": "10:30 am",
-        "classType": "YS - Yoga Sculpt",
-        "studio": "Encino",
-        "teacher": "Eric G",
-        "status": "OPEN"
-      },
-      {
-        "date": "2026-04-14",
-        "time": "12:00 pm",
-        "classType": "YS - Yoga Sculpt",
-        "studio": "Encino",
-        "teacher": "Eric G",
-        "status": "OPEN"
-      },
-      {
-        "date": "2026-04-14",
-        "time": "12:30 pm",
-        "classType": "C2 - CorePower Yoga 2",
-        "studio": "Encino",
-        "teacher": "Aileen S",
-        "status": "OPEN"
-      },
-      {
-        "date": "2026-04-14",
-        "time": "12:30 pm",
-        "classType": "C2 - CorePower Yoga 2",
-        "studio": "Sherman Oaks",
-        "teacher": "Libby R",
-        "status": "OPEN"
-      },
-      {
-        "date": "2026-04-14",
-        "time": "4:30 pm",
-        "classType": "YS - Yoga Sculpt",
-        "studio": "Sherman Oaks",
-        "teacher": "Ling C",
-        "status": "OPEN"
-      },
-      {
-        "date": "2026-04-14",
-        "time": "5:30 pm",
-        "classType": "YS - Yoga Sculpt",
-        "studio": "Encino",
-        "teacher": "Gabriella D",
-        "status": "SUB"
-      },
-      {
-        "date": "2026-04-14",
-        "time": "7:00 pm",
-        "classType": "C2 - CorePower Yoga 2: CANCELLED DUE TO TEACHER TRAINING",
-        "studio": "Encino",
-        "teacher": "Jennifer F",
-        "status": "Cancelled"
-      },
-      {
-        "date": "2026-04-14",
-        "time": "7:00 pm",
-        "classType": "YS - Yoga Sculpt",
-        "studio": "Sherman Oaks",
-        "teacher": "John S",
-        "status": "OPEN"
-      },
-      {
-        "date": "2026-04-14",
-        "time": "7:30 pm",
-        "classType": "YS - Yoga Sculpt",
-        "studio": "Encino",
-        "teacher": "Chloe B",
-        "status": "SUB"
-      },
-      {
-        "date": "2026-04-14",
-        "time": "8:30 pm",
-        "classType": "C2 - CorePower Yoga 2: CANCELLED DUE TO TEACHER TRAINING",
-        "studio": "Encino",
-        "teacher": "Jennifer F",
-        "status": "Cancelled"
-      },
-      {
-        "date": "2026-04-15",
-        "time": "6:00 am",
-        "classType": "C2 - CorePower Yoga 2",
-        "studio": "Sherman Oaks",
-        "teacher": "Erin H",
-        "status": "OPEN"
-      },
-      {
-        "date": "2026-04-15",
-        "time": "7:00 am",
-        "classType": "YS - Yoga Sculpt",
-        "studio": "Sherman Oaks",
-        "teacher": "Kelly D",
-        "status": "OPEN"
-      },
-      {
-        "date": "2026-04-15",
-        "time": "7:30 am",
-        "classType": "C2 - CorePower Yoga 2",
-        "studio": "Sherman Oaks",
-        "teacher": "Mara C",
-        "status": "SUB"
-      },
-      {
-        "date": "2026-04-15",
-        "time": "9:00 am",
-        "classType": "YS - Yoga Sculpt",
-        "studio": "Sherman Oaks",
-        "teacher": "Lupita",
-        "status": "OPEN"
-      },
-      {
-        "date": "2026-04-15",
-        "time": "10:00 am",
-        "classType": "C2 - CorePower Yoga 2",
-        "studio": "Sherman Oaks",
-        "teacher": "Jennifer R",
-        "status": "OPEN"
-      },
-      {
-        "date": "2026-04-15",
-        "time": "10:30 am",
-        "classType": "YS - Yoga Sculpt",
-        "studio": "Encino",
-        "teacher": "Gabriella D",
-        "status": "OPEN"
-      },
-      {
-        "date": "2026-04-15",
-        "time": "12:00 pm",
-        "classType": "YS - Yoga Sculpt",
-        "studio": "Encino",
-        "teacher": "Gabriella D",
-        "status": "OPEN"
-      },
-      {
-        "date": "2026-04-15",
-        "time": "12:30 pm",
-        "classType": "C2 - CorePower Yoga 2",
-        "studio": "Encino",
-        "teacher": "Tatiana C",
-        "status": "OPEN"
-      },
-      {
-        "date": "2026-04-15",
-        "time": "12:30 pm",
-        "classType": "C2 - CorePower Yoga 2",
-        "studio": "Sherman Oaks",
-        "teacher": "Madison M",
-        "status": "OPEN"
-      },
-      {
-        "date": "2026-04-15",
-        "time": "3:00 pm",
-        "classType": "C2 - CorePower Yoga 2: HigherDOSE Red Light Class (waiver required)",
-        "studio": "Sherman Oaks",
-        "teacher": "Leigh Anne S",
-        "status": "OPEN"
-      },
-      {
-        "date": "2026-04-15",
-        "time": "4:30 pm",
-        "classType": "CSX - CorePower Strength X (Full Body)",
-        "studio": "Encino",
-        "teacher": "Nicole L",
-        "status": "OPEN"
-      },
-      {
-        "date": "2026-04-15",
-        "time": "5:30 pm",
-        "classType": "YS - Yoga Sculpt",
-        "studio": "Encino",
-        "teacher": "Danielle W",
-        "status": "OPEN"
-      },
-      {
-        "date": "2026-04-15",
-        "time": "5:45 pm",
-        "classType": "CSX - CorePower Strength X (Full Body)",
-        "studio": "Sherman Oaks",
-        "teacher": "Leigh Anne S",
-        "status": "OPEN"
-      },
-      {
-        "date": "2026-04-15",
-        "time": "6:00 pm",
-        "classType": "C2 - CorePower Yoga 2",
-        "studio": "Sherman Oaks",
-        "teacher": "Prerna C",
-        "status": "OPEN"
-      },
-      {
-        "date": "2026-04-15",
-        "time": "7:00 pm",
-        "classType": "YS - Yoga Sculpt",
-        "studio": "Sherman Oaks",
-        "teacher": "Hannah S",
-        "status": "OPEN"
-      },
-      {
-        "date": "2026-04-15",
-        "time": "7:30 pm",
-        "classType": "YS - Yoga Sculpt",
-        "studio": "Encino",
-        "teacher": "Nicole L",
-        "status": "OPEN"
-      }
-    ]
+    "classes": []
   },
   "movies": {
-    "2026-04-13": [
-      {
-        "title": "LOL: Spy Kids",
-        "runtime": "1hr 28mins",
-        "formats": [
-          "Standard / Recliner Seating / LASER"
-        ],
-        "nopass": false,
-        "showtimes": [
-          "11:00am (Standard Recliner Seating LASER)"
-        ]
-      },
+    "2026-04-16": [
       {
         "title": "The Super Mario Galaxy Movie",
         "runtime": "1hr 38mins",
         "formats": [
-          "Recliner Seating / LASER / STADIUM SEATING / HDR BY BARCO / MAGNIFY8 / Standard"
+          "\ue037 / Recliner Seating / LASER / STADIUM SEATING / Standard"
         ],
         "nopass": true,
+        "soldout": false,
         "showtimes": [
-          "2:50pm (Recliner Seating LASER)",
-          "8:10pm (Recliner Seating LASER)",
-          "1:00pm (Recliner Seating LASER LASER STADIUM SEATING)",
-          "3:40pm (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING)",
-          "6:20pm (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING)",
-          "9:00pm (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING)",
-          "11:10am (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating)",
-          "1:50pm (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating)",
-          "4:30pm (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating)",
-          "7:15pm (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating)",
-          "11:40am (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating Recliner Seating HDR BY BARCO LASER MAGNIFY8)",
-          "2:20pm (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating Recliner Seating HDR BY BARCO LASER MAGNIFY8)",
-          "5:00pm (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating Recliner Seating HDR BY BARCO LASER MAGNIFY8)",
-          "7:40pm (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating Recliner Seating HDR BY BARCO LASER MAGNIFY8)",
-          "10:20pm (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating Recliner Seating HDR BY BARCO LASER MAGNIFY8)",
-          "11:00am (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating Recliner Seating HDR BY BARCO LASER MAGNIFY8 Standard Recliner Seating LASER)",
-          "11:15am (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating Recliner Seating HDR BY BARCO LASER MAGNIFY8 Standard Recliner Seating LASER)",
-          "12:10pm (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating Recliner Seating HDR BY BARCO LASER MAGNIFY8 Standard Recliner Seating LASER)",
-          "1:00pm (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating Recliner Seating HDR BY BARCO LASER MAGNIFY8 Standard Recliner Seating LASER)",
-          "1:40pm (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating Recliner Seating HDR BY BARCO LASER MAGNIFY8 Standard Recliner Seating LASER)",
-          "2:00pm (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating Recliner Seating HDR BY BARCO LASER MAGNIFY8 Standard Recliner Seating LASER)",
-          "3:55pm (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating Recliner Seating HDR BY BARCO LASER MAGNIFY8 Standard Recliner Seating LASER)",
-          "4:20pm (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating Recliner Seating HDR BY BARCO LASER MAGNIFY8 Standard Recliner Seating LASER)",
-          "4:45pm (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating Recliner Seating HDR BY BARCO LASER MAGNIFY8 Standard Recliner Seating LASER)",
-          "5:30pm (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating Recliner Seating HDR BY BARCO LASER MAGNIFY8 Standard Recliner Seating LASER)",
-          "10:00pm (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating Recliner Seating HDR BY BARCO LASER MAGNIFY8 Standard Recliner Seating LASER)"
-        ]
-      },
-      {
-        "title": "Project Hail Mary",
-        "runtime": "2hr 36mins",
-        "formats": [
-          "Recliner Seating / HDR BY BARCO / LASER / Standard / 70mm / RECLINER SEATING"
-        ],
-        "nopass": true,
-        "showtimes": [
-          "10:00pm (Recliner Seating)",
-          "11:45am (Recliner Seating Recliner Seating HDR BY BARCO LASER)",
-          "3:30pm (Recliner Seating Recliner Seating HDR BY BARCO LASER)",
-          "7:20pm (Recliner Seating Recliner Seating HDR BY BARCO LASER)",
-          "11:00pm (Recliner Seating Recliner Seating HDR BY BARCO LASER)",
-          "11:15am (Recliner Seating Recliner Seating HDR BY BARCO LASER Standard 70mm RECLINER SEATING)",
-          "3:00pm (Recliner Seating Recliner Seating HDR BY BARCO LASER Standard 70mm RECLINER SEATING)",
-          "6:45pm (Recliner Seating Recliner Seating HDR BY BARCO LASER Standard 70mm RECLINER SEATING)",
-          "10:30pm (Recliner Seating Recliner Seating HDR BY BARCO LASER Standard 70mm RECLINER SEATING)"
-        ]
-      },
-      {
-        "title": "The Drama",
-        "runtime": "1hr 46mins",
-        "formats": [
-          "Standard / Recliner Seating / LASER"
-        ],
-        "nopass": false,
-        "showtimes": [
-          "11:20am (Standard Recliner Seating LASER)",
-          "2:10pm (Standard Recliner Seating LASER)",
-          "5:05pm (Standard Recliner Seating LASER)",
-          "8:00pm (Standard Recliner Seating LASER)",
-          "10:55pm (Standard Recliner Seating LASER)"
-        ]
-      },
-      {
-        "title": "You, Me & Tuscany",
-        "runtime": "1hr 44mins",
-        "formats": [
-          "Standard / Recliner Seating / LASER"
-        ],
-        "nopass": false,
-        "showtimes": [
-          "11:30am (Standard Recliner Seating LASER)",
-          "1:15pm (Standard Recliner Seating LASER)",
-          "2:15pm (Standard Recliner Seating LASER)",
-          "3:15pm (Standard Recliner Seating LASER)",
-          "4:05pm (Standard Recliner Seating LASER)",
-          "5:15pm (Standard Recliner Seating LASER)",
-          "8:10pm (Standard Recliner Seating LASER)",
-          "9:50pm (Standard Recliner Seating LASER)"
-        ]
-      },
-      {
-        "title": "Exit 8 (Japanese)",
-        "runtime": "1hr 35mins",
-        "formats": [
-          "Standard / Recliner Seating / LASER"
-        ],
-        "nopass": false,
-        "showtimes": [
-          "11:50am (Standard Recliner Seating LASER)",
-          "2:30pm (Standard Recliner Seating LASER)",
-          "5:10pm (Standard Recliner Seating LASER)",
-          "7:50pm (Standard Recliner Seating LASER)",
-          "10:30pm (Standard Recliner Seating LASER)"
-        ]
-      },
-      {
-        "title": "Hamlet",
-        "runtime": "1hr 54mins",
-        "formats": [
-          "Standard / Recliner Seating / LASER"
-        ],
-        "nopass": false,
-        "showtimes": [
-          "12:10pm (Standard Recliner Seating LASER)",
-          "3:10pm (Standard Recliner Seating LASER)",
-          "6:10pm (Standard Recliner Seating LASER)",
-          "9:15pm (Standard Recliner Seating LASER)"
+          "2:50pm",
+          "8:10pm",
+          "1:15pm",
+          "3:55pm",
+          "6:35pm",
+          "9:10pm",
+          "12:00pm",
+          "2:50pm",
+          "11:00am",
+          "1:50pm",
+          "4:35pm",
+          "7:45pm",
+          "11:30am",
+          "12:00pm",
+          "12:30pm",
+          "1:00pm",
+          "3:20pm",
+          "3:50pm",
+          "6:00pm",
+          "8:40pm"
         ]
       },
       {
         "title": "Hoppers",
         "runtime": "1hr 45mins",
         "formats": [
-          "Standard / Recliner Seating / LASER"
+          "\ue037 / Standard / Recliner Seating / LASER"
         ],
         "nopass": false,
+        "soldout": false,
         "showtimes": [
-          "12:30pm (Standard Recliner Seating LASER)",
-          "6:00pm (Standard Recliner Seating LASER)",
-          "8:45pm (Standard Recliner Seating LASER)"
+          "11:00am",
+          "1:50pm",
+          "4:40pm"
         ]
       },
       {
-        "title": "LOL: Better Off Dead",
-        "runtime": "1hr 37mins",
+        "title": "The Drama",
+        "runtime": "1hr 46mins",
         "formats": [
-          "Standard / Recliner Seating / LASER"
+          "\ue037 / Standard / Recliner Seating / LASER"
         ],
         "nopass": false,
+        "soldout": false,
         "showtimes": [
-          "1:35pm (Standard Recliner Seating LASER)",
-          "4:20pm (Standard Recliner Seating LASER)",
-          "7:05pm (Standard Recliner Seating LASER)",
-          "9:50pm (Standard Recliner Seating LASER)"
+          "11:20am",
+          "2:10pm",
+          "5:05pm",
+          "8:00pm",
+          "10:55pm"
         ]
       },
       {
-        "title": "Monday Mystery Movie (04/13)",
-        "runtime": "1hr 50mins",
+        "title": "Hamlet",
+        "runtime": "1hr 54mins",
         "formats": [
-          "Standard / Recliner Seating / LASER"
+          "\ue037 / Standard / Recliner Seating / LASER"
+        ],
+        "nopass": false,
+        "soldout": false,
+        "showtimes": [
+          "11:35am",
+          "2:35pm"
+        ]
+      },
+      {
+        "title": "Exit 8 (Japanese)",
+        "runtime": "1hr 35mins",
+        "formats": [
+          "Standard / Recliner Seating / JAPANESE LANGUAGE / LASER / SUB-TITLED"
+        ],
+        "nopass": false,
+        "soldout": false,
+        "showtimes": [
+          "11:40am",
+          "2:20pm",
+          "5:00pm",
+          "10:20pm"
+        ]
+      },
+      {
+        "title": "Project Hail Mary",
+        "runtime": "2hr 36mins",
+        "formats": [
+          "\ue037 / Recliner Seating / LASER / Standard / 70mm / RECLINER SEATING"
         ],
         "nopass": true,
+        "soldout": false,
         "showtimes": [
-          "7:00pm (Standard Recliner Seating LASER)"
+          "6:15pm",
+          "12:15pm",
+          "4:00pm",
+          "10:30pm",
+          "11:45am",
+          "3:30pm",
+          "7:15pm",
+          "11:00pm"
         ]
       },
       {
-        "title": "Fangoria Staff Picks: Sinister",
-        "runtime": "1hr 50mins",
+        "title": "You, Me & Tuscany",
+        "runtime": "1hr 44mins",
+        "formats": [
+          "\ue037 / Standard / Recliner Seating / LASER"
+        ],
+        "nopass": false,
+        "soldout": false,
+        "showtimes": [
+          "12:10pm",
+          "12:50pm",
+          "3:40pm",
+          "6:30pm",
+          "9:25pm"
+        ]
+      },
+      {
+        "title": "LOL: Austin Powers: International Man of Mystery",
+        "runtime": "1hr 30mins",
         "formats": [
           "Standard / Recliner Seating / LASER"
         ],
         "nopass": false,
+        "soldout": false,
         "showtimes": [
-          "7:00pm (Standard Recliner Seating LASER)"
+          "1:25pm",
+          "4:10pm",
+          "6:50pm",
+          "9:30pm"
+        ]
+      },
+      {
+        "title": "Lorne",
+        "runtime": "1hr 41mins",
+        "formats": [
+          "\ue037 / Standard / Recliner Seating / LASER"
+        ],
+        "nopass": false,
+        "soldout": false,
+        "showtimes": [
+          "2:10pm",
+          "4:50pm",
+          "7:40pm",
+          "10:30pm"
+        ]
+      },
+      {
+        "title": "Lee Cronin's The Mummy",
+        "runtime": "2hr 14mins",
+        "formats": [
+          "\ue037 / Recliner Seating / HDR BY BARCO / LASER / Standard"
+        ],
+        "nopass": true,
+        "soldout": false,
+        "showtimes": [
+          "10:00pm",
+          "7:15pm",
+          "10:45pm",
+          "3:00pm",
+          "6:15pm",
+          "9:30pm"
+        ]
+      },
+      {
+        "title": "The Christophers",
+        "runtime": "1hr 40mins",
+        "formats": [
+          "\ue037 / Standard / Recliner Seating / LASER"
+        ],
+        "nopass": false,
+        "soldout": false,
+        "showtimes": [
+          "5:30pm",
+          "8:15pm",
+          "11:00pm"
+        ]
+      },
+      {
+        "title": "Normal",
+        "runtime": "1hr 31mins",
+        "formats": [
+          "\ue037 / Standard / Recliner Seating / LASER"
+        ],
+        "nopass": false,
+        "soldout": false,
+        "showtimes": [
+          "5:30pm",
+          "7:40pm",
+          "11:00pm"
         ]
       },
       {
         "title": "ChaO (Sub)",
         "runtime": "1hr 30mins",
         "formats": [
-          "Standard / Recliner Seating / LASER"
+          "Standard / Recliner Seating / JAPANESE LANGUAGE / LASER / SUB-TITLED"
         ],
         "nopass": false,
+        "soldout": false,
         "showtimes": [
-          "7:15pm (Standard Recliner Seating LASER)",
-          "9:55pm (Standard Recliner Seating LASER)"
+          "7:15pm",
+          "9:55pm"
         ]
       },
       {
         "title": "Hunting Matthew Nichols",
         "runtime": "1hr 29mins",
         "formats": [
-          "Standard / Recliner Seating / LASER"
+          "\ue037 / Standard / Recliner Seating / LASER"
         ],
         "nopass": false,
+        "soldout": false,
         "showtimes": [
-          "7:40pm (Standard Recliner Seating LASER)",
-          "10:15pm (Standard Recliner Seating LASER)"
+          "7:40pm",
+          "10:20pm"
         ]
       },
       {
-        "title": "Faces Of Death",
-        "runtime": "1hr 37mins",
+        "title": "Busboys",
+        "runtime": "1hr 33mins",
         "formats": [
-          "Standard / Recliner Seating / LASER"
+          "\ue037"
         ],
         "nopass": false,
-        "showtimes": [
-          "10:55pm (Standard Recliner Seating LASER)"
-        ]
-      },
-      {
-        "title": "Ready or Not 2: Here I Come",
-        "runtime": "1hr 48mins",
-        "formats": [
-          "Standard / Recliner Seating / LASER"
-        ],
-        "nopass": false,
-        "showtimes": [
-          "11:00pm (Standard Recliner Seating LASER)"
-        ]
+        "soldout": false,
+        "showtimes": []
       }
     ],
-    "2026-04-14": [
-      {
-        "title": "LOL: Spy Kids",
-        "runtime": "1hr 28mins",
-        "formats": [
-          "Standard / Recliner Seating / LASER"
-        ],
-        "nopass": false,
-        "showtimes": [
-          "11:00am (Standard Recliner Seating LASER)"
-        ]
-      },
+    "2026-04-17": [
       {
         "title": "The Super Mario Galaxy Movie",
         "runtime": "1hr 38mins",
         "formats": [
-          "Recliner Seating / LASER / STADIUM SEATING / HDR BY BARCO / MAGNIFY8 / Standard"
+          "\ue037 / LASER / STADIUM SEATING / Recliner Seating / Standard"
         ],
         "nopass": true,
+        "soldout": false,
         "showtimes": [
-          "2:50pm (Recliner Seating LASER)",
-          "8:10pm (Recliner Seating LASER)",
-          "1:00pm (Recliner Seating LASER LASER STADIUM SEATING)",
-          "3:40pm (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING)",
-          "6:20pm (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING)",
-          "9:00pm (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING)",
-          "11:10am (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating)",
-          "1:50pm (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating)",
-          "4:30pm (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating)",
-          "7:10pm (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating)",
-          "11:40am (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating Recliner Seating HDR BY BARCO LASER MAGNIFY8)",
-          "2:20pm (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating Recliner Seating HDR BY BARCO LASER MAGNIFY8)",
-          "5:00pm (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating Recliner Seating HDR BY BARCO LASER MAGNIFY8)",
-          "7:40pm (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating Recliner Seating HDR BY BARCO LASER MAGNIFY8)",
-          "10:20pm (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating Recliner Seating HDR BY BARCO LASER MAGNIFY8)",
-          "11:00am (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating Recliner Seating HDR BY BARCO LASER MAGNIFY8 Standard Recliner Seating LASER)",
-          "11:15am (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating Recliner Seating HDR BY BARCO LASER MAGNIFY8 Standard Recliner Seating LASER)",
-          "12:10pm (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating Recliner Seating HDR BY BARCO LASER MAGNIFY8 Standard Recliner Seating LASER)",
-          "1:00pm (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating Recliner Seating HDR BY BARCO LASER MAGNIFY8 Standard Recliner Seating LASER)",
-          "1:40pm (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating Recliner Seating HDR BY BARCO LASER MAGNIFY8 Standard Recliner Seating LASER)",
-          "2:30pm (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating Recliner Seating HDR BY BARCO LASER MAGNIFY8 Standard Recliner Seating LASER)"
-        ]
-      },
-      {
-        "title": "Project Hail Mary",
-        "runtime": "2hr 36mins",
-        "formats": [
-          "Recliner Seating / HDR BY BARCO / LASER / Standard / 70mm / RECLINER SEATING"
-        ],
-        "nopass": true,
-        "showtimes": [
-          "10:00pm (Recliner Seating)",
-          "11:45am (Recliner Seating Recliner Seating HDR BY BARCO LASER)",
-          "3:30pm (Recliner Seating Recliner Seating HDR BY BARCO LASER)",
-          "7:20pm (Recliner Seating Recliner Seating HDR BY BARCO LASER)",
-          "11:00pm (Recliner Seating Recliner Seating HDR BY BARCO LASER)",
-          "11:15am (Recliner Seating Recliner Seating HDR BY BARCO LASER Standard 70mm RECLINER SEATING)",
-          "3:00pm (Recliner Seating Recliner Seating HDR BY BARCO LASER Standard 70mm RECLINER SEATING)",
-          "6:45pm (Recliner Seating Recliner Seating HDR BY BARCO LASER Standard 70mm RECLINER SEATING)",
-          "10:30pm (Recliner Seating Recliner Seating HDR BY BARCO LASER Standard 70mm RECLINER SEATING)"
+          "2:30pm",
+          "5:15pm",
+          "8:00pm",
+          "10:40am",
+          "1:35pm",
+          "4:30pm",
+          "10:00am",
+          "1:00pm",
+          "4:00pm",
+          "6:40pm",
+          "11:15am",
+          "12:15pm",
+          "2:00pm",
+          "3:15pm",
+          "4:50pm",
+          "6:00pm",
+          "8:45pm",
+          "10:45pm"
         ]
       },
       {
         "title": "The Drama",
         "runtime": "1hr 46mins",
         "formats": [
-          "Standard / Recliner Seating / LASER"
+          "\ue037 / Standard / Recliner Seating / LASER"
         ],
         "nopass": false,
+        "soldout": false,
         "showtimes": [
-          "11:20am (Standard Recliner Seating LASER)",
-          "2:10pm (Standard Recliner Seating LASER)",
-          "5:05pm (Standard Recliner Seating LASER)",
-          "8:00pm (Standard Recliner Seating LASER)",
-          "10:55pm (Standard Recliner Seating LASER)"
+          "10:10am",
+          "1:10pm",
+          "4:10pm",
+          "7:10pm",
+          "10:20pm"
         ]
       },
       {
-        "title": "You, Me & Tuscany",
-        "runtime": "1hr 44mins",
+        "title": "The Christophers",
+        "runtime": "1hr 40mins",
         "formats": [
-          "Standard / Recliner Seating / LASER"
+          "\ue037 / Standard / Recliner Seating / LASER"
         ],
         "nopass": false,
+        "soldout": false,
         "showtimes": [
-          "11:30am (Standard Recliner Seating LASER)",
-          "1:15pm (Standard Recliner Seating LASER)",
-          "2:15pm (Standard Recliner Seating LASER)",
-          "3:15pm (Standard Recliner Seating LASER)",
-          "4:05pm (Standard Recliner Seating LASER)",
-          "5:15pm (Standard Recliner Seating LASER)",
-          "8:10pm (Standard Recliner Seating LASER)",
-          "9:50pm (Standard Recliner Seating LASER)"
-        ]
-      },
-      {
-        "title": "Exit 8 (Japanese)",
-        "runtime": "1hr 35mins",
-        "formats": [
-          "Standard / Recliner Seating / LASER"
-        ],
-        "nopass": false,
-        "showtimes": [
-          "11:40am (Standard Recliner Seating LASER)",
-          "2:20pm (Standard Recliner Seating LASER)",
-          "5:00pm (Standard Recliner Seating LASER)",
-          "7:40pm (Standard Recliner Seating LASER)",
-          "10:20pm (Standard Recliner Seating LASER)"
-        ]
-      },
-      {
-        "title": "Hamlet",
-        "runtime": "1hr 54mins",
-        "formats": [
-          "Standard / Recliner Seating / LASER"
-        ],
-        "nopass": false,
-        "showtimes": [
-          "12:00pm (Standard Recliner Seating LASER)",
-          "3:00pm (Standard Recliner Seating LASER)",
-          "6:55pm (Standard Recliner Seating LASER)",
-          "9:20pm (Standard Recliner Seating LASER)"
-        ]
-      },
-      {
-        "title": "Hoppers",
-        "runtime": "1hr 45mins",
-        "formats": [
-          "Standard / Recliner Seating / LASER"
-        ],
-        "nopass": false,
-        "showtimes": [
-          "12:30pm (Standard Recliner Seating LASER)",
-          "6:00pm (Standard Recliner Seating LASER)",
-          "8:45pm (Standard Recliner Seating LASER)"
-        ]
-      },
-      {
-        "title": "LOL: Beverly Hills Cop",
-        "runtime": "1hr 45mins",
-        "formats": [
-          "Standard / Recliner Seating / LASER"
-        ],
-        "nopass": false,
-        "showtimes": [
-          "1:30pm (Standard Recliner Seating LASER)",
-          "4:20pm (Standard Recliner Seating LASER)",
-          "7:05pm (Standard Recliner Seating LASER)",
-          "10:00pm (Standard Recliner Seating LASER)"
-        ]
-      },
-      {
-        "title": "Jerry Maguire 30th Anniversary",
-        "runtime": "2hr 18mins",
-        "formats": [
-          "Standard / Recliner Seating / LASER"
-        ],
-        "nopass": false,
-        "showtimes": [
-          "6:00pm (Standard Recliner Seating LASER)"
-        ]
-      },
-      {
-        "title": "ChaO (Sub)",
-        "runtime": "1hr 30mins",
-        "formats": [
-          "Standard / Recliner Seating / LASER"
-        ],
-        "nopass": false,
-        "showtimes": [
-          "7:15pm (Standard Recliner Seating LASER)",
-          "9:55pm (Standard Recliner Seating LASER)"
-        ]
-      },
-      {
-        "title": "Hunting Matthew Nichols",
-        "runtime": "1hr 29mins",
-        "formats": [
-          "Standard / Recliner Seating / LASER"
-        ],
-        "nopass": false,
-        "showtimes": [
-          "8:20pm (Standard Recliner Seating LASER)",
-          "10:50pm (Standard Recliner Seating LASER)"
-        ]
-      },
-      {
-        "title": "Faces Of Death",
-        "runtime": "1hr 37mins",
-        "formats": [
-          "Standard / Recliner Seating / LASER"
-        ],
-        "nopass": false,
-        "showtimes": [
-          "10:55pm (Standard Recliner Seating LASER)"
-        ]
-      },
-      {
-        "title": "Ready or Not 2: Here I Come",
-        "runtime": "1hr 48mins",
-        "formats": [
-          "Standard / Recliner Seating / LASER"
-        ],
-        "nopass": false,
-        "showtimes": [
-          "11:00pm (Standard Recliner Seating LASER)"
-        ]
-      }
-    ],
-    "2026-04-15": [
-      {
-        "title": "You, Me & Tuscany",
-        "runtime": "1hr 44mins",
-        "formats": [
-          "Standard / Recliner Seating / LASER"
-        ],
-        "nopass": false,
-        "showtimes": [
-          "11:00am (Standard Recliner Seating LASER)",
-          "11:30am (Standard Recliner Seating LASER)",
-          "1:50pm (Standard Recliner Seating LASER)",
-          "2:15pm (Standard Recliner Seating LASER)",
-          "3:20pm (Standard Recliner Seating LASER)",
-          "4:50pm (Standard Recliner Seating LASER)",
-          "5:15pm (Standard Recliner Seating LASER)",
-          "7:45pm (Standard Recliner Seating LASER)",
-          "8:10pm (Standard Recliner Seating LASER)",
-          "10:35pm (Standard Recliner Seating LASER)"
-        ]
-      },
-      {
-        "title": "The Super Mario Galaxy Movie",
-        "runtime": "1hr 38mins",
-        "formats": [
-          "Recliner Seating / LASER / STADIUM SEATING / HDR BY BARCO / MAGNIFY8 / Standard"
-        ],
-        "nopass": true,
-        "showtimes": [
-          "2:50pm (Recliner Seating LASER)",
-          "8:10pm (Recliner Seating LASER)",
-          "1:20pm (Recliner Seating LASER LASER STADIUM SEATING)",
-          "4:00pm (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING)",
-          "6:40pm (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING)",
-          "9:20pm (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING)",
-          "11:10am (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating)",
-          "1:50pm (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating)",
-          "4:30pm (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating)",
-          "7:10pm (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating)",
-          "11:40am (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating Recliner Seating HDR BY BARCO LASER MAGNIFY8)",
-          "2:20pm (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating Recliner Seating HDR BY BARCO LASER MAGNIFY8)",
-          "5:00pm (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating Recliner Seating HDR BY BARCO LASER MAGNIFY8)",
-          "7:40pm (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating Recliner Seating HDR BY BARCO LASER MAGNIFY8)",
-          "10:20pm (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating Recliner Seating HDR BY BARCO LASER MAGNIFY8)",
-          "11:00am (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating Recliner Seating HDR BY BARCO LASER MAGNIFY8 Standard Recliner Seating LASER)",
-          "11:15am (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating Recliner Seating HDR BY BARCO LASER MAGNIFY8 Standard Recliner Seating LASER)",
-          "12:10pm (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating Recliner Seating HDR BY BARCO LASER MAGNIFY8 Standard Recliner Seating LASER)",
-          "1:00pm (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating Recliner Seating HDR BY BARCO LASER MAGNIFY8 Standard Recliner Seating LASER)",
-          "1:40pm (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating Recliner Seating HDR BY BARCO LASER MAGNIFY8 Standard Recliner Seating LASER)",
-          "2:00pm (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating Recliner Seating HDR BY BARCO LASER MAGNIFY8 Standard Recliner Seating LASER)",
-          "3:55pm (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating Recliner Seating HDR BY BARCO LASER MAGNIFY8 Standard Recliner Seating LASER)",
-          "4:20pm (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating Recliner Seating HDR BY BARCO LASER MAGNIFY8 Standard Recliner Seating LASER)",
-          "4:45pm (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating Recliner Seating HDR BY BARCO LASER MAGNIFY8 Standard Recliner Seating LASER)",
-          "5:30pm (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating Recliner Seating HDR BY BARCO LASER MAGNIFY8 Standard Recliner Seating LASER)",
-          "9:55pm (Recliner Seating LASER LASER STADIUM SEATING LASER STADIUM SEATING Recliner Seating Recliner Seating HDR BY BARCO LASER MAGNIFY8 Standard Recliner Seating LASER)"
+          "10:15am",
+          "1:00pm",
+          "3:45pm",
+          "6:30pm",
+          "9:20pm"
         ]
       },
       {
         "title": "Project Hail Mary",
         "runtime": "2hr 36mins",
         "formats": [
-          "Recliner Seating / HDR BY BARCO / LASER / Standard / 70mm / RECLINER SEATING"
+          "\ue037 / Recliner Seating / LASER / Standard / 70mm / RECLINER SEATING"
         ],
         "nopass": true,
+        "soldout": false,
         "showtimes": [
-          "10:05pm (Recliner Seating)",
-          "11:45am (Recliner Seating Recliner Seating HDR BY BARCO LASER)",
-          "3:30pm (Recliner Seating Recliner Seating HDR BY BARCO LASER)",
-          "7:20pm (Recliner Seating Recliner Seating HDR BY BARCO LASER)",
-          "11:00pm (Recliner Seating Recliner Seating HDR BY BARCO LASER)",
-          "11:15am (Recliner Seating Recliner Seating HDR BY BARCO LASER Standard 70mm RECLINER SEATING)",
-          "3:00pm (Recliner Seating Recliner Seating HDR BY BARCO LASER Standard 70mm RECLINER SEATING)",
-          "6:45pm (Recliner Seating Recliner Seating HDR BY BARCO LASER Standard 70mm RECLINER SEATING)",
-          "10:30pm (Recliner Seating Recliner Seating HDR BY BARCO LASER Standard 70mm RECLINER SEATING)"
+          "7:20pm",
+          "11:00am",
+          "2:55pm",
+          "9:30pm",
+          "10:45am",
+          "2:30pm",
+          "6:15pm",
+          "10:00pm"
         ]
       },
       {
-        "title": "LOL: Wayne's World",
-        "runtime": "1hr 34mins",
+        "title": "You, Me & Tuscany",
+        "runtime": "1hr 44mins",
+        "formats": [
+          "\ue037 / Standard / Recliner Seating / LASER"
+        ],
+        "nopass": false,
+        "soldout": false,
+        "showtimes": [
+          "10:55am",
+          "1:50pm",
+          "4:45pm",
+          "7:45pm",
+          "10:35pm"
+        ]
+      },
+      {
+        "title": "LOL: Rugrats in Paris",
+        "runtime": "1hr 18mins",
         "formats": [
           "Standard / Recliner Seating / LASER"
         ],
         "nopass": false,
+        "soldout": false,
         "showtimes": [
-          "11:20am (Standard Recliner Seating LASER)",
-          "2:00pm (Standard Recliner Seating LASER)",
-          "4:40pm (Standard Recliner Seating LASER)",
-          "7:25pm (Standard Recliner Seating LASER)",
-          "10:10pm (Standard Recliner Seating LASER)"
+          "11:00am"
         ]
       },
       {
-        "title": "The Drama",
-        "runtime": "1hr 46mins",
+        "title": "Lorne",
+        "runtime": "1hr 41mins",
         "formats": [
-          "Standard / Recliner Seating / LASER"
+          "\ue037 / Standard / Recliner Seating / LASER"
         ],
         "nopass": false,
+        "soldout": false,
         "showtimes": [
-          "11:20am (Standard Recliner Seating LASER)",
-          "2:10pm (Standard Recliner Seating LASER)",
-          "5:05pm (Standard Recliner Seating LASER)",
-          "8:00pm (Standard Recliner Seating LASER)",
-          "10:55pm (Standard Recliner Seating LASER)"
+          "11:10am",
+          "2:00pm",
+          "4:50pm",
+          "7:40pm",
+          "10:30pm"
         ]
       },
       {
-        "title": "Exit 8 (Japanese)",
-        "runtime": "1hr 35mins",
+        "title": "Busboys",
+        "runtime": "1hr 33mins",
         "formats": [
-          "Standard / Recliner Seating / LASER"
+          "\ue037 / Standard / Recliner Seating / LASER"
         ],
         "nopass": false,
+        "soldout": false,
         "showtimes": [
-          "11:40am (Standard Recliner Seating LASER)",
-          "2:20pm (Standard Recliner Seating LASER)",
-          "5:00pm (Standard Recliner Seating LASER)",
-          "7:40pm (Standard Recliner Seating LASER)",
-          "10:20pm (Standard Recliner Seating LASER)"
+          "11:20am",
+          "2:00pm",
+          "4:40pm",
+          "7:20pm",
+          "10:00pm"
         ]
       },
       {
-        "title": "Hamlet",
-        "runtime": "1hr 54mins",
+        "title": "Lee Cronin's The Mummy",
+        "runtime": "2hr 14mins",
         "formats": [
-          "Standard / Recliner Seating / LASER"
+          "\ue037 / LASER / STADIUM SEATING / Recliner Seating / HDR BY BARCO / Standard"
         ],
-        "nopass": false,
+        "nopass": true,
+        "soldout": false,
         "showtimes": [
-          "12:00pm (Standard Recliner Seating LASER)",
-          "3:00pm (Standard Recliner Seating LASER)",
-          "9:20pm (Standard Recliner Seating LASER)"
+          "10:45pm",
+          "11:00pm",
+          "7:00pm",
+          "10:15pm",
+          "11:30am",
+          "2:45pm",
+          "6:00pm",
+          "9:15pm"
         ]
       },
       {
         "title": "Hoppers",
         "runtime": "1hr 45mins",
         "formats": [
-          "Standard / Recliner Seating / LASER"
+          "\ue037 / Standard / Recliner Seating / LASER"
         ],
         "nopass": false,
+        "soldout": false,
         "showtimes": [
-          "12:35pm (Standard Recliner Seating LASER)",
-          "6:05pm (Standard Recliner Seating LASER)",
-          "8:50pm (Standard Recliner Seating LASER)"
+          "11:35am",
+          "2:25pm",
+          "5:15pm"
         ]
       },
       {
-        "title": "Jerry Maguire 30th Anniversary",
-        "runtime": "2hr 18mins",
+        "title": "Normal",
+        "runtime": "1hr 31mins",
+        "formats": [
+          "\ue037 / Standard / Recliner Seating / LASER"
+        ],
+        "nopass": false,
+        "soldout": false,
+        "showtimes": [
+          "12:00pm",
+          "2:40pm",
+          "5:20pm",
+          "8:00pm",
+          "10:45pm"
+        ]
+      },
+      {
+        "title": "LOL: The Big Lebowski",
+        "runtime": "1hr 57mins",
         "formats": [
           "Standard / Recliner Seating / LASER"
         ],
         "nopass": false,
+        "soldout": false,
         "showtimes": [
-          "6:05pm (Standard Recliner Seating LASER)"
+          "1:25pm",
+          "4:25pm",
+          "7:25pm",
+          "10:25pm"
         ]
       },
       {
-        "title": "Over Your Dead Body - Early Access",
-        "runtime": "1hr 45mins",
+        "title": "Ferris Bueller's Day Off 40th Anniversary",
+        "runtime": "1hr 43mins",
         "formats": [
           "Standard / Recliner Seating / LASER"
         ],
         "nopass": false,
+        "soldout": false,
         "showtimes": [
-          "7:00pm (Standard Recliner Seating LASER)"
+          "7:40pm"
         ]
       },
       {
-        "title": "ChaO (Sub)",
-        "runtime": "1hr 30mins",
+        "title": "Exit 8 (Japanese)",
+        "runtime": "1hr 35mins",
         "formats": [
-          "Standard / Recliner Seating / LASER"
+          "Standard / Recliner Seating / JAPANESE LANGUAGE / LASER / SUB-TITLED"
         ],
         "nopass": false,
+        "soldout": false,
         "showtimes": [
-          "7:15pm (Standard Recliner Seating LASER)",
-          "9:55pm (Standard Recliner Seating LASER)"
-        ]
-      },
-      {
-        "title": "Hunting Matthew Nichols",
-        "runtime": "1hr 29mins",
-        "formats": [
-          "Standard / Recliner Seating / LASER"
-        ],
-        "nopass": false,
-        "showtimes": [
-          "7:40pm (Standard Recliner Seating LASER)",
-          "10:20pm (Standard Recliner Seating LASER)"
-        ]
-      },
-      {
-        "title": "Faces Of Death",
-        "runtime": "1hr 37mins",
-        "formats": [
-          "Standard / Recliner Seating / LASER"
-        ],
-        "nopass": false,
-        "showtimes": [
-          "10:55pm (Standard Recliner Seating LASER)"
-        ]
-      },
-      {
-        "title": "Ready or Not 2: Here I Come",
-        "runtime": "1hr 48mins",
-        "formats": [
-          "Standard / Recliner Seating / LASER"
-        ],
-        "nopass": false,
-        "showtimes": [
-          "11:00pm (Standard Recliner Seating LASER)"
+          "8:15pm",
+          "10:55pm"
         ]
       }
     ]
