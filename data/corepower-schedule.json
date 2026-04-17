@@ -1,0 +1,808 @@
+{
+  "updatedAt": "2026-04-17T16:52:03Z",
+  "source": {
+    "name": "CorePower Yoga",
+    "filter": "Main",
+    "studios": [
+      "Encino",
+      "Sherman Oaks"
+    ],
+    "sourceType": "browser-scrape-direct-cdp",
+    "inputFile": "/root/.openclaw/workspace/shared/pixel-agent/tmp/corepower-body.txt"
+  },
+  "window": {
+    "start": "2026-04-06",
+    "end": "2026-04-09",
+    "days": 4
+  },
+  "summary": {
+    "classCount": 74,
+    "dayCount": 4
+  },
+  "days": [
+    {
+      "date": "2026-04-06",
+      "label": "Mon, Apr 06",
+      "classCount": 22,
+      "classes": [
+        {
+          "dayLabel": "Mon, Apr 06",
+          "time": "6:30 am",
+          "className": "YS - Yoga Sculpt",
+          "studio": "Encino",
+          "teacher": "Gabriella D",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-06"
+        },
+        {
+          "dayLabel": "Mon, Apr 06",
+          "time": "7:00 am",
+          "className": "YS - Yoga Sculpt",
+          "studio": "Sherman Oaks",
+          "teacher": "Mara C",
+          "status": "open",
+          "badges": [
+            "SUB"
+          ],
+          "date": "2026-04-06"
+        },
+        {
+          "dayLabel": "Mon, Apr 06",
+          "time": "7:30 am",
+          "className": "C2 - CorePower Yoga 2",
+          "studio": "Sherman Oaks",
+          "teacher": "Madison M",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-06"
+        },
+        {
+          "dayLabel": "Mon, Apr 06",
+          "time": "9:00 am",
+          "className": "YS - Yoga Sculpt",
+          "studio": "Sherman Oaks",
+          "teacher": "Laura F",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-06"
+        },
+        {
+          "dayLabel": "Mon, Apr 06",
+          "time": "9:30 am",
+          "className": "C2 - CorePower Yoga 2",
+          "studio": "Encino",
+          "teacher": "Tatiana C",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-06"
+        },
+        {
+          "dayLabel": "Mon, Apr 06",
+          "time": "10:00 am",
+          "className": "C2 - CorePower Yoga 2",
+          "studio": "Sherman Oaks",
+          "teacher": "Jennifer R",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-06"
+        },
+        {
+          "dayLabel": "Mon, Apr 06",
+          "time": "10:30 am",
+          "className": "YS - Yoga Sculpt",
+          "studio": "Encino",
+          "teacher": "Maxwell Sp",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-06"
+        },
+        {
+          "dayLabel": "Mon, Apr 06",
+          "time": "12:00 pm",
+          "className": "YS - Yoga Sculpt",
+          "studio": "Encino",
+          "teacher": "Adrian A",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-06"
+        },
+        {
+          "dayLabel": "Mon, Apr 06",
+          "time": "12:30 pm",
+          "className": "C2 - CorePower Yoga 2",
+          "studio": "Encino",
+          "teacher": "Nicole L",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-06"
+        },
+        {
+          "dayLabel": "Mon, Apr 06",
+          "time": "12:30 pm",
+          "className": "C2 - CorePower Yoga 2",
+          "studio": "Sherman Oaks",
+          "teacher": "Madison M",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-06"
+        },
+        {
+          "dayLabel": "Mon, Apr 06",
+          "time": "3:00 pm",
+          "className": "YS - Yoga Sculpt",
+          "studio": "Encino",
+          "teacher": "Danielle W",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-06"
+        },
+        {
+          "dayLabel": "Mon, Apr 06",
+          "time": "3:00 pm",
+          "className": "C2 - CorePower Yoga 2",
+          "studio": "Sherman Oaks",
+          "teacher": "Olivia S",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-06"
+        },
+        {
+          "dayLabel": "Mon, Apr 06",
+          "time": "4:00 pm",
+          "className": "C2 - CorePower Yoga 2",
+          "studio": "Encino",
+          "teacher": "Toni S",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-06"
+        },
+        {
+          "dayLabel": "Mon, Apr 06",
+          "time": "4:30 pm",
+          "className": "CSX - CorePower Strength X (Lower Body)",
+          "studio": "Encino",
+          "teacher": "Janelle P",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-06"
+        },
+        {
+          "dayLabel": "Mon, Apr 06",
+          "time": "4:30 pm",
+          "className": "YS - Yoga Sculpt",
+          "studio": "Sherman Oaks",
+          "teacher": "Hannah S",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-06"
+        },
+        {
+          "dayLabel": "Mon, Apr 06",
+          "time": "5:30 pm",
+          "className": "YS - Yoga Sculpt",
+          "studio": "Encino",
+          "teacher": "Anna J",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-06"
+        },
+        {
+          "dayLabel": "Mon, Apr 06",
+          "time": "5:45 pm",
+          "className": "CSX - CorePower Strength X (Lower Body)",
+          "studio": "Sherman Oaks",
+          "teacher": "Laura F",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-06"
+        },
+        {
+          "dayLabel": "Mon, Apr 06",
+          "time": "6:00 pm",
+          "className": "C2 - CorePower Yoga 2",
+          "studio": "Sherman Oaks",
+          "teacher": "Olivia S",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-06"
+        },
+        {
+          "dayLabel": "Mon, Apr 06",
+          "time": "7:00 pm",
+          "className": "C2 - CorePower Yoga 2",
+          "studio": "Encino",
+          "teacher": "Hector G",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-06"
+        },
+        {
+          "dayLabel": "Mon, Apr 06",
+          "time": "7:30 pm",
+          "className": "YS - Yoga Sculpt",
+          "studio": "Encino",
+          "teacher": "Anna J",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-06"
+        },
+        {
+          "dayLabel": "Mon, Apr 06",
+          "time": "8:30 pm",
+          "className": "C2 - CorePower Yoga 2",
+          "studio": "Encino",
+          "teacher": "Hector G",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-06"
+        },
+        {
+          "dayLabel": "Mon, Apr 06",
+          "time": "9:00 pm",
+          "className": "C2 - CorePower Yoga 2",
+          "studio": "Sherman Oaks",
+          "teacher": "Adriana S",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-06"
+        }
+      ]
+    },
+    {
+      "date": "2026-04-07",
+      "label": "Tue, Apr 07",
+      "classCount": 18,
+      "classes": [
+        {
+          "dayLabel": "Tue, Apr 07",
+          "time": "6:00 am",
+          "className": "CSX - CorePower Strength X (Upper Body)",
+          "studio": "Sherman Oaks",
+          "teacher": "Janelle P",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-07"
+        },
+        {
+          "dayLabel": "Tue, Apr 07",
+          "time": "7:00 am",
+          "className": "YS - Yoga Sculpt",
+          "studio": "Sherman Oaks",
+          "teacher": "Lydia P",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-07"
+        },
+        {
+          "dayLabel": "Tue, Apr 07",
+          "time": "7:30 am",
+          "className": "C2 - CorePower Yoga 2",
+          "studio": "Sherman Oaks",
+          "teacher": "Aileen S",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-07"
+        },
+        {
+          "dayLabel": "Tue, Apr 07",
+          "time": "8:00 am",
+          "className": "C2 - CorePower Yoga 2",
+          "studio": "Encino",
+          "teacher": "Olivia S",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-07"
+        },
+        {
+          "dayLabel": "Tue, Apr 07",
+          "time": "9:00 am",
+          "className": "YS - Yoga Sculpt",
+          "studio": "Sherman Oaks",
+          "teacher": "Lydia P",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-07"
+        },
+        {
+          "dayLabel": "Tue, Apr 07",
+          "time": "9:30 am",
+          "className": "C2 - CorePower Yoga 2",
+          "studio": "Encino",
+          "teacher": "Olivia S",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-07"
+        },
+        {
+          "dayLabel": "Tue, Apr 07",
+          "time": "10:00 am",
+          "className": "C2 - CorePower Yoga 2",
+          "studio": "Sherman Oaks",
+          "teacher": "Madison M",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-07"
+        },
+        {
+          "dayLabel": "Tue, Apr 07",
+          "time": "10:30 am",
+          "className": "YS - Yoga Sculpt",
+          "studio": "Encino",
+          "teacher": "Eric G",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-07"
+        },
+        {
+          "dayLabel": "Tue, Apr 07",
+          "time": "12:00 pm",
+          "className": "YS - Yoga Sculpt",
+          "studio": "Encino",
+          "teacher": "Eric G",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-07"
+        },
+        {
+          "dayLabel": "Tue, Apr 07",
+          "time": "12:30 pm",
+          "className": "C2 - CorePower Yoga 2",
+          "studio": "Encino",
+          "teacher": "Aileen S",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-07"
+        },
+        {
+          "dayLabel": "Tue, Apr 07",
+          "time": "12:30 pm",
+          "className": "C2 - CorePower Yoga 2",
+          "studio": "Sherman Oaks",
+          "teacher": "Libby R",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-07"
+        },
+        {
+          "dayLabel": "Tue, Apr 07",
+          "time": "4:30 pm",
+          "className": "YS - Yoga Sculpt",
+          "studio": "Sherman Oaks",
+          "teacher": "Ling C",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-07"
+        },
+        {
+          "dayLabel": "Tue, Apr 07",
+          "time": "5:30 pm",
+          "className": "YS - Yoga Sculpt",
+          "studio": "Encino",
+          "teacher": "Gabriella D",
+          "status": "open",
+          "badges": [
+            "SUB"
+          ],
+          "date": "2026-04-07"
+        },
+        {
+          "dayLabel": "Tue, Apr 07",
+          "time": "7:00 pm",
+          "className": "C2 - CorePower Yoga 2: CANCELLED DUE TO TEACHER TRAINING",
+          "studio": "Encino",
+          "teacher": "Jennifer F",
+          "status": "cancelled",
+          "badges": [
+            "Cancelled"
+          ],
+          "date": "2026-04-07"
+        },
+        {
+          "dayLabel": "Tue, Apr 07",
+          "time": "7:00 pm",
+          "className": "YS - Yoga Sculpt",
+          "studio": "Sherman Oaks",
+          "teacher": "John S",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-07"
+        },
+        {
+          "dayLabel": "Tue, Apr 07",
+          "time": "7:30 pm",
+          "className": "YS - Yoga Sculpt",
+          "studio": "Encino",
+          "teacher": "Chloe B",
+          "status": "open",
+          "badges": [
+            "SUB"
+          ],
+          "date": "2026-04-07"
+        },
+        {
+          "dayLabel": "Tue, Apr 07",
+          "time": "8:30 pm",
+          "className": "C2 - CorePower Yoga 2: CANCELLED DUE TO TEACHER TRAINING",
+          "studio": "Encino",
+          "teacher": "Jennifer F",
+          "status": "cancelled",
+          "badges": [
+            "Cancelled"
+          ],
+          "date": "2026-04-07"
+        },
+        {
+          "dayLabel": "Tue, Apr 07",
+          "time": "9:00 pm",
+          "className": "C2 - CorePower Yoga 2",
+          "studio": "Sherman Oaks",
+          "teacher": "Ryan C",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-07"
+        }
+      ]
+    },
+    {
+      "date": "2026-04-08",
+      "label": "Wed, Apr 08",
+      "classCount": 17,
+      "classes": [
+        {
+          "dayLabel": "Wed, Apr 08",
+          "time": "6:00 am",
+          "className": "C2 - CorePower Yoga 2",
+          "studio": "Sherman Oaks",
+          "teacher": "Erin H",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-08"
+        },
+        {
+          "dayLabel": "Wed, Apr 08",
+          "time": "7:00 am",
+          "className": "YS - Yoga Sculpt",
+          "studio": "Sherman Oaks",
+          "teacher": "Kelly D",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-08"
+        },
+        {
+          "dayLabel": "Wed, Apr 08",
+          "time": "7:30 am",
+          "className": "C2 - CorePower Yoga 2",
+          "studio": "Sherman Oaks",
+          "teacher": "Mara C",
+          "status": "open",
+          "badges": [
+            "SUB"
+          ],
+          "date": "2026-04-08"
+        },
+        {
+          "dayLabel": "Wed, Apr 08",
+          "time": "9:00 am",
+          "className": "YS - Yoga Sculpt",
+          "studio": "Sherman Oaks",
+          "teacher": "Lupita",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-08"
+        },
+        {
+          "dayLabel": "Wed, Apr 08",
+          "time": "10:00 am",
+          "className": "C2 - CorePower Yoga 2",
+          "studio": "Sherman Oaks",
+          "teacher": "Jennifer R",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-08"
+        },
+        {
+          "dayLabel": "Wed, Apr 08",
+          "time": "10:30 am",
+          "className": "YS - Yoga Sculpt",
+          "studio": "Encino",
+          "teacher": "Gabriella D",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-08"
+        },
+        {
+          "dayLabel": "Wed, Apr 08",
+          "time": "12:00 pm",
+          "className": "YS - Yoga Sculpt",
+          "studio": "Encino",
+          "teacher": "Gabriella D",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-08"
+        },
+        {
+          "dayLabel": "Wed, Apr 08",
+          "time": "12:30 pm",
+          "className": "C2 - CorePower Yoga 2",
+          "studio": "Encino",
+          "teacher": "Tatiana C",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-08"
+        },
+        {
+          "dayLabel": "Wed, Apr 08",
+          "time": "12:30 pm",
+          "className": "C2 - CorePower Yoga 2",
+          "studio": "Sherman Oaks",
+          "teacher": "Madison M",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-08"
+        },
+        {
+          "dayLabel": "Wed, Apr 08",
+          "time": "3:00 pm",
+          "className": "C2 - CorePower Yoga 2",
+          "studio": "Sherman Oaks",
+          "teacher": "Chloe B",
+          "status": "open",
+          "badges": [
+            "SUB"
+          ],
+          "date": "2026-04-08"
+        },
+        {
+          "dayLabel": "Wed, Apr 08",
+          "time": "4:30 pm",
+          "className": "CSX - CorePower Strength X (Full Body)",
+          "studio": "Encino",
+          "teacher": "Nicole L",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-08"
+        },
+        {
+          "dayLabel": "Wed, Apr 08",
+          "time": "5:30 pm",
+          "className": "YS - Yoga Sculpt",
+          "studio": "Encino",
+          "teacher": "Danielle W",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-08"
+        },
+        {
+          "dayLabel": "Wed, Apr 08",
+          "time": "5:45 pm",
+          "className": "CSX - CorePower Strength X (Full Body)",
+          "studio": "Sherman Oaks",
+          "teacher": "Leigh Anne S",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-08"
+        },
+        {
+          "dayLabel": "Wed, Apr 08",
+          "time": "6:00 pm",
+          "className": "C2 - CorePower Yoga 2",
+          "studio": "Sherman Oaks",
+          "teacher": "Prerna C",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-08"
+        },
+        {
+          "dayLabel": "Wed, Apr 08",
+          "time": "7:00 pm",
+          "className": "YS - Yoga Sculpt",
+          "studio": "Sherman Oaks",
+          "teacher": "Hannah S",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-08"
+        },
+        {
+          "dayLabel": "Wed, Apr 08",
+          "time": "7:30 pm",
+          "className": "YS - Yoga Sculpt",
+          "studio": "Encino",
+          "teacher": "Nicole L",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-08"
+        },
+        {
+          "dayLabel": "Wed, Apr 08",
+          "time": "9:00 pm",
+          "className": "C2 - CorePower Yoga 2",
+          "studio": "Sherman Oaks",
+          "teacher": "Ryan C",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-08"
+        }
+      ]
+    },
+    {
+      "date": "2026-04-09",
+      "label": "Thu, Apr 09",
+      "classCount": 17,
+      "classes": [
+        {
+          "dayLabel": "Thu, Apr 09",
+          "time": "6:00 am",
+          "className": "CSX - CorePower Strength X (Glutes + Core)",
+          "studio": "Sherman Oaks",
+          "teacher": "Janelle P",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-09"
+        },
+        {
+          "dayLabel": "Thu, Apr 09",
+          "time": "7:00 am",
+          "className": "YS - Yoga Sculpt",
+          "studio": "Sherman Oaks",
+          "teacher": "Lydia P",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-09"
+        },
+        {
+          "dayLabel": "Thu, Apr 09",
+          "time": "7:30 am",
+          "className": "C2 - CorePower Yoga 2",
+          "studio": "Sherman Oaks",
+          "teacher": "Aileen S",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-09"
+        },
+        {
+          "dayLabel": "Thu, Apr 09",
+          "time": "9:00 am",
+          "className": "YS - Yoga Sculpt",
+          "studio": "Sherman Oaks",
+          "teacher": "Lydia P",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-09"
+        },
+        {
+          "dayLabel": "Thu, Apr 09",
+          "time": "9:30 am",
+          "className": "C2 - CorePower Yoga 2",
+          "studio": "Encino",
+          "teacher": "Lupita",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-09"
+        },
+        {
+          "dayLabel": "Thu, Apr 09",
+          "time": "10:00 am",
+          "className": "C2 - CorePower Yoga 2",
+          "studio": "Sherman Oaks",
+          "teacher": "Olivia L",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-09"
+        },
+        {
+          "dayLabel": "Thu, Apr 09",
+          "time": "10:30 am",
+          "className": "YS - Yoga Sculpt",
+          "studio": "Encino",
+          "teacher": "Eric G",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-09"
+        },
+        {
+          "dayLabel": "Thu, Apr 09",
+          "time": "12:00 pm",
+          "className": "YS - Yoga Sculpt",
+          "studio": "Encino",
+          "teacher": "Eric G",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-09"
+        },
+        {
+          "dayLabel": "Thu, Apr 09",
+          "time": "12:30 pm",
+          "className": "C2 - CorePower Yoga 2: 75 min",
+          "studio": "Encino",
+          "teacher": "Gabriella D",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-09"
+        },
+        {
+          "dayLabel": "Thu, Apr 09",
+          "time": "3:00 pm",
+          "className": "YS - Yoga Sculpt",
+          "studio": "Encino",
+          "teacher": "Gabriella D",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-09"
+        },
+        {
+          "dayLabel": "Thu, Apr 09",
+          "time": "4:30 pm",
+          "className": "YS - Yoga Sculpt",
+          "studio": "Sherman Oaks",
+          "teacher": "Laura F",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-09"
+        },
+        {
+          "dayLabel": "Thu, Apr 09",
+          "time": "5:30 pm",
+          "className": "YS - Yoga Sculpt",
+          "studio": "Encino",
+          "teacher": "Brianna M",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-09"
+        },
+        {
+          "dayLabel": "Thu, Apr 09",
+          "time": "6:00 pm",
+          "className": "C3 - CorePower Yoga 3 - Cancelled For Teacher Training",
+          "studio": "Sherman Oaks",
+          "teacher": "Megan M",
+          "status": "cancelled",
+          "badges": [
+            "Cancelled"
+          ],
+          "date": "2026-04-09"
+        },
+        {
+          "dayLabel": "Thu, Apr 09",
+          "time": "7:00 pm",
+          "className": "YS - Yoga Sculpt",
+          "studio": "Sherman Oaks",
+          "teacher": "Ling C",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-09"
+        },
+        {
+          "dayLabel": "Thu, Apr 09",
+          "time": "7:30 pm",
+          "className": "C2 - CorePower Yoga 2: NEW TIME DUE TO TEACHER TRAINING",
+          "studio": "Encino",
+          "teacher": "Jenna M",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-09"
+        },
+        {
+          "dayLabel": "Thu, Apr 09",
+          "time": "9:00 pm",
+          "className": "C2 - CorePower Yoga 2: NEW TIME DUE TO TEACHER TRAINING",
+          "studio": "Encino",
+          "teacher": "Jenna M",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-09"
+        },
+        {
+          "dayLabel": "Thu, Apr 09",
+          "time": "9:00 pm",
+          "className": "C2 - CorePower Yoga 2",
+          "studio": "Sherman Oaks",
+          "teacher": "Adriana S",
+          "status": "open",
+          "badges": [],
+          "date": "2026-04-09"
+        }
+      ]
+    }
+  ]
+}
