@@ -3,6 +3,13 @@
 ## Overview
 Configure OpenClaw cron jobs for automated CorePower + Regal schedule updates.
 
+## Current operational note
+The old `schedule-update ...` commands below are legacy placeholders. The live command path should be the unified Pixel runner:
+
+```bash
+python3 /root/.openclaw/workspace/shared/pixel-agent/scripts/pixel-schedule-runner.py
+```
+
 ## Cron Configuration
 
 Add to your `~/.openclaw/openclaw.json`:
@@ -14,20 +21,26 @@ Add to your `~/.openclaw/openclaw.json`:
       {
         "name": "monday-morning-schedule",
         "schedule": "0 6 * * 1",
-        "command": "schedule-update monday",
-        "description": "Pull Mon-Wed CorePower + Regal schedules"
+        "command": "python3 /root/.openclaw/workspace/shared/pixel-agent/scripts/pixel-schedule-runner.py",
+        "description": "Pull rolling schedule via unified Pixel runner"
       },
       {
-        "name": "wednesday-night-rollover", 
+        "name": "wednesday-night-rollover",
         "schedule": "45 23 * * 3",
-        "command": "schedule-update thursday-friday",
-        "description": "Delete Mon-Wed, pull Thu-Fri schedules"
+        "command": "python3 /root/.openclaw/workspace/shared/pixel-agent/scripts/pixel-schedule-runner.py",
+        "description": "Pull rolling schedule via unified Pixel runner"
+      },
+      {
+        "name": "friday-night-rollover",
+        "schedule": "45 23 * * 5",
+        "command": "python3 /root/.openclaw/workspace/shared/pixel-agent/scripts/pixel-schedule-runner.py",
+        "description": "Pull rolling schedule via unified Pixel runner"
       },
       {
         "name": "sunday-weekend-update",
-        "schedule": "0 10 * * 0",
-        "command": "schedule-update weekend",
-        "description": "Pull Sat-Sun CorePower + Regal schedules"
+        "schedule": "45 23 * * 0",
+        "command": "python3 /root/.openclaw/workspace/shared/pixel-agent/scripts/pixel-schedule-runner.py",
+        "description": "Pull rolling schedule via unified Pixel runner"
       }
     ]
   }
@@ -44,17 +57,10 @@ Add to your `~/.openclaw/openclaw.json`:
 
 ## Manual Testing
 
-Before enabling cron, test each schedule manually:
+Before enabling cron, test the real runner manually:
 
 ```bash
-# Test Monday schedule (Mon-Wed)
-openclaw schedule-update monday
-
-# Test Wednesday rollover (Thu-Fri)  
-openclaw schedule-update thursday-friday
-
-# Test Sunday weekend (Sat-Sun)
-openclaw schedule-update weekend
+python3 /root/.openclaw/workspace/shared/pixel-agent/scripts/pixel-schedule-runner.py
 ```
 
 ## Implementation
@@ -92,7 +98,7 @@ After each update:
 - "Schedule updated: [Mon-Wed] 12 classes, 8 movies"
 
 ## Next Steps
-1. Restart gateway to load cron config
-2. Test manual commands
-3. Enable cron jobs
+1. Repoint registered cron jobs to the unified Pixel runner
+2. Restart gateway only if config-based cron registration requires it
+3. Test one cron-triggered run
 4. Verify first automated run

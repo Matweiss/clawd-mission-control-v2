@@ -10,13 +10,24 @@ tags: [cron, corepower, regal, movies, yoga, automation]
 ## Overview
 Maintains a rolling 3-day schedule for CorePower Yoga "Main" filter and Regal Sherman Oaks Galleria movies.
 
+## Current command path
+The historical `schedule-update ...` placeholders in this doc are obsolete.
+
+Use this single operational command for schedule automation:
+
+```bash
+python3 /root/.openclaw/workspace/shared/pixel-agent/scripts/pixel-schedule-runner.py
+```
+
+That command now owns the live schedule run path and delegates to the existing preflight and pipeline logic.
+
 ## Schedule (Rolling 2-3 Day Window)
 
 **Rule:** Every trigger = delete current → pull next. No history, no accumulation.
 
 ### Job 1: Monday Morning (Mon-Wed)
 **When:** Every Monday at 6:00 AM PT  
-**Command:** `schedule-update monday-tuesday-wednesday`  
+**Command:** `python3 /root/.openclaw/workspace/shared/pixel-agent/scripts/pixel-schedule-runner.py`  
 **Action:**
 - Delete existing schedule data
 - Pull CorePower: Mon (after 6am) + Tue + Wed
@@ -25,7 +36,7 @@ Maintains a rolling 3-day schedule for CorePower Yoga "Main" filter and Regal Sh
 
 ### Job 2: Wednesday Late Night (Thu-Fri)
 **When:** Every Wednesday at 11:45 PM PT  
-**Command:** `schedule-update thursday-friday`  
+**Command:** `python3 /root/.openclaw/workspace/shared/pixel-agent/scripts/pixel-schedule-runner.py`  
 **Action:**
 - Delete Mon-Wed data
 - Pull CorePower: Thu + Fri
@@ -34,7 +45,7 @@ Maintains a rolling 3-day schedule for CorePower Yoga "Main" filter and Regal Sh
 
 ### Job 3: Friday Late Night (Sat-Sun)
 **When:** Every Friday at 11:45 PM PT  
-**Command:** `schedule-update saturday-sunday`  
+**Command:** `python3 /root/.openclaw/workspace/shared/pixel-agent/scripts/pixel-schedule-runner.py`  
 **Action:**
 - Delete Thu-Fri data
 - Pull CorePower: Sat + Sun
@@ -43,7 +54,7 @@ Maintains a rolling 3-day schedule for CorePower Yoga "Main" filter and Regal Sh
 
 ### Job 4: Sunday Late Night (Next Week)
 **When:** Every Sunday at 11:45 PM PT  
-**Command:** `schedule-update next-mon-tue-wed`  
+**Command:** `python3 /root/.openclaw/workspace/shared/pixel-agent/scripts/pixel-schedule-runner.py`  
 **Action:**
 - Delete Sat-Sun data
 - Pull CorePower: Next Mon + Tue + Wed
@@ -98,17 +109,12 @@ Each job executes the documented browser coworking workflows:
 ```
 
 ## Manual Trigger
-To run any schedule update manually:
+To run the live schedule path manually:
 ```bash
-# Monday schedule (Mon-Wed)
-openclaw cron run monday-morning-schedule
-
-# Wednesday rollover (Thu-Fri)
-openclaw cron run wednesday-night-rollover
-
-# Sunday weekend (Sat-Sun)
-openclaw cron run sunday-weekend-update
+python3 /root/.openclaw/workspace/shared/pixel-agent/scripts/pixel-schedule-runner.py
 ```
+
+If cron jobs are already registered, they should all point to that same command.
 
 ## Files Managed
 - `memory/data/schedule-mon-wed.md` (Mon 6am → Wed 11:45pm)
@@ -117,7 +123,7 @@ openclaw cron run sunday-weekend-update
 - Archive: `memory/data/archive/schedule-YYYY-MM-DD.md`
 
 ## Next Steps
-- [ ] Set up cron jobs in OpenClaw config
-- [ ] Test Monday morning workflow
+- [ ] Repoint registered cron jobs to `pixel-schedule-runner.py`
+- [ ] Test one cron-triggered run end to end
 - [ ] Verify data format with Mat
 - [ ] Add Obsidian dashboard integration
