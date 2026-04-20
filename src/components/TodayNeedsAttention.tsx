@@ -25,6 +25,8 @@ type YogaStats = {
     location: string;
   }>;
   lastUpdated?: string;
+  sourceNote?: string | null;
+  sourceError?: string | null;
 };
 
 function toDateTimeValue(date: string, time: string) {
@@ -85,6 +87,7 @@ export function TodayNeedsAttention() {
     if (movies && !movies.strict) items.push('Movie data is provisional for some days');
     if (movies && movies.confidence !== 'high') items.push('Movie confidence is below high');
     if (yoga && yoga.freshness !== 'fresh') items.push('Yoga freshness is not fresh');
+    if (yoga?.sourceError) items.push('Yoga browser sync is currently down');
     if (!nextYoga) items.push('No upcoming yoga classes loaded');
     return items;
   }, [movies, yoga, nextYoga]);

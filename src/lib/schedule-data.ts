@@ -11,6 +11,9 @@ export type ScheduleSnapshot = {
       studios: string[];
       confidence: 'high' | 'medium' | 'low';
       sourceType: string;
+      note?: string;
+      error?: string;
+      lastSuccessfulUpdate?: string;
     };
     regal: {
       name: string;
@@ -63,20 +66,56 @@ export type ScheduleSnapshot = {
   };
 };
 
-export function loadScheduleSnapshot(): ScheduleSnapshot | null {
-  const candidatePaths = [
+function candidatePaths() {
+  return [
     path.join(process.cwd(), 'data', 'schedule-current.json'),
     path.join(process.cwd(), 'memory', 'data', 'schedule-current.json'),
     path.join(process.cwd(), '..', 'memory', 'data', 'schedule-current.json'),
   ];
+}
 
-  for (const filePath of candidatePaths) {
+function readSnapshotFile(): ScheduleSnapshot | null {
+  for (const filePath of candidatePaths()) {
     if (fs.existsSync(filePath)) {
       return JSON.parse(fs.readFileSync(filePath, 'utf8')) as ScheduleSnapshot;
     }
   }
-
   return null;
+}
+
+function dayHasClasses(day: ScheduleSnapshot['yoga']['days'][number]) {
+  return day.studios.some((studio) => studio.classes.length > 0);
+}
+
+function normalizeYogaSnapshot(snapshot: ScheduleSnapshot): ScheduleSnapshot {
+  const yogaDays = snapshot.yoga?.days || [];
+  const daysWithClasses = yogaDays.filter(dayHasClasses);
+  const emptyDays = yogaDays.filter((day) => !dayHasClasses(day));
+  const errorText = snapshot.sources.corepower.error || '';
+  const hasBrowserFailure = /disconnected|offline|blocked|failed|refused|unreachable/i.test(errorText);
+
+  if (hasBrowserFailure) {
+    snapshot.yoga.confidence = 'low';
+    snapshot.yoga.freshness = 'stale';
+  } else if (daysWithClasses.length === 0) {
+    snapshot.yoga.confidence = 'low';
+    snapshot.yoga.freshness = 'stale';
+    snapshot.sources.corepower.error = snapshot.sources.corepower.error || 'No CorePower classes loaded in current snapshot';
+  } else if (emptyDays.length > 0) {
+    snapshot.yoga.confidence = snapshot.yoga.confidence === 'high' ? 'medium' : snapshot.yoga.confidence;
+    if (snapshot.yoga.freshness === 'fresh') snapshot.yoga.freshness = 'mixed';
+    if (!snapshot.sources.corepower.note) {
+      snapshot.sources.corepower.note = `Partial CorePower coverage: ${emptyDays.length} day(s) in the current window have zero classes.`;
+    }
+  }
+
+  return snapshot;
+}
+
+export function loadScheduleSnapshot(): ScheduleSnapshot | null {
+  const snapshot = readSnapshotFile();
+  if (!snapshot) return null;
+  return normalizeYogaSnapshot(snapshot);
 }
 
 export function sortTimes(times: string[]) {

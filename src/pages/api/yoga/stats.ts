@@ -74,6 +74,8 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
       confidence: snapshot?.yoga.confidence || 'medium',
       freshness: snapshot?.yoga.freshness || 'stale',
       lastUpdated: snapshot?.yoga.lastUpdated || new Date().toISOString(),
+      sourceNote: snapshot?.sources.corepower.note || null,
+      sourceError: snapshot?.sources.corepower.error || null,
       timestamp: new Date().toISOString(),
     });
   } catch (error) {

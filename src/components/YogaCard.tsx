@@ -25,6 +25,8 @@ interface YogaStats {
   confidence?: 'high' | 'medium' | 'low';
   freshness?: string;
   lastUpdated?: string;
+  sourceNote?: string | null;
+  sourceError?: string | null;
 }
 
 function getDaysSince(dateStr: string): number {
@@ -151,6 +153,12 @@ export function YogaCard() {
           </div>
           <span>{stats.lastUpdated ? `Updated ${new Date(stats.lastUpdated).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}` : ''}</span>
         </div>
+
+        {(stats.sourceError || stats.sourceNote) && (
+          <div className={`rounded-lg border px-3 py-2 text-xs ${stats.sourceError ? 'border-red-500/30 bg-red-500/10 text-red-200' : 'border-yellow-500/20 bg-yellow-500/10 text-yellow-200'}`}>
+            {stats.sourceError ? stats.sourceError : stats.sourceNote}
+          </div>
+        )}
 
         <div className="flex bg-surface-light rounded-lg p-1">
           <button

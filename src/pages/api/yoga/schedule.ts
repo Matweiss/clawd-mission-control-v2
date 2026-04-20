@@ -43,6 +43,9 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     preferredClasses: ['C2', 'C3', 'YS', 'CSX'],
     totalClasses: studios.reduce((sum, studio) => sum + studio.classes.length, 0),
     lastUpdated: snapshot.yoga.lastUpdated,
-    sourceNote: `Live browser extraction using ${snapshot.sources.corepower.filter} filter (${snapshot.sources.corepower.studios.join(', ')})`,
+    sourceNote:
+      snapshot.sources.corepower.note ||
+      `Live browser extraction using ${snapshot.sources.corepower.filter} filter (${snapshot.sources.corepower.studios.join(', ')})`,
+    sourceError: snapshot.sources.corepower.error || null,
   });
 }
