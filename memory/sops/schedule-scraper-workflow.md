@@ -3,6 +3,20 @@
 ## Overview
 Automated browser-based scraping of CorePower Yoga and Regal movie schedules.
 
+## Current operational entrypoint
+The old manual step list below is historical context. The live entrypoint is:
+
+```bash
+python3 /root/.openclaw/workspace/shared/pixel-agent/scripts/pixel-schedule-runner.py
+```
+
+That runner:
+- calls the CorePower pipeline
+- preserves degraded-state signaling into `data/schedule-current.json`
+- relies on preflight alerting to open Paperclip alerts when prerequisites are down
+- refreshes warm browser state after successful runs
+- writes run state to `shared/pixel-agent/memory/schedule-runner-state.json`
+
 ## Trigger
 Called by cron jobs:
 - `monday-schedule` (Mon 6am)

@@ -9,10 +9,15 @@
     "corepower": {
       "name": "CorePower Yoga",
       "filter": "Main",
-      "studios": ["Encino", "Sherman Oaks"],
-      "confidence": "medium",
+      "studios": [
+        "Encino",
+        "Sherman Oaks"
+      ],
+      "confidence": "low",
       "sourceType": "browser-scrape-direct-cdp",
-      "note": "Live raw CDP scrape succeeded on Fri Apr 17. The visible schedule grid returned 16 Main-filter classes for Friday, but Sat Apr 18 and Sun Apr 19 rendered as 0 classes in the same view, so weekend yoga coverage is provisional."
+      "note": "{\n  \"ok\": false,\n  \"summary\": {\n    \"timestampPt\": \"2026-04-20 08:02:02 PDT\",\n    \"nodeOk\": false,\n    \"mcpOk\": true,\n    \"blockedScrapes\": [\n      \"monday-schedule (Mon + Tue + Wed)\"\n    ],\n    \"commands\": {\n      \"nodes\": {\n        \"cmd\": \"/usr/bin/openclaw nodes status\",\n        \"code\": 0,\n        \"stdout\": \"Known: 1 \\u00b7 Paired: 1 \\u00b7 Connected: 0\\n\\u250c\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u252c\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u252c\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u252c\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u252c\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u252c\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2510\\n\\u2502 Node \\u2502 ID                                                            \\u2502 IP       \\u2502 Detail \\u2502 Status             \\u2502 Caps \\u2502\\n\\u251c\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u253c\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u253c\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u253c\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u253c\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u253c\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2524\\n\\u2502 Mat' \\u2502 faea6e83a7e54cf758b8de36dfaf0db8284f7959718c2dbe86c8b2bf2d39a \\u2502          \\u2502 client \\u2502 paired \\u00b7           \\u2502      \\u2502\\n\\u2502 s    \\u2502 d6b                                                           \\u2502          \\u2502 :      \\u2502 disconnected       \\u2502      \\u2502\\n\\u2502 MacB \\u2502                                                               \\u2502          \\u2502 node-  \\u2502                    \\u2502      \\u2502\\n\\u2502 ook  \\u2502                                                               \\u2502          \\u2502 host/  \\u2502                    \\u2502      \\u2502\\n\\u2502 Pro  \\u2502                                                               \\u2502          \\u2502 node   \\u2502                    \\u2502      \\u2502\\n\\u2514\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2534\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2534\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2534\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2534\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2534\\u2500\\u2500\\u2500\\u2500\\u2500\\u2500\\u2518\",\n        \"stderr\": \"\"\n      },\n      \"mcporter\": {\n        \"cmd\": \"/usr/bin/mcporter list\",\n        \"code\": 0,\n        \"stdout\": \"mcporter 0.7.3 \\u2014 Listing 2 server(s) (per-server timeout: 30s)\\n- mac-chrome (29 tools, 5.2s)\\n- chrome-devtools (29 tools, 5.2s)\\n\\u2714 Listed 2 servers (2 healthy).\",\n        \"stderr\": \"\"\n      }\n    }\n  },\n  \"alerted\": false,\n  \"alertResult\": null\n}",
+      "error": "Pixel preflight failed: Mac node or chrome-devtools unavailable",
+      "lastSuccessfulUpdate": "2026-04-20T14:33:57Z"
     },
     "regal": {
       "name": "Regal Sherman Oaks Galleria",
@@ -24,25 +29,124 @@
   },
   "yoga": {
     "2026-04-17": [
-      {"time": "8:00 am", "classType": "YS - Yoga Sculpt", "studio": "Encino", "teacher": "Adrian A", "status": "session-started"},
-      {"time": "9:00 am", "classType": "YS - Yoga Sculpt", "studio": "Sherman Oaks", "teacher": "Michelle S", "status": "session-started"},
-      {"time": "9:30 am", "classType": "C2 - CorePower Yoga 2", "studio": "Encino", "teacher": "Olivia S", "status": "cancelled"},
-      {"time": "10:00 am", "classType": "C2 - CorePower Yoga 2", "studio": "Sherman Oaks", "teacher": "Heather P", "status": "open"},
-      {"time": "10:30 am", "classType": "YS - Yoga Sculpt", "studio": "Encino", "teacher": "Gabriella D", "status": "open"},
-      {"time": "12:00 pm", "classType": "YS - Yoga Sculpt", "studio": "Encino", "teacher": "Gabriella D", "status": "open"},
-      {"time": "12:00 pm", "classType": "YS - Yoga Sculpt", "studio": "Sherman Oaks", "teacher": "Hannah S", "status": "open"},
-      {"time": "12:30 pm", "classType": "C2 - CorePower Yoga 2", "studio": "Encino", "teacher": "Tatiana C", "status": "open"},
-      {"time": "3:00 pm", "classType": "YS - Yoga Sculpt", "studio": "Encino", "teacher": "Eric G", "status": "open"},
-      {"time": "3:00 pm", "classType": "C2 - CorePower Yoga 2", "studio": "Sherman Oaks", "teacher": "Aliza P", "status": "open"},
-      {"time": "4:00 pm", "classType": "C2 - CorePower Yoga 2", "studio": "Encino", "teacher": "Aileen S", "status": "open"},
-      {"time": "4:30 pm", "classType": "YS - Yoga Sculpt", "studio": "Sherman Oaks", "teacher": "Bridget A", "status": "open"},
-      {"time": "5:30 pm", "classType": "YS - Yoga Sculpt", "studio": "Encino", "teacher": "Eric G", "status": "open"},
-      {"time": "6:00 pm", "classType": "C2 - CorePower Yoga 2", "studio": "Sherman Oaks", "teacher": "Prerna C", "status": "sub"},
-      {"time": "7:00 pm", "classType": "C2 - CorePower Yoga 2", "studio": "Encino", "teacher": "Nina R", "status": "open"},
-      {"time": "8:30 pm", "classType": "C2 - CorePower Yoga 2", "studio": "Encino", "teacher": "Nina R", "status": "open"}
+      {
+        "time": "8:00 am",
+        "classType": "YS - Yoga Sculpt",
+        "studio": "Encino",
+        "teacher": "Adrian A",
+        "status": "session-started"
+      },
+      {
+        "time": "9:00 am",
+        "classType": "YS - Yoga Sculpt",
+        "studio": "Sherman Oaks",
+        "teacher": "Michelle S",
+        "status": "session-started"
+      },
+      {
+        "time": "9:30 am",
+        "classType": "C2 - CorePower Yoga 2",
+        "studio": "Encino",
+        "teacher": "Olivia S",
+        "status": "cancelled"
+      },
+      {
+        "time": "10:00 am",
+        "classType": "C2 - CorePower Yoga 2",
+        "studio": "Sherman Oaks",
+        "teacher": "Heather P",
+        "status": "open"
+      },
+      {
+        "time": "10:30 am",
+        "classType": "YS - Yoga Sculpt",
+        "studio": "Encino",
+        "teacher": "Gabriella D",
+        "status": "open"
+      },
+      {
+        "time": "12:00 pm",
+        "classType": "YS - Yoga Sculpt",
+        "studio": "Encino",
+        "teacher": "Gabriella D",
+        "status": "open"
+      },
+      {
+        "time": "12:00 pm",
+        "classType": "YS - Yoga Sculpt",
+        "studio": "Sherman Oaks",
+        "teacher": "Hannah S",
+        "status": "open"
+      },
+      {
+        "time": "12:30 pm",
+        "classType": "C2 - CorePower Yoga 2",
+        "studio": "Encino",
+        "teacher": "Tatiana C",
+        "status": "open"
+      },
+      {
+        "time": "3:00 pm",
+        "classType": "YS - Yoga Sculpt",
+        "studio": "Encino",
+        "teacher": "Eric G",
+        "status": "open"
+      },
+      {
+        "time": "3:00 pm",
+        "classType": "C2 - CorePower Yoga 2",
+        "studio": "Sherman Oaks",
+        "teacher": "Aliza P",
+        "status": "open"
+      },
+      {
+        "time": "4:00 pm",
+        "classType": "C2 - CorePower Yoga 2",
+        "studio": "Encino",
+        "teacher": "Aileen S",
+        "status": "open"
+      },
+      {
+        "time": "4:30 pm",
+        "classType": "YS - Yoga Sculpt",
+        "studio": "Sherman Oaks",
+        "teacher": "Bridget A",
+        "status": "open"
+      },
+      {
+        "time": "5:30 pm",
+        "classType": "YS - Yoga Sculpt",
+        "studio": "Encino",
+        "teacher": "Eric G",
+        "status": "open"
+      },
+      {
+        "time": "6:00 pm",
+        "classType": "C2 - CorePower Yoga 2",
+        "studio": "Sherman Oaks",
+        "teacher": "Prerna C",
+        "status": "sub"
+      },
+      {
+        "time": "7:00 pm",
+        "classType": "C2 - CorePower Yoga 2",
+        "studio": "Encino",
+        "teacher": "Nina R",
+        "status": "open"
+      },
+      {
+        "time": "8:30 pm",
+        "classType": "C2 - CorePower Yoga 2",
+        "studio": "Encino",
+        "teacher": "Nina R",
+        "status": "open"
+      }
     ],
     "2026-04-18": [],
-    "2026-04-19": []
+    "2026-04-19": [],
+    "confidence": "low",
+    "freshness": "stale",
+    "lastUpdated": "2026-04-20T15:02:27Z"
   },
   "movies": {
     "2026-04-17": {
