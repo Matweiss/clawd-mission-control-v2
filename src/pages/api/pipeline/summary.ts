@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getValidGoogleToken } from '../auth/refresh-google';
+import { buildDataQuality, completeSource, partialSource, unavailableSource } from '../../../lib/data-quality';
 
 const SHEET_ID = '1pJJ7dP5hw1un18g0yprfw4sc__ITvdzdsfSFFVqhepQ';
 
@@ -12,7 +13,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const token = await getValidGoogleToken();
     
     if (!token) {
-      // Return fallback data if not authenticated
+      // Return fallback data if not authenticated, but mark it as incomplete.
       return res.status(200).json({
         totalValue: '$18.4k',
         totalMRR: 18400,
@@ -25,6 +26,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         closingThisWeek: 1,
         source: 'Fallback (auth required)',
         lastUpdated: new Date().toISOString(),
+        dataQuality: buildDataQuality({
+          sources: [unavailableSource('Google Sheets', 'Google token is missing; showing fallback pipeline summary.')],
+        }),
       });
     }
 
@@ -74,13 +78,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const data = await response.json();
     const rows = data.values || [];
+    const sourceRows = rows.slice(1);
+    const malformedRows = sourceRows.filter((row: string[]) => {
+      const name = row[0]?.trim();
+      if (!name || name === 'TOTALS:' || name === 'Company') return false;
+      return !row[3] || !row[5];
+    });
     
     // Parse deals - skip header
     let totalMRR = 0;
     let dealCount = 0;
     const byStage: Record<string, { count: number; mrr: number }> = {};
     
-    rows.slice(1).forEach((row: string[]) => {
+    sourceRows.forEach((row: string[]) => {
       const name = row[0]?.trim();
       if (!name || name === 'TOTALS:' || name === 'Company') return;
       
@@ -110,7 +120,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const weekFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
     let closingThisWeek = 0;
     
-    rows.slice(1).forEach((row: string[]) => {
+    sourceRows.forEach((row: string[]) => {
       const closeDate = row[6];
       if (closeDate) {
         const close = new Date(closeDate);
@@ -118,6 +128,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           closingThisWeek++;
         }
       }
+    });
+
+    const dataQuality = buildDataQuality({
+      sources: [
+        dealCount > 0
+          ? completeSource('Google Sheets', `${dealCount} pipeline deals parsed.`)
+          : partialSource('Google Sheets', 'Sheet returned no parseable deal rows.', { expected: 1, received: 0 }),
+        malformedRows.length
+          ? partialSource('Pipeline required columns', `${malformedRows.length} rows are missing MRR or stage.`, { expected: sourceRows.length, received: sourceRows.length - malformedRows.length })
+          : completeSource('Pipeline required columns'),
+      ],
     });
 
     return res.status(200).json({
@@ -128,11 +149,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       closingThisWeek,
       source: 'Google Sheets',
       lastUpdated: new Date().toISOString(),
+      dataQuality,
     });
 
   } catch (error) {
     console.error('Pipeline summary error:', error);
-    // Return fallback
+    // Return fallback, but mark it as incomplete.
     res.status(200).json({
       totalValue: '$18.4k',
       totalMRR: 18400,
@@ -146,6 +168,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       source: 'Fallback',
       error: error instanceof Error ? error.message : 'Unknown error',
       lastUpdated: new Date().toISOString(),
+      dataQuality: buildDataQuality({
+        sources: [unavailableSource('Google Sheets', error instanceof Error ? error.message : 'Unknown error')],
+      }),
     });
   }
 }

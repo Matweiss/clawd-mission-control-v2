@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getValidGoogleToken } from '../auth/refresh-google';
+import { buildDataQuality, completeSource, partialSource, unavailableSource } from '../../../lib/data-quality';
 
 const SHEET_ID = '1pJJ7dP5hw1un18g0yprfw4sc__ITvdzdsfSFFVqhepQ';
 
@@ -25,7 +26,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!token) {
       return res.status(401).json({ 
         error: 'Google authentication required',
-        message: 'Please run the Google auth setup'
+        message: 'Please run the Google auth setup',
+        dataQuality: buildDataQuality({
+          sources: [unavailableSource('Google Sheets', 'Google token is missing; pipeline cannot be verified.')],
+        }),
       });
     }
 
@@ -77,9 +81,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const data = await response.json();
     const rows = data.values || [];
     
+    const sourceRows = rows.slice(1);
+    const malformedRows = sourceRows.filter((row: string[]) => {
+      const name = row[0]?.trim();
+      if (!name || name === 'TOTALS:') return false;
+      return !row[3] || !row[5];
+    });
+
     // Skip header row, parse deals
     // Column D (index 3) = MRR value, Column E (index 4) = ARR value (MRR * 12), Column F (index 5) = Stage
-    const deals: Deal[] = rows.slice(1).map((row: string[], index: number) => {
+    const deals: Deal[] = sourceRows.map((row: string[], index: number) => {
       const mrr = parseFloat(row[3]?.replace(/[^0-9.]/g, '')) || 0;
       const arr = parseFloat(row[4]?.replace(/[^0-9.]/g, '')) || (mrr * 12);
       return {
@@ -93,6 +104,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         notes: row[8] || '', // Column I = Notes
       };
     }).filter((d: Deal) => d.name && d.name !== 'Unnamed Deal' && d.name !== 'TOTALS:');
+
+    const dataQuality = buildDataQuality({
+      sources: [
+        rows.length > 1
+          ? completeSource('Google Sheets', `${deals.length} pipeline deals parsed.`)
+          : partialSource('Google Sheets', 'Sheet returned no deal rows.', { expected: 1, received: 0 }),
+        malformedRows.length
+          ? partialSource('Pipeline required columns', `${malformedRows.length} rows are missing MRR or stage.`, { expected: sourceRows.length, received: sourceRows.length - malformedRows.length })
+          : completeSource('Pipeline required columns'),
+      ],
+    });
 
     // Calculate totals by stage
     const totalMRR = deals.reduce((sum: number, d: Deal) => sum + d.mrr, 0);
@@ -123,12 +145,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       closingThisWeek,
       count: deals.length,
       lastUpdated: new Date().toISOString(),
-      source: 'Google Sheets'
+      source: 'Google Sheets',
+      dataQuality
     });
 
   } catch (error) {
     console.error('Pipeline API error:', error);
     // Return fallback data with error info
+    const message = error instanceof Error ? error.message : 'Unknown error';
     res.status(200).json({ 
       deals: [],
       total: 0,
@@ -137,8 +161,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       count: 0,
       lastUpdated: new Date().toISOString(),
       source: 'Google Sheets',
-      error: error instanceof Error ? error.message : 'Unknown error',
-      help: 'Sheet may need permission or correct tab name. Check sheet ID and ensure "Deals" tab exists.'
+      error: message,
+      help: 'Sheet may need permission or correct tab name. Check sheet ID and ensure "Deals" tab exists.',
+      dataQuality: buildDataQuality({
+        sources: [unavailableSource('Google Sheets', message)],
+      }),
     });
   }
 }

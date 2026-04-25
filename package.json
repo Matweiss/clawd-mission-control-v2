@@ -8,7 +8,10 @@
     "clean": "rm -rf .next dist out build",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "check:safety": "node scripts/check-safety-invariants.js",
+    "check:safety:all": "node scripts/check-safety-invariants.js --all",
+    "check:data-quality": "node scripts/check-data-quality-contracts.js"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",

@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { buildDataQuality, completeSource, partialSource, unavailableSource } from '../../../lib/data-quality';
 import { loadScheduleSnapshot, sortTimes } from '../../../lib/schedule-data';
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -6,7 +7,12 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
 
   const snapshot = loadScheduleSnapshot();
   if (!snapshot) {
-    return res.status(500).json({ error: 'Schedule snapshot not found' });
+    return res.status(500).json({
+      error: 'Schedule snapshot not found',
+      dataQuality: buildDataQuality({
+        sources: [unavailableSource('Regal schedule snapshot', 'Schedule snapshot file is missing or unreadable.')],
+      }),
+    });
   }
 
   const requestedKey = String(req.query.day || '').toLowerCase();
@@ -20,6 +26,16 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
       showtimes: sortTimes(formatGroup.showtimes || []),
     })),
   }));
+  const dataQuality = buildDataQuality({
+    sources: [
+      isStrict
+        ? completeSource('Regal strict parser', `${strictMovies.length} movies parsed for ${activeDay.label}.`)
+        : partialSource('Regal strict parser', `No strict Regal parse is available for ${activeDay.label}; fallback showtimes are displayed.`, { expected: 1, received: 0 }),
+      snapshot.movies.freshness === 'fresh'
+        ? completeSource('Regal freshness', `Freshness is ${snapshot.movies.freshness}.`)
+        : partialSource('Regal freshness', `Freshness is ${snapshot.movies.freshness}; verify before relying on these showtimes.`),
+    ],
+  });
 
   return res.status(200).json({
     theater: snapshot.movies.theater,
@@ -45,5 +61,6 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     sourceNote: isStrict
       ? snapshot.sources.regal.notes || 'Live browser extraction from Regal page'
       : `No strict Regal parse is available for ${activeDay.label} yet. Showing legacy fallback showtimes with provisional confidence.`,
+    dataQuality,
   });
 }

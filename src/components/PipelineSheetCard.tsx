@@ -11,6 +11,12 @@ interface Deal {
   probability?: number;
 }
 
+interface DataQuality {
+  status?: 'complete' | 'partial' | 'unavailable';
+  isPartial?: boolean;
+  message?: string;
+}
+
 interface PipelineData {
   deals: Deal[];
   totalMRR: number;
@@ -21,6 +27,7 @@ interface PipelineData {
   lastUpdated: string;
   error?: string;
   help?: string;
+  dataQuality?: DataQuality;
 }
 
 const STAGE_COLORS: Record<string, string> = {
@@ -234,6 +241,13 @@ export function PipelineSheetCard() {
       )}
       
       <div className="p-4">
+        {data.dataQuality?.isPartial && (
+          <div className="mb-4 rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-3 text-xs text-yellow-100">
+            <div className="font-medium text-yellow-300">Partial data</div>
+            <div className="mt-1 text-yellow-100/80">{data.dataQuality.message}</div>
+          </div>
+        )}
+
         {/* Stats */}
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div className="text-center">

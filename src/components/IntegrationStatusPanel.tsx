@@ -1,12 +1,34 @@
 import React, { useEffect, useState } from 'react';
 import { Activity, CheckCircle, AlertCircle, Clock, RefreshCw } from 'lucide-react';
 
+interface DataQuality {
+  status?: 'complete' | 'partial' | 'unavailable';
+  isPartial?: boolean;
+  message?: string;
+}
+
 interface IntegrationStatus {
   name: string;
   status: 'healthy' | 'stale' | 'error' | 'unknown';
   lastSync: string | null;
   latency?: number;
   error?: string;
+}
+
+async function readDataQuality(response: Response): Promise<DataQuality | null> {
+  try {
+    const clone = response.clone();
+    const body = await clone.json();
+    return body?.dataQuality || null;
+  } catch {
+    return null;
+  }
+}
+
+function statusFromResponse(response: Response, dataQuality: DataQuality | null): IntegrationStatus['status'] {
+  if (!response.ok || dataQuality?.status === 'unavailable') return 'error';
+  if (dataQuality?.isPartial || dataQuality?.status === 'partial') return 'stale';
+  return 'healthy';
 }
 
 export function IntegrationStatusPanel() {
@@ -22,12 +44,14 @@ export function IntegrationStatusPanel() {
     try {
       const start = Date.now();
       const calRes = await fetch('/api/calendar/meetings');
+      const dataQuality = await readDataQuality(calRes);
+      const status = statusFromResponse(calRes, dataQuality);
       checks.push({
         name: 'Calendar',
-        status: calRes.ok ? 'healthy' : 'error',
+        status,
         lastSync: calRes.ok ? new Date().toISOString() : null,
         latency: Date.now() - start,
-        error: calRes.ok ? undefined : `HTTP ${calRes.status}`
+        error: status !== 'healthy' ? (dataQuality?.message || `HTTP ${calRes.status}`) : undefined
       });
     } catch (e) {
       checks.push({ name: 'Calendar', status: 'error', lastSync: null, error: 'Network error' });
@@ -37,12 +61,14 @@ export function IntegrationStatusPanel() {
     try {
       const start = Date.now();
       const emailRes = await fetch('/api/emails/recent');
+      const dataQuality = await readDataQuality(emailRes);
+      const status = statusFromResponse(emailRes, dataQuality);
       checks.push({
         name: 'Gmail',
-        status: emailRes.ok ? 'healthy' : 'error',
+        status,
         lastSync: emailRes.ok ? new Date().toISOString() : null,
         latency: Date.now() - start,
-        error: emailRes.ok ? undefined : `HTTP ${emailRes.status}`
+        error: status !== 'healthy' ? (dataQuality?.message || `HTTP ${emailRes.status}`) : undefined
       });
     } catch (e) {
       checks.push({ name: 'Gmail', status: 'error', lastSync: null, error: 'Network error' });
@@ -52,12 +78,14 @@ export function IntegrationStatusPanel() {
     try {
       const start = Date.now();
       const pipeRes = await fetch('/api/pipeline/sheet');
+      const dataQuality = await readDataQuality(pipeRes);
+      const status = statusFromResponse(pipeRes, dataQuality);
       checks.push({
         name: 'Pipeline (Sheet)',
-        status: pipeRes.ok ? 'healthy' : 'error',
+        status,
         lastSync: pipeRes.ok ? new Date().toISOString() : null,
         latency: Date.now() - start,
-        error: pipeRes.ok ? undefined : `HTTP ${pipeRes.status}`
+        error: status !== 'healthy' ? (dataQuality?.message || `HTTP ${pipeRes.status}`) : undefined
       });
     } catch (e) {
       checks.push({ name: 'Pipeline (Sheet)', status: 'error', lastSync: null, error: 'Network error' });
@@ -67,12 +95,14 @@ export function IntegrationStatusPanel() {
     try {
       const start = Date.now();
       const haRes = await fetch('/api/ha/presence');
+      const dataQuality = await readDataQuality(haRes);
+      const status = statusFromResponse(haRes, dataQuality);
       checks.push({
         name: 'Home Assistant',
-        status: haRes.ok ? 'healthy' : 'error',
+        status,
         lastSync: haRes.ok ? new Date().toISOString() : null,
         latency: Date.now() - start,
-        error: haRes.ok ? undefined : `HTTP ${haRes.status}`
+        error: status !== 'healthy' ? (dataQuality?.message || `HTTP ${haRes.status}`) : undefined
       });
     } catch (e) {
       checks.push({ name: 'Home Assistant', status: 'error', lastSync: null, error: 'Network error' });
@@ -156,7 +186,7 @@ export function IntegrationStatusPanel() {
                 <div className="text-sm">{status.name}</div>
                 <div className={`text-xs ${getStatusColor(status.status)}`}>
                   {status.status === 'healthy' && status.latency && `${status.latency}ms`}
-                  {status.status === 'error' && status.error}
+                  {(status.status === 'error' || status.status === 'stale') && status.error}
                   {status.status === 'healthy' && !status.latency && 'OK'}
                 </div>
               </div>
