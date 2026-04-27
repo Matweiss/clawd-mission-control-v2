@@ -16,21 +16,25 @@ interface AgentConfig {
   subagentCount?: number;
 }
 
-const colorMap: Record<string, { border: string; text: string; bg: string }> = {
-  work: { border: 'border-orange-500', text: 'text-orange-400', bg: 'bg-orange-500' },
-  build: { border: 'border-blue-500', text: 'text-blue-400', bg: 'bg-blue-500' },
-  research: { border: 'border-green-500', text: 'text-green-400', bg: 'bg-green-500' },
-  lifestyle: { border: 'border-purple-500', text: 'text-purple-400', bg: 'bg-purple-500' },
-  email: { border: 'border-pink-500', text: 'text-pink-400', bg: 'bg-pink-500' },
-  hubspot: { border: 'border-cyan-500', text: 'text-cyan-400', bg: 'bg-cyan-500' },
+// Map agent.color → CSS var for the 2px department accent strip.
+const DEPT_ACCENT: Record<string, string> = {
+  work: 'var(--dept-sales)',
+  build: 'var(--dept-build)',
+  research: 'var(--dept-research)',
+  lifestyle: 'var(--dept-life)',
+  email: 'var(--dept-email)',
+  hubspot: 'var(--dept-browser)',
+  arty: 'var(--dept-creative)',
+  vandalay: 'var(--dept-strategy)',
+  sloan: 'var(--dept-ops)',
 };
 
-const statusConfig: Record<string, { color: string; label: string; animate: boolean }> = {
-  running: { color: 'bg-yellow-500', label: 'Active', animate: true },
-  idle: { color: 'bg-green-500', label: 'Idle', animate: false },
-  error: { color: 'bg-red-500', label: 'Error', animate: false },
-  offline: { color: 'bg-gray-600', label: 'Offline', animate: false },
-  weekend: { color: 'bg-purple-500', label: 'Weekend Off', animate: false },
+const STATUS_CHIP: Record<string, { color: string; bg: string; label: string; pulse: boolean }> = {
+  running: { color: 'var(--status-active)', bg: 'var(--status-active-bg)', label: 'Active', pulse: true },
+  idle:    { color: 'var(--status-idle)',   bg: 'var(--status-idle-bg)',   label: 'Idle',   pulse: false },
+  error:   { color: 'var(--status-error)',  bg: 'var(--status-error-bg)',  label: 'Error',  pulse: false },
+  offline: { color: 'var(--text-2)',        bg: 'var(--status-off-bg)',    label: 'Offline', pulse: false },
+  weekend: { color: 'var(--dept-ops)',      bg: 'rgba(140, 125, 217, 0.10)', label: 'Weekend Off', pulse: false },
 };
 
 function formatTimeAgo(dateString: string): string {
@@ -55,8 +59,8 @@ interface AgentCardProps {
 }
 
 export function AgentCard({ agent, onRefresh, onOpenDetails, telemetryMode = 'live' }: AgentCardProps) {
-  const colors = colorMap[agent.color] || colorMap.work;
-  const status = statusConfig[agent.status] || statusConfig.offline;
+  const accent = agent.level === 1 ? 'var(--dept-ceo)' : (DEPT_ACCENT[agent.color] || 'var(--dept-build)');
+  const status = STATUS_CHIP[agent.status] || STATUS_CHIP.offline;
   const contextUsed = agent.contextUsed ?? 0;
   const contextMax = agent.contextMax ?? 128000;
   const subagentCount = agent.subagentCount ?? 0;
@@ -65,34 +69,38 @@ export function AgentCard({ agent, onRefresh, onOpenDetails, telemetryMode = 'li
     <button
       type="button"
       onClick={() => onOpenDetails?.(agent)}
-      className={`w-full text-left bg-surface border ${
-        agent.status === 'error' ? 'border-red-500' : agent.level === 1 ? 'border-red-500/50' : 'border-border'
-      } rounded-xl p-4 hover:border-gray-600 transition-colors ${
-        agent.level === 1 ? 'ring-1 ring-red-500/20' : ''
-      }`}
+      className="group relative w-full text-left bg-white/[0.045] hover:bg-white/[0.065] border border-white/10 hover:border-white/20 rounded-2xl pl-5 pr-4 py-3.5 transition-all shadow-lg shadow-black/10"
     >
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <span className="text-2xl">{agent.emoji}</span>
-            <span
-              className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-surface ${
-                status.color
-              } ${status.animate ? 'animate-pulse' : ''}`}
-            />
+      {/* 2px department accent strip — replaces ring/glow system */}
+      <span
+        aria-hidden
+        className="absolute left-0 top-3.5 bottom-3.5 w-[2px] rounded-r"
+        style={{ background: accent, opacity: 0.85 }}
+      />
+
+      {/* Header: avatar + identity + refresh */}
+      <div className="flex items-center gap-2.5 mb-2.5">
+        <div className="w-8 h-8 rounded-lg bg-white/[0.04] border border-white/10 grid place-items-center text-base flex-shrink-0">
+          {agent.emoji}
+        </div>
+        <div className="flex flex-col min-w-0 flex-1">
+          <div className="flex items-center gap-1.5">
+            <h3 className="text-sm font-semibold text-white truncate">{agent.name}</h3>
+            {agent.level === 1 && (
+              <span
+                className="text-[9px] font-bold tracking-wider px-1 py-px rounded border"
+                style={{ color: accent, borderColor: accent, opacity: 0.7 }}
+              >
+                CEO
+              </span>
+            )}
+            {agent.level === 3 && (
+              <span className="text-[9px] font-bold tracking-wider px-1 py-px rounded border border-white/15 text-gray-400">
+                L3
+              </span>
+            )}
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className={`font-semibold ${colors.text}`}>{agent.name}</h3>
-              {agent.level === 1 && (
-                <span className="text-xs px-1.5 py-0.5 bg-red-500/20 text-red-400 rounded">YOU</span>
-              )}
-              {agent.level === 3 && (
-                <span className="text-xs px-1.5 py-0.5 bg-gray-700 text-gray-400 rounded">L3</span>
-              )}
-            </div>
-            <p className="text-xs text-gray-500">{agent.role}</p>
-          </div>
+          <p className="text-[11px] text-gray-500 truncate mt-px">{agent.role}</p>
         </div>
         {onRefresh && (
           <button
@@ -101,51 +109,55 @@ export function AgentCard({ agent, onRefresh, onOpenDetails, telemetryMode = 'li
               e.stopPropagation();
               onRefresh();
             }}
-            className="p-1 hover:bg-surface-light rounded transition-colors"
-            title="Refresh all agent status"
+            className="w-6 h-6 grid place-items-center rounded text-gray-500 hover:text-gray-300 hover:bg-white/[0.06] transition-colors"
+            title="Refresh agent status"
           >
-            <RefreshCw className="w-4 h-4 text-gray-500" />
+            <RefreshCw className="w-3.5 h-3.5" />
           </button>
         )}
       </div>
 
-      <div className="space-y-3">
-        {telemetryMode === 'simulated' && (
-          <div className="rounded-lg border border-blue-500/20 bg-blue-500/10 px-2.5 py-2 text-[11px] text-blue-200">
-            Simulated telemetry shown for context + session load.
-          </div>
-        )}
-        <div className="flex items-center justify-between text-xs">
-          <span className="text-gray-500">Status</span>
-          <span className={`font-medium ${status.color.replace('bg-', 'text-')}`}>{status.label}</span>
+      {telemetryMode === 'simulated' && (
+        <div className="rounded-lg border border-blue-500/20 bg-blue-500/10 px-2 py-1.5 text-[10px] text-blue-200 mb-2.5">
+          Simulated telemetry — context + session load
         </div>
+      )}
 
-        <ContextPressureMeter used={contextUsed} max={contextMax} size="sm" />
-
-        <div className="grid grid-cols-2 gap-2 text-xs">
-          <div className="rounded-lg bg-surface-light px-2.5 py-2">
-            <div className="text-gray-500">Last Active</div>
-            <div className="font-mono text-gray-300 mt-1">{formatTimeAgo(agent.lastActive)}</div>
-          </div>
-          <div className="rounded-lg bg-surface-light px-2.5 py-2" title={`${subagentCount} child sessions`}>
-            <div className="text-gray-500">Subagents</div>
-            <div className="font-mono text-gray-300 mt-1">{subagentCount}</div>
-          </div>
-        </div>
+      {/* Status chip + last seen */}
+      <div className="flex items-center gap-2 mb-2.5">
+        <span
+          className="inline-flex items-center gap-1.5 h-5 px-2 rounded text-[10px] font-semibold uppercase tracking-wider"
+          style={{ color: status.color, background: status.bg }}
+        >
+          {status.pulse && (
+            <span
+              className="w-1 h-1 rounded-full animate-pulse"
+              style={{ background: status.color }}
+            />
+          )}
+          {status.label}
+        </span>
+        <span className="ml-auto text-[11px] font-mono text-gray-500 tabular-nums">
+          {formatTimeAgo(agent.lastActive)}
+        </span>
       </div>
 
-      <div className="flex gap-2 mt-3">
-        <div
-          className="flex-1 py-1.5 text-xs bg-surface-light text-gray-400 rounded text-center"
-          title="Open the card to inspect agent details"
-        >
-          Open Details
+      {/* Context pressure meter */}
+      <div className="mb-2.5">
+        <ContextPressureMeter used={contextUsed} max={contextMax} size="sm" />
+      </div>
+
+      {/* Footer stats — replaces the old "Open Details / Spawn Soon" button row */}
+      <div className="grid grid-cols-2 gap-2 border-t border-white/5 pt-2.5 mt-1">
+        <div>
+          <div className="text-[9px] font-semibold uppercase tracking-wider text-gray-500">Subagents</div>
+          <div className="font-mono text-xs text-gray-200 tabular-nums mt-0.5">{subagentCount}</div>
         </div>
-        <div
-          className="flex-1 py-1.5 text-xs bg-surface-light text-gray-500 rounded text-center"
-          title="Task spawning from cards is planned but not yet wired"
-        >
-          Spawn Soon
+        <div className="min-w-0">
+          <div className="text-[9px] font-semibold uppercase tracking-wider text-gray-500">Last seen</div>
+          <div className="font-mono text-xs text-gray-200 tabular-nums mt-0.5">
+            {formatTimeAgo(agent.lastActive)}
+          </div>
         </div>
       </div>
     </button>

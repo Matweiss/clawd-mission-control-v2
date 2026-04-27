@@ -3,10 +3,48 @@
 @tailwind utilities;
 
 :root {
-  --background: #0F0F0F;
-  --surface: #1A1A1A;
-  --surface-light: #252525;
-  --border: #333333;
+  /* Legacy aliases — every existing component that uses bg-background /
+     bg-surface / bg-surface-light / border-border inherits the new palette
+     through these without any per-component edits. (TMW-601, Apr 2026.) */
+  --background: #0A0A0B;
+  --surface: #111114;
+  --surface-light: #1C1C22;
+  --border: #2A2A32;
+
+  /* Explicit neutral steps — for components that want finer control. */
+  --bg-0: #0A0A0B;
+  --bg-1: #111114;
+  --bg-2: #16161B;
+  --bg-3: #1C1C22;
+  --line-1: #1F1F25;
+  --line-2: #2A2A32;
+  --text-1: #ECECEF;
+  --text-2: #9598A3;
+  --text-3: #5C5F6B;
+
+  /* Status colors — calmer than the prior pure-saturation neons. */
+  --status-active: #E8A24A;
+  --status-active-bg: rgba(232, 162, 74, 0.10);
+  --status-idle: #5DAB6F;
+  --status-idle-bg: rgba(93, 171, 111, 0.08);
+  --status-error: #DD6464;
+  --status-error-bg: rgba(221, 100, 100, 0.10);
+  --status-warn: #D9A547;
+  --status-warn-bg: rgba(217, 165, 71, 0.10);
+  --status-off: #4A4D58;
+  --status-off-bg: rgba(74, 77, 88, 0.20);
+
+  /* Department accent — used as a 2px left strip on cards, never as glow. */
+  --dept-ceo: #C44545;
+  --dept-strategy: #C9A24E;
+  --dept-ops: #8C7DD9;
+  --dept-build: #5C8FE6;
+  --dept-sales: #E08B4A;
+  --dept-life: #6BB18C;
+  --dept-email: #D77AAB;
+  --dept-research: #5BB39A;
+  --dept-browser: #6FA6CC;
+  --dept-creative: #D08080;
 }
 
 * {
@@ -19,12 +57,37 @@ html,
 body {
   max-width: 100vw;
   overflow-x: hidden;
-  background: var(--background);
-  color: white;
+  background: var(--bg-0);
+  color: var(--text-1);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Mission shell — preserved from prior pass, recolored to the calmer palette.
+   Two faint radials replace the bright orange/cyan glow with department-tone
+   warmth in the corners. The translucent bg-surface override keeps the
+   layered-glass feel of the cards. */
+.mission-shell {
+  background:
+    radial-gradient(circle at 18% 0%, rgba(224, 139, 74, 0.08), transparent 32%),
+    radial-gradient(circle at 86% 8%, rgba(111, 166, 204, 0.06), transparent 30%),
+    linear-gradient(180deg, #07080A 0%, var(--bg-0) 42%, #07080A 100%);
+}
+
+.mission-shell .bg-surface {
+  background-color: rgba(17, 17, 22, 0.82);
+}
+
+.mission-shell .bg-surface-light {
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+.mission-shell .border-border {
+  border-color: rgba(148, 154, 168, 0.12);
 }
 
 /* Custom scrollbar */
@@ -43,45 +106,40 @@ body {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #444;
+  background: #36363F;
 }
 
-/* Glassmorphism utilities */
+/* Glassmorphism utility */
 .glass {
-  background: rgba(26, 26, 26, 0.8);
+  background: rgba(17, 17, 22, 0.8);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
 
-/* Glow effects */
+/* Glow utilities — kept for any consumer still referencing them, but the
+   new visual language prefers a 2px accent strip over glow. */
 .glow-work {
-  box-shadow: 0 0 20px rgba(249, 115, 22, 0.3);
+  box-shadow: 0 0 20px rgba(224, 139, 74, 0.25);
 }
 
 .glow-hubspot {
-  box-shadow: 0 0 20px rgba(6, 182, 212, 0.3);
+  box-shadow: 0 0 20px rgba(111, 166, 204, 0.25);
 }
 
 .glow-email {
-  box-shadow: 0 0 20px rgba(236, 72, 153, 0.3);
+  box-shadow: 0 0 20px rgba(215, 122, 171, 0.25);
 }
 
-/* Animation utilities */
 @keyframes pulse-glow {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 
 .animate-pulse-glow {
   animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-/* Selection color */
 ::selection {
-  background: rgba(249, 115, 22, 0.3);
-  color: white;
+  background: rgba(232, 162, 74, 0.25);
+  color: var(--text-1);
 }
