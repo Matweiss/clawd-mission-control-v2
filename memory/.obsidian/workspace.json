@@ -230,6 +230,7 @@
   },
   "active": "a11d7573f5146803",
   "lastOpenFiles": [
+    "data/corepower-schedule.md",
     "lifestyle/restaurants.md",
     "lifestyle",
     "Obsidian Sync Test.md",
@@ -257,7 +258,6 @@
     "projects/esp32-uwb-shopping-list.md",
     "projects/esp32-presence-optimization.md",
     "projects/camera-integration.md",
-    "guides/youtube-analysis.md",
     "guides"
   ]
 }
