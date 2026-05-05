@@ -91,6 +91,23 @@ export function IntegrationStatusPanel() {
       checks.push({ name: 'Pipeline (Sheet)', status: 'error', lastSync: null, error: 'Network error' });
     }
 
+    // Check HubSpot
+    try {
+      const start = Date.now();
+      const hubspotRes = await fetch('/api/hubspot/status');
+      const dataQuality = await readDataQuality(hubspotRes);
+      const status = statusFromResponse(hubspotRes, dataQuality);
+      checks.push({
+        name: 'HubSpot',
+        status,
+        lastSync: hubspotRes.ok ? new Date().toISOString() : null,
+        latency: Date.now() - start,
+        error: status !== 'healthy' ? (dataQuality?.message || `HTTP ${hubspotRes.status}`) : undefined
+      });
+    } catch (e) {
+      checks.push({ name: 'HubSpot', status: 'error', lastSync: null, error: 'Network error' });
+    }
+
     // Check HA
     try {
       const start = Date.now();
