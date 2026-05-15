@@ -79,60 +79,84 @@ interface AgentSystemPayload {
 }
 
 const AGENT_CATALOG: Record<string, Omit<AgentStatus, 'status' | 'lastActive' | 'contextUsed' | 'contextMax' | 'subagentCount'>> = {
-  'clawd-prime': {
-    id: 'clawd-prime',
-    name: 'CLAWD Prime',
+  'a0edadcb-f994-40e3-a9a1-d3ffde595c3e': {
+    id: 'a0edadcb-f994-40e3-a9a1-d3ffde595c3e',
+    name: 'Clawd',
     emoji: '🦞',
     color: 'work',
-    role: 'Director & Orchestrator',
+    role: 'CEO & Orchestrator',
     level: 1,
   },
-  'work-agent': {
-    id: 'work-agent',
-    name: 'Work Agent',
-    emoji: '🤖',
-    color: 'work',
-    role: 'Sales & Business Operations',
+  '6ec7b59f-8955-4d21-b4c3-c4b5a68772c8': {
+    id: '6ec7b59f-8955-4d21-b4c3-c4b5a68772c8',
+    name: 'Vandalay',
+    emoji: '📈',
+    color: 'vandalay',
+    role: 'Chief Strategy Officer',
     level: 2,
   },
-  'lifestyle-agent': {
-    id: 'lifestyle-agent',
-    name: 'Lifestyle Agent',
-    emoji: '🧘',
-    color: 'lifestyle',
-    role: 'Wellness & Life Balance',
+  '1ef5e05b-7a16-4ebc-8c05-cdb03a321197': {
+    id: '1ef5e05b-7a16-4ebc-8c05-cdb03a321197',
+    name: 'Sloan',
+    emoji: '📋',
+    color: 'sloan',
+    role: 'Chief of Staff',
     level: 2,
   },
-  'build-agent': {
-    id: 'build-agent',
-    name: 'Build Agent',
+  'fd4efc78-5969-47f3-878a-457654682548': {
+    id: 'fd4efc78-5969-47f3-878a-457654682548',
+    name: 'Bob',
     emoji: '🔧',
     color: 'build',
-    role: 'Engineering & Infrastructure',
+    role: 'Head of Build',
     level: 2,
   },
-  'email-agent': {
-    id: 'email-agent',
-    name: 'Email Agent',
-    emoji: '📧',
+  '8c40bdd4-7e82-40a7-9fa7-982b0931d705': {
+    id: '8c40bdd4-7e82-40a7-9fa7-982b0931d705',
+    name: 'Luke',
+    emoji: '💼',
+    color: 'work',
+    role: 'Sales & Lucra Ops',
+    level: 2,
+  },
+  'd61e45f1-a8ad-4c2c-afeb-1cad12ec17c6': {
+    id: 'd61e45f1-a8ad-4c2c-afeb-1cad12ec17c6',
+    name: 'Sage',
+    emoji: '🌿',
+    color: 'lifestyle',
+    role: 'Personal & Lifestyle',
+    level: 2,
+  },
+  'e6822182-3611-4152-a1f2-aab9975fce3d': {
+    id: 'e6822182-3611-4152-a1f2-aab9975fce3d',
+    name: 'Hermes',
+    emoji: '✉️',
     color: 'email',
-    role: 'Inbox Monitor → Work Agent',
+    role: 'Google Workspace Ops',
     level: 3,
   },
-  'hubspot-agent': {
-    id: 'hubspot-agent',
-    name: 'HubSpot Agent',
-    emoji: '📊',
-    color: 'hubspot',
-    role: 'CRM Data → Work Agent',
-    level: 3,
-  },
-  'research-agent': {
-    id: 'research-agent',
-    name: 'Research Agent',
+  'dd20d11e-6a2e-4de1-bdfd-c068b5f1499f': {
+    id: 'dd20d11e-6a2e-4de1-bdfd-c068b5f1499f',
+    name: 'Scout',
     emoji: '🔍',
     color: 'research',
-    role: 'Intelligence Gathering',
+    role: 'Research & Intelligence',
+    level: 3,
+  },
+  '951c871e-fcb0-4211-bf92-19b0812d16bd': {
+    id: '951c871e-fcb0-4211-bf92-19b0812d16bd',
+    name: 'Pixel',
+    emoji: '🌐',
+    color: 'hubspot',
+    role: 'Browser & Scheduling',
+    level: 3,
+  },
+  '61ee0d8e-ac57-47bc-8402-5d3a756427ad': {
+    id: '61ee0d8e-ac57-47bc-8402-5d3a756427ad',
+    name: 'Arty',
+    emoji: '🎨',
+    color: 'arty',
+    role: 'Art & Shopify Ops',
     level: 3,
   },
 };
@@ -268,7 +292,7 @@ function countChildSessions(agentId: string, status: OpenClawStatusPayload) {
 
 function averagePercentUsed(sessions: OpenClawRecentSession[]) {
   const usable = sessions.filter((session) => typeof session.percentUsed === 'number' && typeof session.contextTokens === 'number');
-  if (usable.length === 0) return { used: 0, max: usable[0]?.contextTokens || 262144 };
+  if (usable.length === 0) return { used: 0, max: 262144 };
   const max = usable[0]?.contextTokens || 262144;
   const avgPercent = usable.reduce((sum, session) => sum + Number(session.percentUsed || 0), 0) / usable.length;
   return {
@@ -322,50 +346,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const openclawStatus = runOpenClawJson<OpenClawStatusPayload>(['status'], {} as OpenClawStatusPayload);
     const sessionTree = buildSessionTree(openclawStatus);
 
-    const mappedAgents = ['main', 'sarah'].map((agentId) => deriveAgentStatus(agentId, openclawStatus));
-    const agents: AgentStatus[] = [
-      {
-        ...AGENT_CATALOG['clawd-prime'],
-        status: openclawStatus.gateway?.reachable ? 'running' : 'idle',
-        lastActive: toIso(openclawStatus.sessions?.recent?.[0]?.updatedAt),
-        contextUsed: openclawStatus.sessions?.recent?.[0]?.totalTokens || 0,
-        contextMax: openclawStatus.sessions?.recent?.[0]?.contextTokens || openclawStatus.sessions?.defaults?.contextTokens || 262144,
-        subagentCount: (openclawStatus.sessions?.recent || []).filter((session) => (session.key || '').includes('subagent:')).length,
-      },
-      {
-        ...mappedAgents[0],
-        ...AGENT_CATALOG['work-agent'],
-      },
-      {
-        ...mappedAgents[1],
-        ...AGENT_CATALOG['lifestyle-agent'],
-      },
-      {
-        ...deriveAgentStatus('main', openclawStatus),
-        ...AGENT_CATALOG['build-agent'],
-        subagentCount: (openclawStatus.sessions?.recent || []).filter((session) => (session.key || '').includes('subagent:')).length,
-      },
-      {
-        ...AGENT_CATALOG['email-agent'],
-        status: 'offline',
-        lastActive: toIso(Date.now() - 86400000),
-        contextUsed: 0,
-        contextMax: openclawStatus.sessions?.defaults?.contextTokens || 262144,
-        subagentCount: 0,
-      },
-      {
-        ...AGENT_CATALOG['hubspot-agent'],
-        status: 'offline',
-        lastActive: toIso(Date.now() - 86400000),
-        contextUsed: 0,
-        contextMax: openclawStatus.sessions?.defaults?.contextTokens || 262144,
-        subagentCount: 0,
-      },
-      {
-        ...deriveAgentStatus('sarah', openclawStatus),
-        ...AGENT_CATALOG['research-agent'],
-      },
+    const agentMappings = [
+      { catalogId: 'a0edadcb-f994-40e3-a9a1-d3ffde595c3e', openclawAgentId: 'main' },
+      { catalogId: '6ec7b59f-8955-4d21-b4c3-c4b5a68772c8', openclawAgentId: 'vandalay' },
+      { catalogId: '1ef5e05b-7a16-4ebc-8c05-cdb03a321197', openclawAgentId: 'sloan' },
+      { catalogId: 'fd4efc78-5969-47f3-878a-457654682548', openclawAgentId: 'builder' },
+      { catalogId: '8c40bdd4-7e82-40a7-9fa7-982b0931d705', openclawAgentId: 'lucra' },
+      { catalogId: 'd61e45f1-a8ad-4c2c-afeb-1cad12ec17c6', openclawAgentId: 'lifestyle' },
+      { catalogId: 'e6822182-3611-4152-a1f2-aab9975fce3d', openclawAgentId: 'hermes' },
+      { catalogId: 'dd20d11e-6a2e-4de1-bdfd-c068b5f1499f', openclawAgentId: 'scout' },
+      { catalogId: '951c871e-fcb0-4211-bf92-19b0812d16bd', openclawAgentId: 'pixel' },
+      { catalogId: '61ee0d8e-ac57-47bc-8402-5d3a756427ad', openclawAgentId: 'sarah' },
     ];
+
+    const agents: AgentStatus[] = agentMappings.map(({ catalogId, openclawAgentId }) => ({
+      ...deriveAgentStatus(openclawAgentId, openclawStatus),
+      ...AGENT_CATALOG[catalogId],
+      sourceAgentId: openclawAgentId,
+    }));
 
     const payload: AgentSystemPayload = {
       agents,

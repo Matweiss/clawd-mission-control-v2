@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { useCommandPalette, useRealtimeData, useAgentActions } from '../hooks/useMissionControl';
 import { useAgentStatus } from '../hooks/useAgentStatus';
+import { useQuickStats } from '../hooks/useQuickStats';
 import { AgentCard } from '../components/AgentCard';
 import { SessionTree } from '../components/SessionTree';
 import { CommandPalette } from '../components/CommandPalette';
@@ -73,6 +74,7 @@ export default function MatMissionControl() {
     loading, lastRefresh, refresh 
   } = useRealtimeData();
   const { data: agentStatus, refresh: refreshAgents } = useAgentStatus();
+  const { data: quickStats } = useQuickStats();
 
   const openAgentCommandCenter = (agent: any) => {
     setSelectedAgent({
@@ -571,12 +573,12 @@ export default function MatMissionControl() {
               <QuickStatsBar
                 urgentEmails={emails.filter((e: any) => e.category === 'URGENT').length}
                 replyNeededEmails={emails.filter((e: any) => e.category === 'REPLY_NEEDED').length}
-                pipelineMRR={`$${((pipeline?.total || 0) / 1000).toFixed(1)}k`}
-                pipelineARR={`$${(((pipeline?.total || 0) * 12) / 1000).toFixed(1)}k`}
-                yogaClasses={51}
-                watchlistCount={0}
-                buddyPasses={2}
-                buddyPassDays={16}
+                pipelineMRR={quickStats.pipelineMRR}
+                pipelineARR={quickStats.pipelineARR}
+                yogaClasses={quickStats.yogaClasses}
+                watchlistCount={quickStats.watchlistCount}
+                buddyPasses={quickStats.buddyPasses}
+                buddyPassDays={quickStats.buddyPassDays}
                 onUrgentClick={() => setShowUrgentEmails(true)}
                 onReplyNeededClick={() => setShowReplyNeededEmails(true)}
                 onPipelineClick={() => setShowSalesHub(true)}

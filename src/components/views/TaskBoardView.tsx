@@ -1,503 +1,281 @@
-import React, { useState } from 'react';
-import { 
-  MoreHorizontal, Calendar, Flag, Clock, CheckCircle2, Circle, 
-  AlertCircle, Plus, X, Edit2, Trash2, ChevronDown, User
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  AlertCircle,
+  Calendar,
+  CheckCircle2,
+  Circle,
+  ExternalLink,
+  Loader2,
+  RefreshCw,
+  User,
 } from 'lucide-react';
 
 interface Task {
   id: string;
+  identifier?: string | null;
   title: string;
-  status: 'todo' | 'in_progress' | 'done';
+  status: 'pending' | 'in_progress' | 'completed';
   priority: 'low' | 'medium' | 'high';
-  dueDate: string;
-  assignee: string;
-  project: string;
-  description?: string;
-  createdAt: string;
+  dueDate?: string | null;
+  assignee?: string | null;
+  project?: string | null;
+  description?: string | null;
 }
 
-const COLUMNS = [
-  { id: 'todo', label: 'To Do', color: 'bg-gray-500/20' },
-  { id: 'in_progress', label: 'In Progress', color: 'bg-blue-500/20' },
-  { id: 'done', label: 'Done', color: 'bg-green-500/20' },
+const COLUMNS: Array<{ id: Task['status']; label: string; color: string; helper: string }> = [
+  { id: 'pending', label: 'To Do', color: 'bg-gray-500/20 text-gray-200', helper: 'Queued Paperclip work' },
+  { id: 'in_progress', label: 'In Progress', color: 'bg-blue-500/20 text-blue-200', helper: 'Currently owned' },
+  { id: 'completed', label: 'Done', color: 'bg-green-500/20 text-green-200', helper: 'Recently completed' },
 ];
 
-const ASSIGNEES = ['Mat', 'Work Agent', 'Build Agent', 'Lifestyle Agent', 'Research Agent', 'HubSpot Agent'];
-const PROJECTS = ['Sales', 'Infrastructure', 'Lifestyle', 'Research', 'Mission Control'];
+const PRIORITY_STYLES: Record<Task['priority'], string> = {
+  high: 'text-red-300 bg-red-500/10 border-red-500/20',
+  medium: 'text-yellow-300 bg-yellow-500/10 border-yellow-500/20',
+  low: 'text-green-300 bg-green-500/10 border-green-500/20',
+};
+
+function formatDate(dateStr?: string | null) {
+  if (!dateStr) return null;
+  const date = new Date(dateStr);
+  if (Number.isNaN(date.getTime())) return dateStr;
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function taskUrl(task: Task) {
+  return `https://paperclip.thematweiss.com/issues/${task.identifier || task.id}`;
+}
 
 export function TaskBoardView() {
-  const [tasks, setTasks] = useState<Task[]>([
-    { 
-      id: '1', 
-      title: 'Review Dragon Technologies proposal', 
-      status: 'todo', 
-      priority: 'high', 
-      dueDate: '2026-03-05', 
-      assignee: 'Mat', 
-      project: 'Sales',
-      description: 'Review the $240K ARR proposal before the call',
-      createdAt: '2026-03-04'
-    },
-    { 
-      id: '2', 
-      title: 'Fix HubSpot token refresh', 
-      status: 'in_progress', 
-      priority: 'high', 
-      dueDate: '2026-03-05', 
-      assignee: 'Build Agent', 
-      project: 'Infrastructure',
-      description: 'OAuth token expiring, needs auto-refresh logic',
-      createdAt: '2026-03-04'
-    },
-    { 
-      id: '3', 
-      title: 'Morning meditation', 
-      status: 'done', 
-      priority: 'medium', 
-      dueDate: '2026-03-04', 
-      assignee: 'Mat', 
-      project: 'Lifestyle',
-      createdAt: '2026-03-04'
-    },
-    { 
-      id: '4', 
-      title: 'Call Sarah about Vertex contract', 
-      status: 'todo', 
-      priority: 'high', 
-      dueDate: '2026-03-06', 
-      assignee: 'Mat', 
-      project: 'Sales',
-      description: 'Discuss liability cap and IP indemnification',
-      createdAt: '2026-03-04'
-    },
-    { 
-      id: '5', 
-      title: 'Update CLAWD Prime SOUL', 
-      status: 'in_progress', 
-      priority: 'medium', 
-      dueDate: '2026-03-07', 
-      assignee: 'Mat', 
-      project: 'Mission Control',
-      createdAt: '2026-03-04'
-    },
-  ]);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [editingTask, setEditingTask] = useState<Task | null>(null);
-  const [viewingTask, setViewingTask] = useState<Task | null>(null);
+  const loadTasks = useCallback(async (mode: 'initial' | 'refresh' = 'initial') => {
+    if (mode === 'initial') setLoading(true);
+    if (mode === 'refresh') setRefreshing(true);
+    setError(null);
 
-  // Add new task
-  const addTask = (task: Omit<Task, 'id' | 'createdAt'>) => {
-    const newTask: Task = {
-      ...task,
-      id: Date.now().toString(),
-      createdAt: new Date().toISOString().split('T')[0],
-    };
-    setTasks([...tasks, newTask]);
-    setShowAddModal(false);
-  };
-
-  // Edit task
-  const editTask = (id: string, updates: Partial<Task>) => {
-    setTasks(tasks.map(t => t.id === id ? { ...t, ...updates } : t));
-    setEditingTask(null);
-  };
-
-  // Delete task
-  const deleteTask = (id: string) => {
-    setTasks(tasks.filter(t => t.id !== id));
-  };
-
-  // Toggle task status
-  const toggleTaskStatus = (taskId: string) => {
-    setTasks(tasks.map(task => {
-      if (task.id !== taskId) return task;
-      const statusFlow: any = { todo: 'in_progress', in_progress: 'done', done: 'todo' };
-      return { ...task, status: statusFlow[task.status] };
-    }));
-  };
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'high': return 'text-red-400 bg-red-500/10';
-      case 'medium': return 'text-yellow-400 bg-yellow-500/10';
-      case 'low': return 'text-green-400 bg-green-500/10';
-      default: return 'text-gray-400 bg-gray-500/10';
+    try {
+      const res = await fetch('/api/tasks');
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || `Task API returned ${res.status}`);
+      setTasks(Array.isArray(data.tasks) ? data.tasks : []);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load Paperclip tasks');
+      setTasks([]);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
     }
-  };
+  }, []);
 
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  };
+  useEffect(() => {
+    loadTasks('initial');
+  }, [loadTasks]);
+
+  const counts = useMemo(() => {
+    return COLUMNS.reduce<Record<Task['status'], number>>((acc, column) => {
+      acc[column.id] = tasks.filter((task) => task.status === column.id).length;
+      return acc;
+    }, { pending: 0, in_progress: 0, completed: 0 });
+  }, [tasks]);
 
   return (
     <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col gap-4 mb-6 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Task Board</h1>
-          <p className="text-sm text-gray-500 mt-1">Manage tasks across all projects and agents</p>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold text-white">Task Board</h1>
+            <span className="rounded-full border border-orange-400/20 bg-orange-400/10 px-2.5 py-1 text-xs text-orange-300">
+              Live Paperclip
+            </span>
+          </div>
+          <p className="text-sm text-gray-500 mt-1">
+            Real agent work from Paperclip — no demo tasks, no local-only edits.
+          </p>
         </div>
-        
-        <button 
-          onClick={() => setShowAddModal(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-orange-500/20 text-orange-400 rounded-lg text-sm hover:bg-orange-500/30 transition-colors"
+
+        <button
+          onClick={() => loadTasks('refresh')}
+          disabled={refreshing || loading}
+          className="flex items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-gray-200 transition-colors hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-60"
         >
-          <Plus className="w-4 h-4" />
-          Add Task
+          <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+          Refresh
         </button>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
-        {COLUMNS.map((column) => (
-          <div key={column.id} className="bg-[#161616] rounded-xl p-4">
-            <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${column.color} mb-4`}>
-              <span className="font-medium text-sm">{column.label}</span>
-              <span className="text-xs text-gray-400">
-                ({tasks.filter(t => t.status === column.id).length})
-              </span>
-            </div>
-
-            <div className="space-y-3">
-              {tasks
-                .filter((task) => task.status === column.id)
-                .map((task) => (
-                  <div 
-                    key={task.id}
-                    className="bg-[#1A1A1A] rounded-lg p-3 hover:bg-[#2A2A2A] transition-colors group relative"
-                  >
-                    {/* Actions Menu */}
-                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); setEditingTask(task); }}
-                        className="p-1 hover:bg-[#3A3A3A] rounded"
-                      >
-                        <Edit2 className="w-3 h-3 text-gray-400" />
-                      </button>
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); deleteTask(task.id); }}
-                        className="p-1 hover:bg-[#3A3A3A] rounded"
-                      >
-                        <Trash2 className="w-3 h-3 text-red-400" />
-                      </button>
-                    </div>
-
-                    <div className="flex items-start gap-2">
-                      <button 
-                        onClick={() => toggleTaskStatus(task.id)}
-                        className="mt-0.5 flex-shrink-0"
-                      >
-                        {task.status === 'done' ? (
-                          <CheckCircle2 className="w-5 h-5 text-green-400" />
-                        ) : task.status === 'in_progress' ? (
-                          <Circle className="w-5 h-5 text-blue-400" />
-                        ) : (
-                          <Circle className="w-5 h-5 text-gray-500 hover:text-gray-400" />
-                        )}
-                      </button>
-                      
-                      <div className="flex-1 min-w-0"
-                        onClick={() => setViewingTask(task)}
-                      >
-                        <p className={`text-sm font-medium cursor-pointer ${
-                          task.status === 'done' ? 'text-gray-500 line-through' : 'text-white'
-                        }`}>
-                          {task.title}
-                        </p>
-                        
-                        {task.description && (
-                          <p className="text-xs text-gray-500 mt-1 line-clamp-2">{task.description}</p>
-                        )}
-                        
-                        <div className="flex items-center gap-2 mt-2 flex-wrap">
-                          <span className={`text-xs px-2 py-0.5 rounded ${getPriorityColor(task.priority)}`}>
-                            {task.priority}
-                          </span>
-                          
-                          <span className="text-xs text-gray-500 flex items-center gap-1">
-                            <Calendar className="w-3 h-3" />
-                            {formatDate(task.dueDate)}
-                          </span>
-                          
-                          <span className="text-xs text-gray-500">
-                            {task.project}
-                          </span>
-                        </div>
-
-                        <div className="flex items-center justify-between mt-3">
-                          <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-[10px] font-bold text-white">
-                            {task.assignee.charAt(0)}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              
-              
-              {/* Add task placeholder */}
-              <button 
-                onClick={() => setShowAddModal(true)}
-                className="w-full py-2 border border-dashed border-[#2A2A2A] rounded-lg text-sm text-gray-500 hover:text-gray-300 hover:border-gray-500 transition-colors"
-              >
-                + Add task
-              </button>
+      {loading ? (
+        <div className="flex min-h-[320px] items-center justify-center rounded-xl border border-white/10 bg-[#161616]">
+          <div className="flex items-center gap-3 text-gray-400">
+            <Loader2 className="h-5 w-5 animate-spin" />
+            Loading Paperclip tasks…
+          </div>
+        </div>
+      ) : error ? (
+        <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-5 text-red-200">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0" />
+            <div>
+              <p className="font-medium">Couldn’t load Paperclip tasks</p>
+              <p className="mt-1 text-sm text-red-200/80">{error}</p>
+              <p className="mt-3 text-xs text-red-200/60">
+                Check Paperclip env/auth, then refresh. The board intentionally does not fall back to fake data.
+              </p>
             </div>
           </div>
-        ))}
-      </div>
+        </div>
+      ) : (
+        <div className="grid gap-4 lg:grid-cols-3">
+          {COLUMNS.map((column) => {
+            const columnTasks = tasks.filter((task) => task.status === column.id);
+            return (
+              <div key={column.id} className="rounded-xl bg-[#161616] p-4 border border-white/5">
+                <div className={`mb-4 rounded-lg px-3 py-2 ${column.color}`}>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">{column.label}</span>
+                    <span className="text-xs opacity-75">{counts[column.id]}</span>
+                  </div>
+                  <p className="mt-1 text-xs opacity-60">{column.helper}</p>
+                </div>
 
-      {/* Add/Edit Task Modal */}
-      {(showAddModal || editingTask) && (
-        <TaskModal
-          task={editingTask}
-          onClose={() => { setShowAddModal(false); setEditingTask(null); }}
-          onSave={editingTask ? 
-            (updates) => editTask(editingTask.id, updates) : 
-            addTask
-          }
-        />
+                <div className="space-y-3">
+                  {columnTasks.length === 0 ? (
+                    <div className="rounded-lg border border-dashed border-white/10 p-4 text-center text-sm text-gray-500">
+                      Nothing here right now.
+                    </div>
+                  ) : (
+                    columnTasks.map((task) => (
+                      <button
+                        key={task.id}
+                        onClick={() => setSelectedTask(task)}
+                        className="w-full rounded-lg bg-[#1A1A1A] p-3 text-left transition-colors hover:bg-[#242424] focus:outline-none focus:ring-1 focus:ring-orange-500/50"
+                      >
+                        <div className="flex items-start gap-2">
+                          <StatusIcon status={task.status} />
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-start justify-between gap-2">
+                              <p className={`text-sm font-medium ${task.status === 'completed' ? 'text-gray-500 line-through' : 'text-white'}`}>
+                                {task.title}
+                              </p>
+                              {task.identifier && <span className="text-[10px] text-gray-500">{task.identifier}</span>}
+                            </div>
+
+                            {task.description && (
+                              <p className="mt-1 line-clamp-2 text-xs text-gray-500">{task.description}</p>
+                            )}
+
+                            <div className="mt-3 flex flex-wrap items-center gap-2">
+                              <span className={`rounded border px-2 py-0.5 text-xs ${PRIORITY_STYLES[task.priority]}`}>
+                                {task.priority}
+                              </span>
+                              {formatDate(task.dueDate) && (
+                                <span className="flex items-center gap-1 text-xs text-gray-500">
+                                  <Calendar className="h-3 w-3" />
+                                  {formatDate(task.dueDate)}
+                                </span>
+                              )}
+                              {task.assignee && (
+                                <span className="flex items-center gap-1 text-xs text-gray-500">
+                                  <User className="h-3 w-3" />
+                                  {task.assignee}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </button>
+                    ))
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       )}
 
-      {/* View Task Modal */}
-      {viewingTask && (
-        <ViewTaskModal
-          task={viewingTask}
-          onClose={() => setViewingTask(null)}
-          onEdit={() => { setViewingTask(null); setEditingTask(viewingTask); }}
-          onToggle={() => toggleTaskStatus(viewingTask.id)}
-        />
+      {!loading && !error && tasks.length === 0 && (
+        <div className="mt-4 rounded-xl border border-white/10 bg-white/[0.03] p-5 text-sm text-gray-400">
+          Paperclip returned zero active tasks. That’s a clean state, not demo data.
+        </div>
       )}
+
+      {selectedTask && <TaskDetailModal task={selectedTask} onClose={() => setSelectedTask(null)} />}
     </div>
   );
 }
 
-// Task Modal Component
-function TaskModal({ task, onClose, onSave }: { 
-  task: Task | null; 
-  onClose: () => void; 
-  onSave: (task: any) => void;
-}) {
-  const [form, setForm] = useState({
-    title: task?.title || '',
-    description: task?.description || '',
-    priority: task?.priority || 'medium',
-    status: task?.status || 'todo',
-    dueDate: task?.dueDate || new Date().toISOString().split('T')[0],
-    assignee: task?.assignee || 'Mat',
-    project: task?.project || 'Mission Control',
-  });
+function StatusIcon({ status }: { status: Task['status'] }) {
+  if (status === 'completed') return <CheckCircle2 className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-400" />;
+  if (status === 'in_progress') return <Circle className="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-400" />;
+  return <Circle className="mt-0.5 h-5 w-5 flex-shrink-0 text-gray-500" />;
+}
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!form.title.trim()) return;
-    onSave(form);
-  };
+function TaskDetailModal({ task, onClose }: { task: Task; onClose: () => void }) {
+  const dueDate = formatDate(task.dueDate);
 
   return (
-    <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
-      <div className="bg-[#161616] rounded-xl max-w-md w-full p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold text-white">{task ? 'Edit Task' : 'Add Task'}</h2>
-          <button onClick={onClose} className="p-1 hover:bg-[#2A2A2A] rounded">
-            <X className="w-5 h-5 text-gray-400" />
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+      <div className="w-full max-w-lg rounded-xl border border-white/10 bg-[#161616] p-6 shadow-2xl">
+        <div className="mb-4 flex items-start justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <StatusIcon status={task.status} />
+            <div>
+              <h2 className="text-xl font-bold text-white">{task.title}</h2>
+              <p className="mt-1 text-sm text-gray-500">{task.identifier || task.id}</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="rounded-lg p-2 text-gray-400 hover:bg-white/10 hover:text-white">
+            ✕
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="text-sm text-gray-400 mb-1 block">Title</label>
-            <input
-              type="text"
-              value={form.title}
-              onChange={(e) => setForm({ ...form, title: e.target.value })}
-              className="w-full px-3 py-2 bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg text-white focus:outline-none focus:border-orange-500"
-              placeholder="What needs to be done?"
-              autoFocus
-            />
+        {task.description && <p className="mb-4 whitespace-pre-wrap text-sm text-gray-300">{task.description}</p>}
+
+        <div className="grid grid-cols-2 gap-3">
+          <InfoTile label="Priority">
+            <span className={`rounded border px-2 py-1 text-xs ${PRIORITY_STYLES[task.priority]}`}>{task.priority}</span>
+          </InfoTile>
+          <InfoTile label="Status">
+            <span className="text-sm capitalize text-white">{task.status.replace('_', ' ')}</span>
+          </InfoTile>
+          <InfoTile label="Assignee">
+            <span className="text-sm text-white">{task.assignee || 'Unassigned'}</span>
+          </InfoTile>
+          <InfoTile label="Due Date">
+            <span className="text-sm text-white">{dueDate || 'No due date'}</span>
+          </InfoTile>
+        </div>
+
+        {task.project && (
+          <div className="mt-3">
+            <InfoTile label="Project">
+              <span className="text-sm text-white">{task.project}</span>
+            </InfoTile>
           </div>
+        )}
 
-          <div>
-            <label className="text-sm text-gray-400 mb-1 block">Description</label>
-            <textarea
-              value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
-              className="w-full px-3 py-2 bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg text-white focus:outline-none focus:border-orange-500 h-20 resize-none"
-              placeholder="Add more details..."
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm text-gray-400 mb-1 block">Priority</label>
-              <select
-                value={form.priority}
-                onChange={(e) => setForm({ ...form, priority: e.target.value as any })}
-                className="w-full px-3 py-2 bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg text-white focus:outline-none focus:border-orange-500"
-              >
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="text-sm text-gray-400 mb-1 block">Status</label>
-              <select
-                value={form.status}
-                onChange={(e) => setForm({ ...form, status: e.target.value as any })}
-                className="w-full px-3 py-2 bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg text-white focus:outline-none focus:border-orange-500"
-              >
-                <option value="todo">To Do</option>
-                <option value="in_progress">In Progress</option>
-                <option value="done">Done</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm text-gray-400 mb-1 block">Due Date</label>
-              <input
-                type="date"
-                value={form.dueDate}
-                onChange={(e) => setForm({ ...form, dueDate: e.target.value })}
-                className="w-full px-3 py-2 bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg text-white focus:outline-none focus:border-orange-500"
-              />
-            </div>
-
-            <div>
-              <label className="text-sm text-gray-400 mb-1 block">Assignee</label>
-              <select
-                value={form.assignee}
-                onChange={(e) => setForm({ ...form, assignee: e.target.value })}
-                className="w-full px-3 py-2 bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg text-white focus:outline-none focus:border-orange-500"
-              >
-                {ASSIGNEES.map(a => <option key={a} value={a}>{a}</option>)}
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label className="text-sm text-gray-400 mb-1 block">Project</label>
-            <select
-              value={form.project}
-              onChange={(e) => setForm({ ...form, project: e.target.value })}
-              className="w-full px-3 py-2 bg-[#1A1A1A] border border-[#2A2A2A] rounded-lg text-white focus:outline-none focus:border-orange-500"
-            >
-              {PROJECTS.map(p => <option key={p} value={p}>{p}</option>)}
-            </select>
-          </div>
-
-          <div className="flex gap-3 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 py-2 bg-[#2A2A2A] text-gray-300 rounded-lg hover:bg-[#3A3A3A] transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="flex-1 py-2 bg-orange-500/20 text-orange-400 rounded-lg hover:bg-orange-500/30 transition-colors"
-            >
-              {task ? 'Save Changes' : 'Add Task'}
-            </button>
-          </div>
-        </form>
+        <a
+          href={taskUrl(task)}
+          target="_blank"
+          rel="noreferrer"
+          className="mt-5 flex items-center justify-center gap-2 rounded-lg bg-orange-500/20 px-4 py-2 text-sm text-orange-300 transition-colors hover:bg-orange-500/30"
+        >
+          Open in Paperclip
+          <ExternalLink className="h-4 w-4" />
+        </a>
       </div>
     </div>
   );
 }
 
-// View Task Modal
-function ViewTaskModal({ task, onClose, onEdit, onToggle }: {
-  task: Task;
-  onClose: () => void;
-  onEdit: () => void;
-  onToggle: () => void;
-}) {
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'done': return <CheckCircle2 className="w-6 h-6 text-green-400" />;
-      case 'in_progress': return <Circle className="w-6 h-6 text-blue-400" />;
-      default: return <Circle className="w-6 h-6 text-gray-500" />;
-    }
-  };
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'high': return 'text-red-400 bg-red-500/10';
-      case 'medium': return 'text-yellow-400 bg-yellow-500/10';
-      case 'low': return 'text-green-400 bg-green-500/10';
-      default: return 'text-gray-400';
-    }
-  };
-
+function InfoTile({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
-      <div className="bg-[#161616] rounded-xl max-w-lg w-full p-6">
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <button onClick={onToggle}>{getStatusIcon(task.status)}</button>
-            <h2 className={`text-xl font-bold ${task.status === 'done' ? 'text-gray-500 line-through' : 'text-white'}`}>
-              {task.title}
-            </h2>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <button onClick={onEdit} className="p-2 hover:bg-[#2A2A2A] rounded-lg">
-              <Edit2 className="w-4 h-4 text-gray-400" />
-            </button>
-            <button onClick={onClose} className="p-2 hover:bg-[#2A2A2A] rounded-lg">
-              <X className="w-5 h-5 text-gray-400" />
-            </button>
-          </div>
-        </div>
-
-        {task.description && (
-          <p className="text-gray-300 mb-4">{task.description}</p>
-        )}
-
-        <div className="grid grid-cols-2 gap-4 mb-4">
-          <div className="bg-[#1A1A1A] rounded-lg p-3">
-            <p className="text-xs text-gray-500 mb-1">Priority</p>
-            <span className={`text-sm px-2 py-1 rounded ${getPriorityColor(task.priority)}`}>
-              {task.priority}
-            </span>
-          </div>
-
-          <div className="bg-[#1A1A1A] rounded-lg p-3">
-            <p className="text-xs text-gray-500 mb-1">Status</p>
-            <span className="text-sm text-white capitalize">{task.status.replace('_', ' ')}</span>
-          </div>
-
-          <div className="bg-[#1A1A1A] rounded-lg p-3">
-            <p className="text-xs text-gray-500 mb-1">Due Date</p>
-            <span className="text-sm text-white flex items-center gap-1">
-              <Calendar className="w-3.5 h-3.5" />
-              {new Date(task.dueDate).toLocaleDateString('en-US', { 
-                weekday: 'short', month: 'short', day: 'numeric' 
-              })}
-            </span>
-          </div>
-
-          <div className="bg-[#1A1A1A] rounded-lg p-3">
-            <p className="text-xs text-gray-500 mb-1">Assignee</p>
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-xs font-bold text-white">
-                {task.assignee.charAt(0)}
-              </div>
-              <span className="text-sm text-white">{task.assignee}</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-[#1A1A1A] rounded-lg p-3">
-          <p className="text-xs text-gray-500 mb-1">Project</p>
-          <span className="text-sm text-white">{task.project}</span>
-        </div>
-      </div>
+    <div className="rounded-lg bg-[#1A1A1A] p-3">
+      <p className="mb-1 text-xs text-gray-500">{label}</p>
+      {children}
     </div>
   );
 }
