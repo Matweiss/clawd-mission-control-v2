@@ -141,8 +141,11 @@ export function ProjectsView() {
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-white">Projects</h1>
-          <p className="text-sm text-gray-500 mt-1">Active initiatives across your ecosystem</p>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold text-white">Projects</h1>
+            <span className="text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full bg-yellow-500/10 text-yellow-300 border border-yellow-500/20">demo data</span>
+          </div>
+          <p className="text-sm text-gray-500 mt-1">Static sample initiatives until this view is wired to Paperclip projects</p>
         </div>
         
         <div className="flex items-center gap-2">

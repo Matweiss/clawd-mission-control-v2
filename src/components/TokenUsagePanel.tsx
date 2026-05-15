@@ -16,7 +16,7 @@ export function TokenUsagePanel() {
     totalTokens: 489361,
     sessionCount: 22,
     dailyAverage: 48936,
-    subscriptionLimit: 1000000, // 1M tokens - placeholder until confirmed
+    subscriptionLimit: 1000000,
     subscriptionCost: 100,
     periodStart: '2026-02-25',
     periodEnd: '2026-03-25'
@@ -70,8 +70,11 @@ export function TokenUsagePanel() {
             <Cpu className="w-4 h-4 text-orange-400" />
           </div>
           <div>
-            <h2 className="text-sm font-semibold text-white">Token Usage</h2>
-            <p className="text-xs text-gray-500">Kimi Allegro - ${usage.subscriptionCost}/mo</p>
+            <div className="flex items-center gap-2">
+              <h2 className="text-sm font-semibold text-white">Token Usage</h2>
+              <span className="text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full bg-yellow-500/10 text-yellow-300 border border-yellow-500/20">estimate</span>
+            </div>
+            <p className="text-xs text-gray-500">Kimi Allegro - ${usage.subscriptionCost}/mo · awaiting live usage API</p>
           </div>
         </div>
         
@@ -79,6 +82,10 @@ export function TokenUsagePanel() {
           {getStatusIcon()}
           <span>{percentUsed.toFixed(0)}% used</span>
         </div>
+      </div>
+
+      <div className="mb-3 rounded-lg border border-yellow-500/20 bg-yellow-500/10 px-3 py-2 text-xs text-yellow-200">
+        Placeholder values are intentionally labeled until live token telemetry is wired.
       </div>
 
       {/* Main Progress Bar */}

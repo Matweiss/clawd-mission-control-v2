@@ -660,6 +660,7 @@ export default function MatMissionControl() {
             {/* Mobile Work tab */}
             {mobileTab === 'work' && (
               <div className="space-y-4">
+                <NeedsMatQueue emails={emails} tasks={tasks} calendarEvents={calendarEvents} onOpenTasks={() => setShowTaskModal(true)} onOpenEmails={() => setShowEmailModal(true)} />
                 <MergedCalendarCard />
                 <EmailCard />
                 <PipelineSheetCard />
@@ -676,6 +677,7 @@ export default function MatMissionControl() {
             {desktopSection === 'work' && (
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-4">
+                  <NeedsMatQueue emails={emails} tasks={tasks} calendarEvents={calendarEvents} onOpenTasks={() => setShowTaskModal(true)} onOpenEmails={() => setShowEmailModal(true)} />
                   <MergedCalendarCard />
                   <EmailCard />
                 </div>
@@ -944,6 +946,127 @@ function EmailPanel({ urgent, replyNeeded, fyiCount, onViewDetails }: any) {
         >
           Draft Response
         </a>
+      </div>
+    </div>
+  );
+}
+
+
+// Needs Mat Queue
+function NeedsMatQueue({ emails, tasks, calendarEvents, onOpenTasks, onOpenEmails }: any) {
+  const now = Date.now();
+  const blockedTasks = (tasks || []).filter((task: any) =>
+    task.status === 'blocked' ||
+    /mat|approval|approve|decision|blocked|review/i.test(`${task.title || ''} ${task.description || ''}`)
+  );
+  const highTasks = (tasks || []).filter((task: any) => task.priority === 'high' && task.status !== 'completed').slice(0, 4);
+  const replyEmails = (emails || []).filter((email: any) => ['URGENT', 'REPLY_NEEDED'].includes(email.category)).slice(0, 4);
+  const prepEvents = (calendarEvents || [])
+    .filter((event: any) => {
+      const start = new Date(event.start || event.start_time || event.startTime || event.date).getTime();
+      return Number.isFinite(start) && start >= now && start - now <= 36 * 60 * 60 * 1000;
+    })
+    .slice(0, 3);
+
+  const queue = [
+    ...replyEmails.map((email: any) => ({
+      id: `email-${email.id || email.subject}`,
+      type: email.category === 'URGENT' ? 'urgent email' : 'reply needed',
+      title: email.subject || 'Email needs review',
+      detail: email.from_name || email.from_email || 'Gmail',
+      tone: email.category === 'URGENT' ? 'red' : 'pink',
+      action: onOpenEmails,
+    })),
+    ...blockedTasks.slice(0, 5).map((task: any) => ({
+      id: `blocked-${task.id}`,
+      type: 'decision / blocker',
+      title: task.title,
+      detail: task.assignee ? `${task.assignee}${task.project ? ` • ${task.project}` : ''}` : task.project || task.identifier || 'Paperclip',
+      tone: 'yellow',
+      action: onOpenTasks,
+    })),
+    ...highTasks.map((task: any) => ({
+      id: `high-${task.id}`,
+      type: 'high priority task',
+      title: task.title,
+      detail: task.assignee ? `${task.assignee}${task.dueDate ? ` • due ${task.dueDate}` : ''}` : task.identifier || 'Paperclip',
+      tone: 'orange',
+      action: onOpenTasks,
+    })),
+    ...prepEvents.map((event: any) => ({
+      id: `event-${event.id || event.summary}`,
+      type: 'calendar prep',
+      title: event.summary || 'Upcoming event',
+      detail: new Date(event.start || event.start_time || event.startTime || event.date).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }),
+      tone: 'cyan',
+      action: undefined,
+    })),
+  ].slice(0, 8);
+
+  const counts = {
+    emails: replyEmails.length,
+    blockers: blockedTasks.length,
+    high: highTasks.length,
+    events: prepEvents.length,
+  };
+
+  const toneClasses: Record<string, string> = {
+    red: 'border-red-500/30 bg-red-500/10 text-red-300',
+    pink: 'border-pink-500/30 bg-pink-500/10 text-pink-300',
+    yellow: 'border-yellow-500/30 bg-yellow-500/10 text-yellow-300',
+    orange: 'border-orange-500/30 bg-orange-500/10 text-orange-300',
+    cyan: 'border-cyan-500/30 bg-cyan-500/10 text-cyan-300',
+  };
+
+  return (
+    <div className="bg-surface border border-orange-500/20 rounded-xl overflow-hidden shadow-lg shadow-orange-500/5">
+      <div className="px-4 py-3 border-b border-border flex items-center justify-between">
+        <div>
+          <div className="flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 text-orange-400" />
+            <h2 className="text-sm font-semibold text-white">Needs Mat</h2>
+            <span className="text-xs px-2 py-0.5 rounded-full bg-orange-500/15 text-orange-300 border border-orange-500/20">
+              {queue.length} open
+            </span>
+          </div>
+          <p className="text-xs text-gray-500 mt-1">Approvals, blockers, replies, and prep items in one place</p>
+        </div>
+        <button onClick={onOpenTasks} className="text-xs text-orange-300 hover:text-orange-200">Open board →</button>
+      </div>
+
+      <div className="grid grid-cols-4 border-b border-border text-center text-xs">
+        <div className="py-2"><div className="font-mono text-white">{counts.emails}</div><div className="text-gray-500">Emails</div></div>
+        <div className="py-2"><div className="font-mono text-white">{counts.blockers}</div><div className="text-gray-500">Blockers</div></div>
+        <div className="py-2"><div className="font-mono text-white">{counts.high}</div><div className="text-gray-500">High</div></div>
+        <div className="py-2"><div className="font-mono text-white">{counts.events}</div><div className="text-gray-500">Prep</div></div>
+      </div>
+
+      <div className="p-3 space-y-2">
+        {queue.length === 0 ? (
+          <div className="py-6 text-center text-sm text-gray-500">
+            <CheckCircle className="w-7 h-7 mx-auto mb-2 text-green-400/70" />
+            Nothing needs Mat right now.
+          </div>
+        ) : queue.map((item: any) => (
+          <button
+            key={item.id}
+            onClick={item.action}
+            className="w-full text-left rounded-lg border border-border bg-surface-light/70 p-3 hover:border-orange-500/30 transition-colors"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className={`text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full border ${toneClasses[item.tone] || toneClasses.orange}`}>
+                    {item.type}
+                  </span>
+                </div>
+                <div className="text-sm text-white truncate">{item.title}</div>
+                <div className="text-xs text-gray-500 truncate mt-0.5">{item.detail}</div>
+              </div>
+              <Clock className="w-4 h-4 text-gray-600 flex-shrink-0 mt-1" />
+            </div>
+          </button>
+        ))}
       </div>
     </div>
   );
