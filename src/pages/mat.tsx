@@ -1,11 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import {
-  Activity, Mail, Database, Cpu, Sparkles,
-  Zap, Calendar, TrendingUp, AlertCircle,
-  CheckCircle, Clock, RefreshCw, MoreHorizontal, CreditCard,
-  Command, Search, Settings, Bell, HardDrive, Reply, X,
-  Briefcase, Bot, Leaf, Cog
+  Activity, Mail, Cpu, Zap, TrendingUp, AlertCircle,
+  CheckCircle, Clock, RefreshCw, Command, Reply, X,
 } from 'lucide-react';
 import { useCommandPalette, useRealtimeData, useAgentActions } from '../hooks/useMissionControl';
 import { useAgentStatus } from '../hooks/useAgentStatus';
@@ -58,14 +55,6 @@ const AGENTS = [
   { id: '61ee0d8e-ac57-47bc-8402-5d3a756427ad', name: 'Arty', emoji: '🎨', color: 'arty', role: 'Art & Shopify Ops', level: 3, status: 'error' as const, lastActive: new Date(Date.now() - 3600000).toISOString() },
 ];
 
-const STAGE_COLORS: any = {
-  'Qualification': 'text-orange-400',
-  'Discovery': 'text-blue-400',
-  'Evaluation': 'text-purple-400',
-  'Confirmation': 'text-green-400',
-  'Negotiation': 'text-red-400',
-};
-
 export default function MatMissionControl() {
   const { isOpen, setIsOpen } = useCommandPalette();
   const { spawnAgent, refreshAgent, restartAgent } = useAgentActions();
@@ -77,14 +66,16 @@ export default function MatMissionControl() {
   const { data: quickStats } = useQuickStats();
 
   const openAgentCommandCenter = (agent: any) => {
+    // success_rate comes from /api/agents/status, derived from recent session
+    // abort flags. When telemetry has no signal we pass null and the modal
+    // renders "live / unavailable" rather than a fabricated number.
+    const liveRate = typeof agent.successRate === 'number' ? agent.successRate : null;
     setSelectedAgent({
       agent_id: agent.id,
       status: agent.status,
       updated_at: agent.lastActive,
-      // success_rate is intentionally null — telemetry source isn't wired yet.
-      // AgentCommandCenter renders "live / unavailable" instead of a fake percentage.
-      success_rate: null,
-      last_task: agent.role,
+      success_rate: liveRate,
+      last_task: agent.lastTask || agent.role,
       model: agent.model,
       source_agent_id: agent.sourceAgentId,
       context_used: agent.contextUsed,
@@ -166,10 +157,6 @@ export default function MatMissionControl() {
     
     setTimeout(() => setActiveAction(''), 1000);
   };
-
-  const urgentEmails = emails.filter(e => e.category === 'URGENT');
-  const replyNeededEmails = emails.filter(e => e.category === 'REPLY_NEEDED');
-  const fyiEmails = emails.filter(e => e.category === 'FYI');
 
   const [tasks, setTasks] = useState<any[]>([]);
   const [tasksLoading, setTasksLoading] = useState(true);
@@ -279,25 +266,6 @@ export default function MatMissionControl() {
   const deleteTask = (id: string) => {
     setTasks(tasks.filter(t => t.id !== id));
   };
-
-  const closingThisWeek = pipeline.deals.filter((d: any) => {
-    if (!d.closeDate) return false;
-    const close = new Date(d.closeDate);
-    const weekFromNow = new Date();
-    weekFromNow.setDate(weekFromNow.getDate() + 7);
-    return close <= weekFromNow;
-  });
-
-  const todayBoard = {
-    urgentEmails: urgentEmails.length,
-    dueTasks: tasks.filter((t: any) => t.status !== 'completed').length,
-    nextEvent: calendarEvents?.[0]?.title || 'No upcoming events',
-    nextAction: tasks.find((t: any) => t.status !== 'completed')?.title || 'No pending tasks',
-  };
-
-  const amexUsedYtd = amexBenefits.reduce((sum: number, b: any) => sum + Number(b.usedAmount || 0), 0);
-  const amexEstimatedCap = amexBenefits.reduce((sum: number, b: any) => sum + Number(b.annualCap || b.periodCap || 0), 0);
-  const amexUnusedCount = amexBenefits.filter((b: any) => b.status === 'unused').length;
 
   return (
     <div className="mission-shell min-h-screen text-white flex flex-col">
@@ -588,22 +556,20 @@ export default function MatMissionControl() {
             </div>
           )}
 
-          {/* System status bar */}
+          {/* System status bar — sync status only. Real integration health lives in IntegrationStatusPanel (Agents / System sections). */}
           {!isSarahMode && (
             <div className="mx-4 mt-3 rounded-2xl border border-white/10 bg-white/[0.045] px-4 py-2 shadow-xl shadow-black/10 backdrop-blur">
               <div className="flex flex-wrap items-center gap-2 text-xs">
                 <span className={`px-2 py-1 rounded ${loading ? 'bg-yellow-500/20 text-yellow-300' : 'bg-green-500/20 text-green-300'}`}>
-                  {loading ? 'Syncing…' : 'Healthy'}
+                  {loading ? 'Syncing…' : 'Synced'}
                 </span>
                 <span className="px-2 py-1 rounded bg-surface-light text-gray-400">
                   {lastRefresh ? new Date(lastRefresh).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : 'unknown'}
                 </span>
-                <span className="text-gray-600">|</span>
-                <span className="px-2.5 py-1 rounded-full bg-green-500/20 text-green-300 border border-green-500/30">Core: Green</span>
-                <span className="px-2.5 py-1 rounded-full bg-green-500/20 text-green-300 border border-green-500/30">Composio: Green</span>
-                <span className="px-2.5 py-1 rounded-full bg-green-500/20 text-green-300 border border-green-500/30">GitHub: Green</span>
-                <span className="px-2.5 py-1 rounded-full bg-yellow-500/20 text-yellow-300 border border-yellow-500/30">GroqCloud: Yellow</span>
-                <span className="px-2.5 py-1 rounded-full bg-yellow-500/20 text-yellow-300 border border-yellow-500/30">OpenRouter: Yellow</span>
+                <span className="text-gray-600 hidden sm:inline">|</span>
+                <span className="hidden sm:inline text-gray-500">
+                  Live integration health → Agents / System tab
+                </span>
                 <button onClick={() => refresh()} className="ml-auto px-2 py-1 rounded bg-work/20 text-work hover:bg-work/30 text-xs">
                   Retry
                 </button>
@@ -847,112 +813,6 @@ export default function MatMissionControl() {
     </div>
   );
 }
-
-function SectionLabel({ title }: { title: string }) {
-  return (
-    <div className="flex items-center justify-between">
-      <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">{title}</h2>
-    </div>
-  );
-}
-
-// Email Panel
-function EmailPanel({ urgent, replyNeeded, fyiCount, onViewDetails }: any) {
-  return (
-    <div className="bg-surface border border-border rounded-xl overflow-hidden">
-      <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Email Intelligence</h2>
-        <button 
-          onClick={onViewDetails}
-          className="text-xs text-pink-500 hover:underline"
-        >
-          View All
-        </button>
-      </div>
-      
-      <div className="p-4 space-y-3">
-        {urgent.length > 0 && (
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-red-500 text-sm font-medium">
-              <AlertCircle className="w-4 h-4" />
-              <span>URGENT ({urgent.length})</span>
-            </div>
-            {urgent.slice(0, 2).map((email: any, i: number) => (
-              <div key={i} className="bg-surface-light rounded-lg p-3 border border-red-500/30">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">{email.from_name || email.from_email}</span>
-                  <span className="text-xs text-gray-500">
-                    {new Date(email.received_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
-                  </span>
-                </div>
-                <p className="text-sm text-gray-400 truncate">{email.subject}</p>
-                {email.deal_name && (
-                  <span className="inline-block mt-1 text-xs bg-orange-500/20 text-orange-400 px-2 py-0.5 rounded">
-                    {email.deal_name}
-                  </span>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-
-        {replyNeeded.length > 0 && (
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-yellow-500 text-sm font-medium">
-              <Clock className="w-4 h-4" />
-              <span>Reply Needed ({replyNeeded.length})</span>
-            </div>
-            {replyNeeded.slice(0, 2).map((email: any, i: number) => (
-              <div key={i} className="bg-surface-light rounded-lg p-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">{email.from_name || email.from_email}</span>
-                  <span className="text-xs text-gray-500">
-                    {new Date(email.received_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
-                  </span>
-                </div>
-                <p className="text-sm text-gray-400 truncate">{email.subject}</p>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {fyiCount > 0 && (
-          <div className="mt-3 pt-3 border-t border-border">
-            <span className="text-xs text-gray-500">{fyiCount} FYI emails</span>
-          </div>
-        )}
-
-        {urgent.length === 0 && replyNeeded.length === 0 && fyiCount === 0 && (
-          <div className="text-center py-8 text-gray-500">
-            <Mail className="w-8 h-8 mx-auto mb-2 opacity-50" />
-            <p>No emails processed yet</p>
-            <p className="text-xs mt-1">Email Agent will populate this</p>
-          </div>
-        )}
-      </div>
-
-      <div className="px-4 py-3 border-t border-border flex gap-2">
-        <a
-          href="https://mail.google.com/mail/u/0/#search/is:unread"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex-1 py-2 text-xs bg-surface-light hover:bg-border rounded transition-colors text-center"
-        >
-          Mark FYI Read
-        </a>
-        <a
-          href="https://mail.google.com/mail/u/0/#compose"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex-1 py-2 text-xs bg-pink-500/20 text-pink-400 hover:bg-pink-500/30 rounded transition-colors text-center"
-        >
-          Draft Response
-        </a>
-      </div>
-    </div>
-  );
-}
-
 
 // Needs Mat Queue
 //
@@ -1209,213 +1069,112 @@ function TaskPanel({ tasks: taskList, loading, onViewDetails }: any) {
   );
 }
 
-// Cron Panel
+// Cron Panel — live OpenClaw cron jobs via /api/cron/jobs (`openclaw cron list --json`).
+interface CronJobRow {
+  id: string;
+  name: string;
+  agentId: string;
+  enabled: boolean;
+  schedule: string;
+  timezone: string | null;
+  nextRunAt: string | null;
+  lastRunAt: string | null;
+  lastStatus: string | null;
+  consecutiveErrors: number;
+}
+
+function formatRelativeTime(iso: string | null) {
+  if (!iso) return '—';
+  const ms = new Date(iso).getTime();
+  if (!Number.isFinite(ms)) return '—';
+  const delta = ms - Date.now();
+  const abs = Math.abs(delta);
+  const past = delta < 0;
+  const minutes = Math.round(abs / 60000);
+  if (minutes < 1) return past ? 'just now' : 'imminent';
+  if (minutes < 60) return past ? `${minutes}m ago` : `in ${minutes}m`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return past ? `${hours}h ago` : `in ${hours}h`;
+  const days = Math.round(hours / 24);
+  return past ? `${days}d ago` : `in ${days}d`;
+}
+
 function CronPanel() {
-  const jobs = [
-    { time: '8:00 AM', name: 'Morning Briefing', status: 'completed' },
-    { time: 'NOW', name: 'Email Agent Check', status: 'running' },
-    { time: '12:00 PM', name: 'Pre-Meeting Prep', status: 'pending' },
-    { time: '4:00 PM', name: 'HubSpot Cache Refresh', status: 'pending' },
-  ];
+  const [jobs, setJobs] = useState<CronJobRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      try {
+        const res = await fetch('/api/cron/jobs');
+        if (!res.ok) throw new Error(`status ${res.status}`);
+        const data = await res.json();
+        if (!cancelled) {
+          setJobs(Array.isArray(data.jobs) ? data.jobs : []);
+          setError(null);
+        }
+      } catch (e: any) {
+        if (!cancelled) setError(e?.message || 'failed to load cron jobs');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+    load();
+    const interval = setInterval(load, 60_000);
+    return () => { cancelled = true; clearInterval(interval); };
+  }, []);
+
+  const visible = jobs.slice(0, 8);
+  const disabledCount = jobs.filter((j) => !j.enabled).length;
+  const errorCount = jobs.filter((j) => j.consecutiveErrors > 0).length;
 
   return (
     <div className="bg-surface border border-border rounded-xl p-4">
-      <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">Scheduled Operations</h2>
-      
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Scheduled Operations</h2>
+        <span className="text-[10px] text-gray-500 font-mono">
+          {loading ? 'loading…' : `${jobs.length} jobs${disabledCount ? ` · ${disabledCount} off` : ''}${errorCount ? ` · ${errorCount} erroring` : ''}`}
+        </span>
+      </div>
+
+      {error && (
+        <div className="mb-2 text-xs text-yellow-400">
+          Cron telemetry unavailable: {error}
+        </div>
+      )}
+
       <div className="space-y-2">
-        {jobs.map((job, i) => (
-          <div key={i} className="flex items-center gap-3 text-sm">
-            <div className={`w-2 h-2 rounded-full ${
-              job.status === 'completed' ? 'bg-green-500' :
-              job.status === 'running' ? 'bg-yellow-500 animate-pulse' :
-              'bg-gray-600'
-            }`} />
-            <span className="text-gray-500 w-16 text-xs">{job.time}</span>
-            <span className="flex-1">{job.name}</span>
-            <span className={`text-xs capitalize ${
-              job.status === 'completed' ? 'text-green-500' :
-              job.status === 'running' ? 'text-yellow-500' :
-              'text-gray-500'
-            }`}>
-              {job.status}
-            </span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// Pipeline Panel
-function PipelinePanel({ pipeline, closingThisWeek, onViewDetails }: any) {
-  const formatCurrency = (val: number) => `$${(val / 1000).toFixed(0)}K`;
-
-  return (
-    <div className="bg-surface border border-border rounded-xl overflow-hidden">
-      <div className="px-4 py-3 border-b border-border flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Sales Pipeline</h2>
-        <MoreHorizontal className="w-4 h-4 text-gray-500" />
-      </div>
-      
-      <div className="p-4">
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-4 mb-4">
-          <div className="text-center">
-            <div className="text-2xl font-bold font-mono">{pipeline.deals.length}</div>
-            <div className="text-xs text-gray-500">Deals</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold font-mono text-cyan-400">{formatCurrency(pipeline.total)}</div>
-            <div className="text-xs text-gray-500">Pipeline</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold font-mono text-green-400">{closingThisWeek.length}</div>
-            <div className="text-xs text-gray-500">This Week</div>
-          </div>
-        </div>
-
-        {/* By Stage */}
-        <div className="space-y-2 mb-4">
-          {Object.entries(pipeline.byStage).map(([stage, data]: [string, any]) => (
-            <div key={stage} className="flex items-center justify-between text-xs">
-              <span className={`${STAGE_COLORS[stage] || 'text-gray-400'}`}>{stage}</span>
-              <div className="flex items-center gap-3">
-                <span className="text-gray-500">{data.count} deals</span>
-                <span className="font-mono text-gray-300">{formatCurrency(data.value)}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Closing Soon */}
-        {closingThisWeek.length > 0 && (
-          <div className="border-t border-border pt-3 mb-3">
-            <div className="flex items-center gap-2 text-red-500 mb-2">
-              <AlertCircle className="w-4 h-4" />
-              <span className="text-xs font-medium">Closing This Week</span>
-            </div>
-            {closingThisWeek.map((deal: any, i: number) => (
-              <div key={i} className="bg-red-500/10 border border-red-500/30 rounded-lg p-2 mb-1">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">{deal.name}</span>
-                  <span className="text-sm font-mono font-bold">{formatCurrency(deal.amount)}</span>
-                </div>
-                <div className="text-xs text-red-400 mt-1">
-                  {new Date(deal.closeDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                  {new Date(deal.closeDate) <= new Date() && new Date(deal.closeDate).toDateString() === new Date().toDateString() && ' (TODAY)'}
-                </div>
-              </div>
-            ))}
-          </div>
+        {!loading && jobs.length === 0 && !error && (
+          <div className="text-xs text-gray-500">No cron jobs scheduled.</div>
         )}
-
-        {/* Stale Deals - disabled, table doesn't exist */}
-        {false && (
-          <div className="border-t border-border pt-3">
-            <div className="flex items-center gap-2 text-yellow-500 mb-2">
-              <Clock className="w-4 h-4" />
-              <span className="text-xs font-medium">Stale Deals</span>
-            </div>
-          </div>
-        )}
-      </div>
-
-      <div className="px-4 py-3 border-t border-border flex gap-2">
-        <button 
-          onClick={onViewDetails}
-          className="flex-1 py-2 text-xs bg-surface-light hover:bg-border rounded transition-colors"
-        >
-          View Pipeline
-        </button>
-        <button 
-          onClick={() => window.location.reload()}
-          className="flex-1 py-2 text-xs bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30 rounded transition-colors"
-        >
-          Refresh
-        </button>
-      </div>
-    </div>
-  );
-}
-
-// API Health Panel
-function ApiHealthPanel() {
-  const services = [
-    { name: 'HubSpot', status: 'connected', latency: 245 },
-    { name: 'Calendar', status: 'connected', latency: 189 },
-    { name: 'Gmail', status: 'connected', latency: 156 },
-    { name: 'Supabase', status: 'connected', latency: 89 },
-    { name: 'ElevenLabs', status: 'connected', latency: 334 },
-    { name: 'SearXNG', status: 'connected', latency: 120 },
-  ];
-
-  return (
-    <div className="bg-surface border border-border rounded-xl p-4">
-      <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">Integration Status</h2>
-      
-      <div className="grid grid-cols-2 gap-2">
-        {services.map((svc, i) => (
-          <div key={i} className="flex items-center justify-between bg-surface-light rounded-lg p-2">
-            <div className="flex items-center gap-2">
-              <div className={`w-2 h-2 rounded-full ${svc.status === 'connected' ? 'bg-green-500' : 'bg-red-500'}`} />
-              <span className="text-xs">{svc.name}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-500">{svc.latency}ms</span>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// Activity Panel
-function ActivityPanel({ activities }: any) {
-  const icons: any = {
-    'email-agent': Mail,
-    'hubspot-agent': Database,
-    'work-agent': Cpu,
-    'build-agent': Zap,
-    'research-agent': Search,
-  };
-
-  return (
-    <div className="bg-surface border border-border rounded-xl overflow-hidden">
-      <div className="px-4 py-3 border-b border-border">
-        <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">Recent Events</h2>
-      </div>
-      
-      <div className="p-4 space-y-3 max-h-[300px] overflow-y-auto">
-        {activities.length === 0 && (
-          <div className="text-center text-gray-500 py-4">
-            <Activity className="w-6 h-6 mx-auto mb-2 opacity-50" />
-            <p className="text-xs">No recent activity</p>
-          </div>
-        )}
-        
-        {activities.slice(0, 10).map((activity: any, i: number) => {
-          const Icon = icons[activity.agent] || Activity;
-          const timeAgo = activity.created_at 
-            ? new Date(activity.created_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
-            : '';
-          
+        {visible.map((job) => {
+          const ok = (job.lastStatus || '').toLowerCase() === 'ok';
+          const erroring = job.consecutiveErrors > 0;
+          const dot = !job.enabled
+            ? 'bg-gray-600'
+            : erroring
+              ? 'bg-red-500'
+              : ok
+                ? 'bg-green-500'
+                : 'bg-gray-500';
           return (
-            <div key={i} className="flex items-start gap-3 text-xs">
-              <Icon className="w-4 h-4 text-gray-500 mt-0.5" />
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-gray-400 capitalize">{activity.agent?.replace('-agent', '')}</span>
-                  <span className="text-gray-600">{timeAgo}</span>
-                </div>
-                <p className="text-gray-300">{activity.action}</p>
-              </div>
-              {activity.status === 'success' && <CheckCircle className="w-3 h-3 text-green-500" />}
-              {activity.status === 'error' && <AlertCircle className="w-3 h-3 text-red-500" />}
+            <div key={job.id} className="flex items-center gap-3 text-sm">
+              <div className={`w-2 h-2 rounded-full ${dot}`} />
+              <span className="text-gray-500 w-20 text-xs">{formatRelativeTime(job.nextRunAt)}</span>
+              <span className="flex-1 truncate">{job.name}</span>
+              <span className={`text-xs ${erroring ? 'text-red-400' : ok ? 'text-green-500' : 'text-gray-500'}`}>
+                {!job.enabled ? 'disabled' : erroring ? `${job.consecutiveErrors}×err` : job.lastStatus || 'pending'}
+              </span>
             </div>
           );
         })}
+        {jobs.length > visible.length && (
+          <div className="text-[11px] text-gray-500">+{jobs.length - visible.length} more cron jobs</div>
+        )}
       </div>
     </div>
   );
 }
+

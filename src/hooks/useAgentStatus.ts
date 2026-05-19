@@ -13,6 +13,11 @@ interface Agent {
   contextUsed?: number;
   contextMax?: number;
   subagentCount?: number;
+  successRate?: number | null;
+  recentSessionCount?: number;
+  lastTask?: string | null;
+  model?: string;
+  sourceAgentId?: string;
 }
 
 interface AgentSystemStatus {

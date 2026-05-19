@@ -17,6 +17,9 @@ interface AgentStatus {
   subagentCount: number;
   sourceAgentId?: string;
   model?: string;
+  successRate: number | null;
+  recentSessionCount: number;
+  lastTask?: string | null;
 }
 
 interface OpenClawRecentSession {
@@ -78,7 +81,7 @@ interface AgentSystemPayload {
   };
 }
 
-const AGENT_CATALOG: Record<string, Omit<AgentStatus, 'status' | 'lastActive' | 'contextUsed' | 'contextMax' | 'subagentCount'>> = {
+const AGENT_CATALOG: Record<string, Omit<AgentStatus, 'status' | 'lastActive' | 'contextUsed' | 'contextMax' | 'subagentCount' | 'successRate' | 'recentSessionCount' | 'lastTask'>> = {
   'a0edadcb-f994-40e3-a9a1-d3ffde595c3e': {
     id: 'a0edadcb-f994-40e3-a9a1-d3ffde595c3e',
     name: 'Clawd',
@@ -301,6 +304,15 @@ function averagePercentUsed(sessions: OpenClawRecentSession[]) {
   };
 }
 
+function deriveSuccessRate(sessions: OpenClawRecentSession[]): number | null {
+  // Use the last 20 sessions and report the percentage that did not abort.
+  // Null when there's nothing to score, so the UI can render "live / unavailable".
+  const sample = sessions.slice(0, 20);
+  if (sample.length === 0) return null;
+  const successes = sample.filter((s) => !s.abortedLastRun).length;
+  return Math.round((successes / sample.length) * 100);
+}
+
 function deriveAgentStatus(agentId: string, status: OpenClawStatusPayload): AgentStatus {
   const byAgent = status.sessions?.byAgent || [];
   const agentSessions = byAgent.find((entry) => entry.agentId === agentId)?.recent || [];
@@ -334,6 +346,9 @@ function deriveAgentStatus(agentId: string, status: OpenClawStatusPayload): Agen
     subagentCount: countChildSessions(agentId, status),
     sourceAgentId: agentId,
     model: latest?.model,
+    successRate: deriveSuccessRate(agentSessions),
+    recentSessionCount: agentSessions.length,
+    lastTask: latest?.key || null,
   };
 }
 
