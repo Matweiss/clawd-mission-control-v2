@@ -1,22 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { agentNameOrFallback } from '../../lib/agents';
 
 const PAPERCLIP_API_URL = process.env.PAPERCLIP_API_URL || 'https://paperclip.thematweiss.com';
 const PAPERCLIP_API_KEY = process.env.PAPERCLIP_API_KEY_STABLE || process.env.PAPERCLIP_API_KEY;
 const PAPERCLIP_COMPANY_ID = process.env.PAPERCLIP_COMPANY_ID;
-
-// Map Paperclip agent IDs to display names — kept in sync with src/pages/mat.tsx roster.
-const AGENT_NAMES: Record<string, string> = {
-  'a0edadcb-f994-40e3-a9a1-d3ffde595c3e': 'Clawd',
-  '6ec7b59f-8955-4d21-b4c3-c4b5a68772c8': 'Vandalay',
-  '1ef5e05b-7a16-4ebc-8c05-cdb03a321197': 'Sloan',
-  'fd4efc78-5969-47f3-878a-457654682548': 'Bob',
-  '8c40bdd4-7e82-40a7-9fa7-982b0931d705': 'Luke',
-  'd61e45f1-a8ad-4c2c-afeb-1cad12ec17c6': 'Sage',
-  'e6822182-3611-4152-a1f2-aab9975fce3d': 'Hermes',
-  'dd20d11e-6a2e-4de1-bdfd-c068b5f1499f': 'Scout',
-  '951c871e-fcb0-4211-bf92-19b0812d16bd': 'Pixel',
-  '61ee0d8e-ac57-47bc-8402-5d3a756427ad': 'Arty',
-};
 
 export type TaskPriority = 'high' | 'medium' | 'low';
 export type TaskStatus = 'pending' | 'in_progress' | 'blocked' | 'completed';
@@ -80,7 +67,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const id: string = issue.id;
         const rawStatus: string = typeof issue.status === 'string' ? issue.status : '';
         const assigneeAgentId: string | null = issue.assigneeAgentId ?? null;
-        const assignee = assigneeAgentId ? (AGENT_NAMES[assigneeAgentId] ?? 'Agent') : null;
+        const assignee = agentNameOrFallback(assigneeAgentId, 'Agent');
 
         return {
           id,

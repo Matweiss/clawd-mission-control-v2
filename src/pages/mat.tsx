@@ -37,23 +37,20 @@ import { FirstTimeCollectorLadderCard } from '../components/FirstTimeCollectorLa
 import { CollectorReengagementRadarCard } from '../components/CollectorReengagementRadarCard';
 import { DASHBOARD_CONFIG, DashboardMode, getDashboardMode } from '../lib/dashboard-config';
 import { AnimatedCard, StaggerContainer, StaggerItem, FadeIn, SlideIn } from '../components/animations';
+import { AGENT_ROSTER } from '../lib/agents';
 
-// Agent configuration - real Paperclip roster
-const AGENTS = [
-  // Level 1: CEO
-  { id: 'a0edadcb-f994-40e3-a9a1-d3ffde595c3e', name: 'Clawd', emoji: '🦞', color: 'work', role: 'CEO & Orchestrator', level: 1, status: 'running' as const, lastActive: new Date().toISOString() },
-  // Level 2: Department leads
-  { id: '6ec7b59f-8955-4d21-b4c3-c4b5a68772c8', name: 'Vandalay', emoji: '📈', color: 'vandalay', role: 'Chief Strategy Officer', level: 2, status: 'idle' as const, lastActive: new Date().toISOString() },
-  { id: '1ef5e05b-7a16-4ebc-8c05-cdb03a321197', name: 'Sloan', emoji: '📋', color: 'sloan', role: 'Chief of Staff', level: 2, status: 'idle' as const, lastActive: new Date().toISOString() },
-  { id: 'fd4efc78-5969-47f3-878a-457654682548', name: 'Bob', emoji: '🔧', color: 'build', role: 'Head of Build', level: 2, status: 'idle' as const, lastActive: new Date().toISOString() },
-  { id: '8c40bdd4-7e82-40a7-9fa7-982b0931d705', name: 'Luke', emoji: '💼', color: 'work', role: 'Sales & Lucra Ops', level: 2, status: 'idle' as const, lastActive: new Date().toISOString() },
-  { id: 'd61e45f1-a8ad-4c2c-afeb-1cad12ec17c6', name: 'Sage', emoji: '🌿', color: 'lifestyle', role: 'Personal & Lifestyle', level: 2, status: 'idle' as const, lastActive: new Date().toISOString() },
-  // Level 3: Specialists
-  { id: 'e6822182-3611-4152-a1f2-aab9975fce3d', name: 'Hermes', emoji: '✉️', color: 'email', role: 'Google Workspace Ops', level: 3, status: 'idle' as const, lastActive: new Date().toISOString() },
-  { id: 'dd20d11e-6a2e-4de1-bdfd-c068b5f1499f', name: 'Scout', emoji: '🔍', color: 'research', role: 'Research & Intelligence', level: 3, status: 'error' as const, lastActive: new Date(Date.now() - 3600000).toISOString() },
-  { id: '951c871e-fcb0-4211-bf92-19b0812d16bd', name: 'Pixel', emoji: '🌐', color: 'hubspot', role: 'Browser & Scheduling', level: 3, status: 'idle' as const, lastActive: new Date().toISOString() },
-  { id: '61ee0d8e-ac57-47bc-8402-5d3a756427ad', name: 'Arty', emoji: '🎨', color: 'arty', role: 'Art & Shopify Ops', level: 3, status: 'error' as const, lastActive: new Date(Date.now() - 3600000).toISOString() },
-];
+// Fallback agent list shown when /api/agents/status hasn't responded yet.
+// Status defaults to 'idle' — real status comes from useAgentStatus when live.
+const AGENTS = AGENT_ROSTER.map((profile) => ({
+  id: profile.id,
+  name: profile.name,
+  emoji: profile.emoji,
+  color: profile.color,
+  role: profile.role,
+  level: profile.level,
+  status: 'idle' as const,
+  lastActive: new Date().toISOString(),
+}));
 
 export default function MatMissionControl() {
   const { isOpen, setIsOpen } = useCommandPalette();

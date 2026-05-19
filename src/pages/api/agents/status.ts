@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import type { SessionNode } from '../../../components/SessionTree';
 import { runOpenClawJson } from '../../../lib/openclaw-cli';
+import { AGENT_ROSTER } from '../../../lib/agents';
 
 interface AgentStatus {
   id: string;
@@ -81,88 +82,14 @@ interface AgentSystemPayload {
   };
 }
 
-const AGENT_CATALOG: Record<string, Omit<AgentStatus, 'status' | 'lastActive' | 'contextUsed' | 'contextMax' | 'subagentCount' | 'successRate' | 'recentSessionCount' | 'lastTask'>> = {
-  'a0edadcb-f994-40e3-a9a1-d3ffde595c3e': {
-    id: 'a0edadcb-f994-40e3-a9a1-d3ffde595c3e',
-    name: 'Clawd',
-    emoji: '🦞',
-    color: 'work',
-    role: 'CEO & Orchestrator',
-    level: 1,
-  },
-  '6ec7b59f-8955-4d21-b4c3-c4b5a68772c8': {
-    id: '6ec7b59f-8955-4d21-b4c3-c4b5a68772c8',
-    name: 'Vandalay',
-    emoji: '📈',
-    color: 'vandalay',
-    role: 'Chief Strategy Officer',
-    level: 2,
-  },
-  '1ef5e05b-7a16-4ebc-8c05-cdb03a321197': {
-    id: '1ef5e05b-7a16-4ebc-8c05-cdb03a321197',
-    name: 'Sloan',
-    emoji: '📋',
-    color: 'sloan',
-    role: 'Chief of Staff',
-    level: 2,
-  },
-  'fd4efc78-5969-47f3-878a-457654682548': {
-    id: 'fd4efc78-5969-47f3-878a-457654682548',
-    name: 'Bob',
-    emoji: '🔧',
-    color: 'build',
-    role: 'Head of Build',
-    level: 2,
-  },
-  '8c40bdd4-7e82-40a7-9fa7-982b0931d705': {
-    id: '8c40bdd4-7e82-40a7-9fa7-982b0931d705',
-    name: 'Luke',
-    emoji: '💼',
-    color: 'work',
-    role: 'Sales & Lucra Ops',
-    level: 2,
-  },
-  'd61e45f1-a8ad-4c2c-afeb-1cad12ec17c6': {
-    id: 'd61e45f1-a8ad-4c2c-afeb-1cad12ec17c6',
-    name: 'Sage',
-    emoji: '🌿',
-    color: 'lifestyle',
-    role: 'Personal & Lifestyle',
-    level: 2,
-  },
-  'e6822182-3611-4152-a1f2-aab9975fce3d': {
-    id: 'e6822182-3611-4152-a1f2-aab9975fce3d',
-    name: 'Hermes',
-    emoji: '✉️',
-    color: 'email',
-    role: 'Google Workspace Ops',
-    level: 3,
-  },
-  'dd20d11e-6a2e-4de1-bdfd-c068b5f1499f': {
-    id: 'dd20d11e-6a2e-4de1-bdfd-c068b5f1499f',
-    name: 'Scout',
-    emoji: '🔍',
-    color: 'research',
-    role: 'Research & Intelligence',
-    level: 3,
-  },
-  '951c871e-fcb0-4211-bf92-19b0812d16bd': {
-    id: '951c871e-fcb0-4211-bf92-19b0812d16bd',
-    name: 'Pixel',
-    emoji: '🌐',
-    color: 'hubspot',
-    role: 'Browser & Scheduling',
-    level: 3,
-  },
-  '61ee0d8e-ac57-47bc-8402-5d3a756427ad': {
-    id: '61ee0d8e-ac57-47bc-8402-5d3a756427ad',
-    name: 'Arty',
-    emoji: '🎨',
-    color: 'arty',
-    role: 'Art & Shopify Ops',
-    level: 3,
-  },
-};
+type CatalogEntry = Omit<AgentStatus, 'status' | 'lastActive' | 'contextUsed' | 'contextMax' | 'subagentCount' | 'successRate' | 'recentSessionCount' | 'lastTask'>;
+
+const AGENT_CATALOG: Record<string, CatalogEntry> = Object.fromEntries(
+  AGENT_ROSTER.map((agent) => [
+    agent.id,
+    { id: agent.id, name: agent.name, emoji: agent.emoji, color: agent.color, role: agent.role, level: agent.level },
+  ])
+);
 
 
 function toIso(updatedAt?: number, fallbackMs?: number) {
@@ -361,23 +288,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const openclawStatus = runOpenClawJson<OpenClawStatusPayload>(['status'], {} as OpenClawStatusPayload);
     const sessionTree = buildSessionTree(openclawStatus);
 
-    const agentMappings = [
-      { catalogId: 'a0edadcb-f994-40e3-a9a1-d3ffde595c3e', openclawAgentId: 'main' },
-      { catalogId: '6ec7b59f-8955-4d21-b4c3-c4b5a68772c8', openclawAgentId: 'vandalay' },
-      { catalogId: '1ef5e05b-7a16-4ebc-8c05-cdb03a321197', openclawAgentId: 'sloan' },
-      { catalogId: 'fd4efc78-5969-47f3-878a-457654682548', openclawAgentId: 'builder' },
-      { catalogId: '8c40bdd4-7e82-40a7-9fa7-982b0931d705', openclawAgentId: 'lucra' },
-      { catalogId: 'd61e45f1-a8ad-4c2c-afeb-1cad12ec17c6', openclawAgentId: 'lifestyle' },
-      { catalogId: 'e6822182-3611-4152-a1f2-aab9975fce3d', openclawAgentId: 'hermes' },
-      { catalogId: 'dd20d11e-6a2e-4de1-bdfd-c068b5f1499f', openclawAgentId: 'scout' },
-      { catalogId: '951c871e-fcb0-4211-bf92-19b0812d16bd', openclawAgentId: 'pixel' },
-      { catalogId: '61ee0d8e-ac57-47bc-8402-5d3a756427ad', openclawAgentId: 'sarah' },
-    ];
-
-    const agents: AgentStatus[] = agentMappings.map(({ catalogId, openclawAgentId }) => ({
-      ...deriveAgentStatus(openclawAgentId, openclawStatus),
-      ...AGENT_CATALOG[catalogId],
-      sourceAgentId: openclawAgentId,
+    const agents: AgentStatus[] = AGENT_ROSTER.map((profile) => ({
+      ...deriveAgentStatus(profile.openclawAgentId, openclawStatus),
+      ...AGENT_CATALOG[profile.id],
+      sourceAgentId: profile.openclawAgentId,
     }));
 
     const payload: AgentSystemPayload = {

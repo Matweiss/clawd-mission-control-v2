@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Activity, CheckCircle, AlertCircle, RefreshCw, Play, FileText, BarChart3, Zap } from 'lucide-react';
+import { AGENT_BY_ID, type AgentProfile as RosterAgentProfile } from '../lib/agents';
 
 interface AgentHistoryItem {
   id: string;
@@ -33,6 +34,7 @@ interface AgentCommandCenterProps {
   onRestart: (agentId: string) => void;
 }
 
+// Local UI profile shape used by the modal — derived from the canonical roster.
 interface AgentProfile {
   name: string;
   emoji: string;
@@ -42,89 +44,16 @@ interface AgentProfile {
   capabilities: string[];
 }
 
-// Real Paperclip roster, keyed by Paperclip agent UUID.
-const AGENT_CONFIG: Record<string, AgentProfile> = {
-  'a0edadcb-f994-40e3-a9a1-d3ffde595c3e': {
-    name: 'Clawd',
-    emoji: '🦞',
-    color: '#F97316',
-    role: 'CEO & Orchestrator',
-    responsibilities: ['Cross-agent orchestration', 'Strategic oversight', 'Decision authority', 'System health', 'Escalation handling'],
-    capabilities: ['Coordinate Paperclip roster', 'Route tasks across agents', 'Spawn cron / one-shot agents', 'Monitor session telemetry', 'Resolve approvals'],
-  },
-  '6ec7b59f-8955-4d21-b4c3-c4b5a68772c8': {
-    name: 'Vandalay',
-    emoji: '📈',
-    color: '#8B5CF6',
-    role: 'Chief Strategy Officer',
-    responsibilities: ['Scope and review enhancements', 'System design critiques', 'Sprint shaping', 'Risk surfacing', 'Cross-team alignment'],
-    capabilities: ['Review proposals', 'Draft sprint briefs', 'Audit dashboard surfaces', 'Recommend scope cuts', 'Hand off to Bob'],
-  },
-  '1ef5e05b-7a16-4ebc-8c05-cdb03a321197': {
-    name: 'Sloan',
-    emoji: '📋',
-    color: '#06B6D4',
-    role: 'Chief of Staff',
-    responsibilities: ['Calendar & schedule ownership', 'Meeting prep', 'Action-item routing', 'Daily/weekly rhythm', 'Status synthesis'],
-    capabilities: ['Manage calendar slots', 'Prep meeting briefs', 'Track follow-ups', 'Coordinate roster check-ins'],
-  },
-  'fd4efc78-5969-47f3-878a-457654682548': {
-    name: 'Bob',
-    emoji: '🔧',
-    color: '#3B82F6',
-    role: 'Head of Build',
-    responsibilities: ['Dashboard / API implementation', 'Infrastructure changes', 'Build verification', 'Bugfix execution', 'Integration wiring'],
-    capabilities: ['Edit Next.js dashboard', 'Wire Paperclip APIs', 'Run builds and tests', 'Deploy via Vercel', 'Author migrations'],
-  },
-  '8c40bdd4-7e82-40a7-9fa7-982b0931d705': {
-    name: 'Luke',
-    emoji: '💼',
-    color: '#F59E0B',
-    role: 'Sales & Lucra Ops',
-    responsibilities: ['Lucra pipeline ownership', 'Deal follow-ups', 'Commission tracking', 'Granola routing', 'Notion deal notes'],
-    capabilities: ['Update HubSpot deals', 'Pull Granola meeting context', 'Draft sales follow-ups', 'Manage Lucra commissions'],
-  },
-  'd61e45f1-a8ad-4c2c-afeb-1cad12ec17c6': {
-    name: 'Sage',
-    emoji: '🌿',
-    color: '#22C55E',
-    role: 'Personal & Lifestyle',
-    responsibilities: ['Wellness/yoga tracking', 'Home + lifestyle context', 'Date night memory bank', 'Personal reminders'],
-    capabilities: ['Update yoga schedule', 'Track wellness signals', 'Surface lifestyle goals', 'Manage memory bank'],
-  },
-  'e6822182-3611-4152-a1f2-aab9975fce3d': {
-    name: 'Hermes',
-    emoji: '✉️',
-    color: '#EC4899',
-    role: 'Google Workspace Ops',
-    responsibilities: ['Gmail triage', 'Calendar event mgmt', 'Drive doc ops', 'Drafts and replies', 'Workspace automation'],
-    capabilities: ['Categorize inbox', 'Create calendar events', 'Open Gmail threads', 'Draft replies', 'Manage Drive files'],
-  },
-  'dd20d11e-6a2e-4de1-bdfd-c068b5f1499f': {
-    name: 'Scout',
-    emoji: '🔍',
-    color: '#10B981',
-    role: 'Research & Intelligence',
-    responsibilities: ['Company / prospect research', 'Competitor scans', 'Battle cards', 'Market signals'],
-    capabilities: ['Run web searches', 'Build battle cards', 'Summarize prospects', 'Track competitor moves'],
-  },
-  '951c871e-fcb0-4211-bf92-19b0812d16bd': {
-    name: 'Pixel',
-    emoji: '🌐',
-    color: '#0EA5E9',
-    role: 'Browser & Scheduling',
-    responsibilities: ['Browser automation', 'Booking flows', 'Scheduling via web UIs', 'Movie / Regal sync'],
-    capabilities: ['Drive Mac Chrome via CDP', 'Scrape protected sites', 'Book and reschedule', 'Sync schedule data'],
-  },
-  '61ee0d8e-ac57-47bc-8402-5d3a756427ad': {
-    name: 'Arty',
-    emoji: '🎨',
-    color: '#F472B6',
-    role: 'Art & Shopify Ops',
-    responsibilities: ['Creative production', 'Shopify lightweight ops', 'Visual review', 'Brand consistency'],
-    capabilities: ['Generate creative drafts', 'Run Shopify checks', 'Review brand surfaces'],
-  },
-};
+function profileFromRoster(p: RosterAgentProfile): AgentProfile {
+  return {
+    name: p.name,
+    emoji: p.emoji,
+    color: p.hexColor,
+    role: p.role,
+    responsibilities: p.responsibilities,
+    capabilities: p.capabilities,
+  };
+}
 
 export function AgentCommandCenter({ isOpen, onClose, agent, onRefresh, onRestart }: AgentCommandCenterProps) {
   const [history, setHistory] = useState<AgentHistoryItem[]>([]);
@@ -145,7 +74,8 @@ export function AgentCommandCenter({ isOpen, onClose, agent, onRefresh, onRestar
     subagent_count: 0,
   };
 
-  const config: AgentProfile = AGENT_CONFIG[safeAgent.agent_id] || {
+  const rosterEntry = AGENT_BY_ID[safeAgent.agent_id];
+  const config: AgentProfile = rosterEntry ? profileFromRoster(rosterEntry) : {
     name: safeAgent.agent_id,
     emoji: '🤖',
     color: '#6B7280',
