@@ -845,30 +845,251 @@ export default function MatMissionControl() {
 const APPROVAL_REGEX = /\b(approve|approval|approvals|needs mat|for mat|decision|blocker|blocked|sign[- ]?off|review[- ]?ready)\b/i;
 const STALE_IN_PROGRESS_MS = 72 * 60 * 60 * 1000;
 
-function NeedsMatQueue({ emails, tasks, calendarEvents, onOpenTasks, onOpenEmails, onTaskUpdate }: any) {
-  const now = Date.now();
-  const [pendingActionId, setPendingActionId] = useState<string | null>(null);
-  const [actionError, setActionError] = useState<string | null>(null);
+const TONE_CLASSES: Record<string, string> = {
+  red: 'border-red-500/30 bg-red-500/10 text-red-300',
+  pink: 'border-pink-500/30 bg-pink-500/10 text-pink-300',
+  yellow: 'border-yellow-500/30 bg-yellow-500/10 text-yellow-300',
+  orange: 'border-orange-500/30 bg-orange-500/10 text-orange-300',
+  cyan: 'border-cyan-500/30 bg-cyan-500/10 text-cyan-300',
+};
 
-  const runTaskAction = async (taskId: string, patch: Record<string, unknown>, queueItemId: string) => {
-    if (!taskId) return;
-    setPendingActionId(queueItemId);
-    setActionError(null);
+interface TaskComment {
+  id: string;
+  body: string;
+  author: string;
+  createdAt: string | null;
+}
+
+function formatCommentAge(iso: string | null) {
+  if (!iso) return '';
+  const ms = Date.now() - new Date(iso).getTime();
+  if (!Number.isFinite(ms) || ms < 0) return '';
+  const m = Math.round(ms / 60000);
+  if (m < 1) return 'just now';
+  if (m < 60) return `${m}m ago`;
+  const h = Math.round(m / 60);
+  if (h < 24) return `${h}h ago`;
+  const d = Math.round(h / 24);
+  return `${d}d ago`;
+}
+
+// One row for a Paperclip-backed queue item. Owns its own comments fetch and
+// inline note form so each row can act independently without blowing up the
+// parent's render or state surface.
+function PaperclipTaskRow({
+  item,
+  onTaskUpdate,
+  onError,
+}: {
+  item: any;
+  onTaskUpdate?: (task: any) => void;
+  onError?: (msg: string | null) => void;
+}) {
+  const task = item.task;
+  const taskId = task.id;
+  const isBlocked = String(task.rawStatus || task.status || '').toLowerCase() === 'blocked';
+
+  const [latestComment, setLatestComment] = useState<TaskComment | null>(null);
+  const [commentsLoading, setCommentsLoading] = useState(false);
+  const [formMode, setFormMode] = useState<null | 'unblock' | 'done'>(null);
+  const [note, setNote] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    setCommentsLoading(true);
+    fetch(`/api/tasks/${encodeURIComponent(taskId)}/comments`)
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(`${res.status}`))))
+      .then((data) => {
+        if (cancelled) return;
+        const list: TaskComment[] = Array.isArray(data.comments) ? data.comments : [];
+        setLatestComment(list[0] || null);
+      })
+      .catch(() => { if (!cancelled) setLatestComment(null); })
+      .finally(() => { if (!cancelled) setCommentsLoading(false); });
+    return () => { cancelled = true; };
+  }, [taskId]);
+
+  const submitWithNote = async (status: 'in_progress' | 'done') => {
+    setSubmitting(true);
+    onError?.(null);
+    try {
+      const noteText = note.trim();
+      if (noteText) {
+        const commentRes = await fetch(`/api/tasks/${encodeURIComponent(taskId)}/comments`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ body: noteText }),
+        });
+        const commentData = await commentRes.json().catch(() => ({}));
+        if (!commentRes.ok) throw new Error(commentData.error || `Comment failed (${commentRes.status})`);
+        if (commentData.comment) setLatestComment(commentData.comment);
+      }
+
+      const patchRes = await fetch(`/api/tasks/${encodeURIComponent(taskId)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      });
+      const patchData = await patchRes.json().catch(() => ({}));
+      if (!patchRes.ok) throw new Error(patchData.error || `Status change failed (${patchRes.status})`);
+      if (patchData.task && typeof onTaskUpdate === 'function') onTaskUpdate(patchData.task);
+
+      setFormMode(null);
+      setNote('');
+    } catch (err: any) {
+      onError?.(err?.message || 'Action failed');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const lowerPriority = async () => {
+    setSubmitting(true);
+    onError?.(null);
     try {
       const res = await fetch(`/api/tasks/${encodeURIComponent(taskId)}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(patch),
+        body: JSON.stringify({ priority: 'low' }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || `Paperclip returned ${res.status}`);
+      if (!res.ok) throw new Error(data.error || `Priority change failed (${res.status})`);
       if (data.task && typeof onTaskUpdate === 'function') onTaskUpdate(data.task);
     } catch (err: any) {
-      setActionError(err?.message || 'Action failed');
+      onError?.(err?.message || 'Action failed');
     } finally {
-      setPendingActionId(null);
+      setSubmitting(false);
     }
   };
+
+  return (
+    <div className="w-full rounded-lg border border-border bg-surface-light/70 p-3 transition-colors hover:border-orange-500/30">
+      <div className="flex items-start justify-between gap-3 min-w-0">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 mb-1">
+            <span className={`text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full border ${TONE_CLASSES[item.tone] || TONE_CLASSES.orange}`}>
+              {item.type}
+            </span>
+          </div>
+          <div className="text-sm text-white truncate">{item.title}</div>
+          <div className="text-xs text-gray-500 truncate mt-0.5">{item.detail}</div>
+        </div>
+        <Clock className="w-4 h-4 text-gray-600 flex-shrink-0 mt-1" />
+      </div>
+
+      {/* Blocker reason / latest comment */}
+      <div className="mt-2 rounded border border-white/5 bg-white/[0.03] px-2.5 py-2 text-[11px] leading-snug">
+        {commentsLoading ? (
+          <span className="text-gray-500">Loading blocker reason…</span>
+        ) : latestComment ? (
+          <>
+            <div className="text-gray-400">
+              <span className="font-medium text-gray-300">{latestComment.author}</span>
+              <span className="text-gray-600"> · {formatCommentAge(latestComment.createdAt)}</span>
+            </div>
+            <div className="mt-0.5 line-clamp-3 whitespace-pre-wrap text-gray-200">{latestComment.body}</div>
+          </>
+        ) : (
+          <span className="text-gray-500">
+            {isBlocked
+              ? 'No blocker reason posted yet — open in Paperclip to dig in, or add a note below when you unblock.'
+              : 'No recent notes. Add one when marking done so the assignee has context.'}
+          </span>
+        )}
+      </div>
+
+      {/* Inline note form */}
+      {formMode ? (
+        <div className="mt-3 space-y-2">
+          <textarea
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder={formMode === 'unblock'
+              ? 'How was this unblocked? (optional, but recommended — assignee sees this)'
+              : 'Closing note (optional — explains what was decided / done)'}
+            rows={2}
+            disabled={submitting}
+            className="w-full rounded border border-white/10 bg-black/30 px-2 py-1.5 text-[12px] text-gray-100 placeholder:text-gray-600 focus:border-orange-500/40 outline-none"
+          />
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              disabled={submitting}
+              onClick={() => submitWithNote(formMode === 'unblock' ? 'in_progress' : 'done')}
+              className={`text-[11px] rounded border px-2 py-1 disabled:opacity-50 ${
+                formMode === 'unblock'
+                  ? 'border-blue-500/30 bg-blue-500/10 text-blue-300 hover:bg-blue-500/20'
+                  : 'border-green-500/30 bg-green-500/10 text-green-300 hover:bg-green-500/20'
+              }`}
+            >
+              {submitting ? 'Working…' : formMode === 'unblock' ? 'Confirm unblock' : 'Confirm done'}
+            </button>
+            <button
+              disabled={submitting}
+              onClick={() => { setFormMode(null); setNote(''); }}
+              className="text-[11px] rounded border border-gray-500/30 bg-white/[0.03] px-2 py-1 text-gray-300 hover:bg-white/[0.06] disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            {item.href && (
+              <a
+                href={item.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="ml-auto text-[11px] text-orange-300 hover:text-orange-200"
+              >
+                Open in Paperclip ↗
+              </a>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          {isBlocked ? (
+            <button
+              disabled={submitting}
+              onClick={() => setFormMode('unblock')}
+              className="text-[11px] rounded border border-blue-500/30 bg-blue-500/10 px-2 py-1 text-blue-300 hover:bg-blue-500/20 disabled:opacity-50"
+            >
+              Unblock with note
+            </button>
+          ) : (
+            <button
+              disabled={submitting}
+              onClick={() => setFormMode('done')}
+              className="text-[11px] rounded border border-green-500/30 bg-green-500/10 px-2 py-1 text-green-300 hover:bg-green-500/20 disabled:opacity-50"
+            >
+              Mark done with note
+            </button>
+          )}
+          {task.priority !== 'low' && (
+            <button
+              disabled={submitting}
+              onClick={lowerPriority}
+              className="text-[11px] rounded border border-gray-500/30 bg-white/[0.03] px-2 py-1 text-gray-300 hover:bg-white/[0.06] disabled:opacity-50"
+            >
+              {submitting ? 'Saving…' : 'Lower priority'}
+            </button>
+          )}
+          {item.href && (
+            <a
+              href={item.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ml-auto text-[11px] text-orange-300 hover:text-orange-200"
+            >
+              Open in Paperclip ↗
+            </a>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function NeedsMatQueue({ emails, tasks, calendarEvents, onOpenTasks, onOpenEmails, onTaskUpdate }: any) {
+  const now = Date.now();
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const activeTasks: any[] = (tasks || []).filter((t: any) => t.status !== 'completed');
 
@@ -961,14 +1182,6 @@ function NeedsMatQueue({ emails, tasks, calendarEvents, onOpenTasks, onOpenEmail
     events: prepEvents.length,
   };
 
-  const toneClasses: Record<string, string> = {
-    red: 'border-red-500/30 bg-red-500/10 text-red-300',
-    pink: 'border-pink-500/30 bg-pink-500/10 text-pink-300',
-    yellow: 'border-yellow-500/30 bg-yellow-500/10 text-yellow-300',
-    orange: 'border-orange-500/30 bg-orange-500/10 text-orange-300',
-    cyan: 'border-cyan-500/30 bg-cyan-500/10 text-cyan-300',
-  };
-
   return (
     <div className="bg-surface border border-orange-500/20 rounded-xl overflow-hidden shadow-lg shadow-orange-500/5">
       <div className="px-4 py-3 border-b border-border flex items-center justify-between">
@@ -1011,7 +1224,7 @@ function NeedsMatQueue({ emails, tasks, calendarEvents, onOpenTasks, onOpenEmail
             <div className="flex items-start justify-between gap-3 min-w-0">
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className={`text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full border ${toneClasses[item.tone] || toneClasses.orange}`}>
+                  <span className={`text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full border ${TONE_CLASSES[item.tone] || TONE_CLASSES.orange}`}>
                     {item.type}
                   </span>
                 </div>
@@ -1022,55 +1235,14 @@ function NeedsMatQueue({ emails, tasks, calendarEvents, onOpenTasks, onOpenEmail
             </div>
           );
 
-          // Paperclip-backed items get inline actions. Wrap in a non-button
-          // container so the action buttons (and the open-in-Paperclip link)
-          // aren't nested inside a parent <button>/<a>.
           if (item.task) {
-            const task = item.task;
-            const isBlocked = String(task.rawStatus || task.status || '').toLowerCase() === 'blocked';
-            const inFlight = pendingActionId === item.id;
             return (
-              <div key={item.id} className={rowClasses}>
-                {headerAndBody}
-                <div className="mt-3 flex flex-wrap items-center gap-2">
-                  {isBlocked ? (
-                    <button
-                      disabled={inFlight}
-                      onClick={() => runTaskAction(task.id, { status: 'in_progress' }, item.id)}
-                      className="text-[11px] rounded border border-blue-500/30 bg-blue-500/10 px-2 py-1 text-blue-300 hover:bg-blue-500/20 disabled:opacity-50"
-                    >
-                      {inFlight ? 'Unblocking…' : 'Unblock'}
-                    </button>
-                  ) : (
-                    <button
-                      disabled={inFlight}
-                      onClick={() => runTaskAction(task.id, { status: 'done' }, item.id)}
-                      className="text-[11px] rounded border border-green-500/30 bg-green-500/10 px-2 py-1 text-green-300 hover:bg-green-500/20 disabled:opacity-50"
-                    >
-                      {inFlight ? 'Saving…' : 'Mark done'}
-                    </button>
-                  )}
-                  {task.priority !== 'low' && (
-                    <button
-                      disabled={inFlight}
-                      onClick={() => runTaskAction(task.id, { priority: 'low' }, item.id)}
-                      className="text-[11px] rounded border border-gray-500/30 bg-white/[0.03] px-2 py-1 text-gray-300 hover:bg-white/[0.06] disabled:opacity-50"
-                    >
-                      Lower priority
-                    </button>
-                  )}
-                  {item.href && (
-                    <a
-                      href={item.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="ml-auto text-[11px] text-orange-300 hover:text-orange-200"
-                    >
-                      Open in Paperclip ↗
-                    </a>
-                  )}
-                </div>
-              </div>
+              <PaperclipTaskRow
+                key={item.id}
+                item={item}
+                onTaskUpdate={onTaskUpdate}
+                onError={setActionError}
+              />
             );
           }
 
