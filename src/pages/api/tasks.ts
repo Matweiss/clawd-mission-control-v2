@@ -4,7 +4,7 @@ const PAPERCLIP_API_URL = process.env.PAPERCLIP_API_URL || 'https://paperclip.th
 const PAPERCLIP_API_KEY = process.env.PAPERCLIP_API_KEY_STABLE || process.env.PAPERCLIP_API_KEY;
 const PAPERCLIP_COMPANY_ID = process.env.PAPERCLIP_COMPANY_ID;
 
-// Map Paperclip agent IDs to display names
+// Map Paperclip agent IDs to display names — kept in sync with src/pages/mat.tsx roster.
 const AGENT_NAMES: Record<string, string> = {
   'a0edadcb-f994-40e3-a9a1-d3ffde595c3e': 'Clawd',
   '6ec7b59f-8955-4d21-b4c3-c4b5a68772c8': 'Vandalay',
@@ -18,51 +18,93 @@ const AGENT_NAMES: Record<string, string> = {
   '61ee0d8e-ac57-47bc-8402-5d3a756427ad': 'Arty',
 };
 
-function mapPriority(p: string): 'high' | 'medium' | 'low' {
-  if (p === 'critical' || p === 'high') return 'high';
-  if (p === 'medium') return 'medium';
+export type TaskPriority = 'high' | 'medium' | 'low';
+export type TaskStatus = 'pending' | 'in_progress' | 'blocked' | 'completed';
+
+function mapPriority(p: unknown): TaskPriority {
+  const v = typeof p === 'string' ? p.toLowerCase() : '';
+  if (v === 'critical' || v === 'urgent' || v === 'high') return 'high';
+  if (v === 'medium' || v === 'normal') return 'medium';
   return 'low';
 }
 
-function mapStatus(s: string): 'pending' | 'in_progress' | 'completed' {
-  if (s === 'in_progress' || s === 'in_review') return 'in_progress';
-  if (s === 'done' || s === 'completed' || s === 'closed') return 'completed';
+function mapStatus(s: unknown): TaskStatus {
+  const v = typeof s === 'string' ? s.toLowerCase() : '';
+  if (v === 'blocked' || v === 'on_hold' || v === 'waiting') return 'blocked';
+  if (v === 'in_progress' || v === 'in_review' || v === 'review' || v === 'started') return 'in_progress';
+  if (v === 'done' || v === 'completed' || v === 'closed' || v === 'released') return 'completed';
   return 'pending';
+}
+
+function paperclipIssueUrl(identifierOrId: string) {
+  return `${PAPERCLIP_API_URL.replace(/\/+$/, '')}/issues/${identifierOrId}`;
+}
+
+function pickArray(payload: any): any[] {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.issues)) return payload.issues;
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload?.results)) return payload.results;
+  return [];
+}
+
+function projectName(issue: any): string | null {
+  if (typeof issue?.project?.name === 'string') return issue.project.name;
+  if (typeof issue?.projectName === 'string') return issue.projectName;
+  if (typeof issue?.project === 'string') return issue.project;
+  return null;
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (!PAPERCLIP_API_KEY || !PAPERCLIP_COMPANY_ID) {
-    return res.status(500).json({ error: 'Paperclip env not configured' });
+    return res.status(500).json({ error: 'Paperclip env not configured', tasks: [] });
   }
 
   try {
     const response = await fetch(
-      `${PAPERCLIP_API_URL}/api/companies/${PAPERCLIP_COMPANY_ID}/issues?status=todo,in_progress,blocked,done,completed&limit=75`,
+      `${PAPERCLIP_API_URL}/api/companies/${PAPERCLIP_COMPANY_ID}/issues?status=todo,in_progress,blocked,done,completed&limit=100`,
       { headers: { Authorization: `Bearer ${PAPERCLIP_API_KEY}` } }
     );
 
     if (!response.ok) {
-      return res.status(response.status).json({ error: 'Paperclip API error' });
+      return res.status(response.status).json({ error: 'Paperclip API error', tasks: [] });
     }
 
     const data = await response.json();
-    const raw: any[] = data.issues ?? data.data ?? (Array.isArray(data) ? data : []);
+    const raw = pickArray(data);
 
-    const tasks = raw.map((issue: any) => ({
-      id: issue.id,
-      identifier: issue.identifier,
-      title: issue.title,
-      priority: mapPriority(issue.priority),
-      status: mapStatus(issue.status),
-      assignee: issue.assigneeAgentId ? (AGENT_NAMES[issue.assigneeAgentId] ?? 'Agent') : null,
-      dueDate: issue.dueDate ?? null,
-      project: issue.project?.name ?? issue.projectName ?? null,
-      description: issue.description ?? issue.body ?? null,
-    }));
+    const tasks = raw
+      .filter((issue) => issue && typeof issue.id === 'string')
+      .map((issue: any) => {
+        const identifier: string | null = issue.identifier ?? null;
+        const id: string = issue.id;
+        const rawStatus: string = typeof issue.status === 'string' ? issue.status : '';
+        const assigneeAgentId: string | null = issue.assigneeAgentId ?? null;
+        const assignee = assigneeAgentId ? (AGENT_NAMES[assigneeAgentId] ?? 'Agent') : null;
+
+        return {
+          id,
+          identifier,
+          title: issue.title ?? 'Untitled Paperclip task',
+          priority: mapPriority(issue.priority),
+          status: mapStatus(rawStatus),
+          rawStatus,
+          assignee,
+          assigneeAgentId,
+          assigneeUserId: issue.assigneeUserId ?? null,
+          dueDate: issue.dueDate ?? null,
+          project: projectName(issue),
+          description: issue.description ?? issue.body ?? null,
+          createdAt: issue.createdAt ?? null,
+          updatedAt: issue.updatedAt ?? null,
+          lastActivityAt: issue.lastActivityAt ?? issue.updatedAt ?? null,
+          url: paperclipIssueUrl(identifier ?? id),
+        };
+      });
 
     res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=120');
     return res.status(200).json({ tasks });
   } catch (err) {
-    return res.status(500).json({ error: 'Failed to fetch tasks' });
+    return res.status(500).json({ error: 'Failed to fetch tasks', tasks: [] });
   }
 }

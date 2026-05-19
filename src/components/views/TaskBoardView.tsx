@@ -19,12 +19,18 @@ interface Task {
   id: string;
   identifier?: string | null;
   title: string;
-  status: 'pending' | 'in_progress' | 'completed';
+  status: 'pending' | 'in_progress' | 'blocked' | 'completed';
+  rawStatus?: string;
   priority: 'low' | 'medium' | 'high';
   dueDate?: string | null;
   assignee?: string | null;
+  assigneeAgentId?: string | null;
   project?: string | null;
   description?: string | null;
+  url?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+  lastActivityAt?: string | null;
 }
 
 type BoardView = 'kanban' | 'compact';
@@ -35,6 +41,7 @@ type SortMode = 'priority' | 'due' | 'newest';
 const COLUMNS: Array<{ id: Task['status']; label: string; color: string; helper: string }> = [
   { id: 'pending', label: 'To Do', color: 'bg-gray-500/20 text-gray-200', helper: 'Queued Paperclip work' },
   { id: 'in_progress', label: 'In Progress', color: 'bg-blue-500/20 text-blue-200', helper: 'Currently owned' },
+  { id: 'blocked', label: 'Blocked', color: 'bg-red-500/20 text-red-200', helper: 'Waiting on a decision or unblock' },
   { id: 'completed', label: 'Done', color: 'bg-green-500/20 text-green-200', helper: 'Recently completed' },
 ];
 
@@ -64,6 +71,7 @@ function dueTimestamp(dateStr?: string | null) {
 }
 
 function taskUrl(task: Task) {
+  if (task.url) return task.url;
   return `https://paperclip.thematweiss.com/issues/${task.identifier || task.id}`;
 }
 
@@ -143,8 +151,17 @@ export function TaskBoardView() {
     return COLUMNS.reduce<Record<Task['status'], number>>((acc, column) => {
       acc[column.id] = filteredTasks.filter((task) => task.status === column.id).length;
       return acc;
-    }, { pending: 0, in_progress: 0, completed: 0 });
+    }, { pending: 0, in_progress: 0, blocked: 0, completed: 0 });
   }, [filteredTasks]);
+
+  const attentionCounts = useMemo(() => {
+    const active = tasks.filter((task) => task.status !== 'completed');
+    return {
+      blocked: active.filter((task) => task.status === 'blocked').length,
+      high: active.filter((task) => task.priority === 'high').length,
+      unassignedHigh: active.filter((task) => task.priority === 'high' && !task.assignee).length,
+    };
+  }, [tasks]);
 
   const activeFilterCount = [query.trim(), priorityFilter !== 'all', assigneeFilter !== 'all', hideCompleted].filter(Boolean).length;
 
@@ -198,6 +215,32 @@ export function TaskBoardView() {
           </button>
         </div>
       </div>
+
+      {!loading && !error && tasks.length > 0 && (
+        <div className="mb-4 grid gap-3 sm:grid-cols-3">
+          <AttentionTile
+            tone="red"
+            label="Blocked"
+            count={attentionCounts.blocked}
+            helper={attentionCounts.blocked === 0 ? 'No blockers right now.' : 'Live blocked items need an unblock or decision.'}
+            onClick={() => { setHideCompleted(true); setPriorityFilter('all'); }}
+          />
+          <AttentionTile
+            tone="orange"
+            label="High priority active"
+            count={attentionCounts.high}
+            helper={attentionCounts.high === 0 ? 'No high-priority active work.' : 'High-priority work in flight or queued.'}
+            onClick={() => { setHideCompleted(true); setPriorityFilter('high'); }}
+          />
+          <AttentionTile
+            tone="yellow"
+            label="High & unassigned"
+            count={attentionCounts.unassignedHigh}
+            helper={attentionCounts.unassignedHigh === 0 ? 'Every high-priority item has an owner.' : 'High priority work without an owner.'}
+            onClick={() => { setHideCompleted(true); setPriorityFilter('high'); setAssigneeFilter('unassigned'); }}
+          />
+        </div>
+      )}
 
       <div className="mb-5 rounded-xl border border-white/10 bg-[#161616] p-4">
         <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
@@ -310,7 +353,7 @@ export function TaskBoardView() {
 
 function KanbanBoard({ tasks, counts, onSelectTask }: { tasks: Task[]; counts: Record<Task['status'], number>; onSelectTask: (task: Task) => void }) {
   return (
-    <div className="grid gap-4 lg:grid-cols-3">
+    <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
       {COLUMNS.map((column) => {
         const columnTasks = tasks.filter((task) => task.status === column.id);
         return (
@@ -420,7 +463,41 @@ function TaskCard({ task, onSelectTask }: { task: Task; onSelectTask: (task: Tas
 function StatusIcon({ status }: { status: Task['status'] }) {
   if (status === 'completed') return <CheckCircle2 className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-400" />;
   if (status === 'in_progress') return <KanbanSquare className="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-400" />;
+  if (status === 'blocked') return <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-400" />;
   return <Circle className="mt-0.5 h-5 w-5 flex-shrink-0 text-gray-500" />;
+}
+
+function AttentionTile({
+  tone,
+  label,
+  count,
+  helper,
+  onClick,
+}: {
+  tone: 'red' | 'orange' | 'yellow';
+  label: string;
+  count: number;
+  helper: string;
+  onClick: () => void;
+}) {
+  const toneClasses: Record<'red' | 'orange' | 'yellow', string> = {
+    red: 'border-red-500/30 bg-red-500/10 text-red-200',
+    orange: 'border-orange-500/30 bg-orange-500/10 text-orange-200',
+    yellow: 'border-yellow-500/30 bg-yellow-500/10 text-yellow-200',
+  };
+  return (
+    <button
+      onClick={onClick}
+      className={`flex w-full items-start justify-between rounded-xl border ${toneClasses[tone]} px-4 py-3 text-left transition-colors hover:brightness-110`}
+    >
+      <div>
+        <div className="text-xs uppercase tracking-wide opacity-70">{label}</div>
+        <div className="mt-1 text-2xl font-bold font-mono">{count}</div>
+        <div className="mt-1 text-xs opacity-70">{helper}</div>
+      </div>
+      <AlertCircle className="h-4 w-4 opacity-70" />
+    </button>
+  );
 }
 
 function TaskDetailModal({ task, onClose }: { task: Task; onClose: () => void }) {

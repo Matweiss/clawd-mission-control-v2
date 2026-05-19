@@ -81,7 +81,9 @@ export default function MatMissionControl() {
       agent_id: agent.id,
       status: agent.status,
       updated_at: agent.lastActive,
-      success_rate: agent.status === 'error' ? 62 : agent.status === 'running' ? 96 : 88,
+      // success_rate is intentionally null — telemetry source isn't wired yet.
+      // AgentCommandCenter renders "live / unavailable" instead of a fake percentage.
+      success_rate: null,
       last_task: agent.role,
       model: agent.model,
       source_agent_id: agent.sourceAgentId,
@@ -953,29 +955,61 @@ function EmailPanel({ urgent, replyNeeded, fyiCount, onViewDetails }: any) {
 
 
 // Needs Mat Queue
+//
+// Live attention sources (this sprint):
+// - Paperclip blocked tasks (rawStatus === 'blocked')
+// - Paperclip tasks whose title/description mentions approval, Mat, decision, blocker, review
+// - High-priority active tasks (especially unassigned)
+// - Stale in_progress tasks (no update in > 72 hours)
+// - Gmail URGENT / REPLY_NEEDED categories (via email_categories Supabase table)
+// - Calendar events within the next 36 hours (via calendar_events Supabase table)
+//
+// Not-yet-connected sources are listed under "Coming soon" instead of being faked.
+const APPROVAL_REGEX = /\b(approve|approval|approvals|needs mat|for mat|decision|blocker|blocked|sign[- ]?off|review[- ]?ready)\b/i;
+const STALE_IN_PROGRESS_MS = 72 * 60 * 60 * 1000;
+
 function NeedsMatQueue({ emails, tasks, calendarEvents, onOpenTasks, onOpenEmails }: any) {
   const now = Date.now();
-  const blockedTasks = (tasks || []).filter((task: any) =>
-    task.status === 'blocked' ||
-    /mat|approval|approve|decision|blocked|review/i.test(`${task.title || ''} ${task.description || ''}`)
+
+  const activeTasks: any[] = (tasks || []).filter((t: any) => t.status !== 'completed');
+
+  const blockedTasks = activeTasks.filter((task: any) => {
+    const rawStatus = String(task.rawStatus || task.status || '').toLowerCase();
+    if (rawStatus === 'blocked') return true;
+    const text = `${task.title || ''} ${task.description || ''}`;
+    return APPROVAL_REGEX.test(text);
+  });
+
+  const highTasks = activeTasks
+    .filter((task: any) => task.priority === 'high')
+    .sort((a: any, b: any) => Number(!a.assignee) - Number(!b.assignee));
+
+  const staleInProgress = activeTasks.filter((task: any) => {
+    const rawStatus = String(task.rawStatus || task.status || '').toLowerCase();
+    if (rawStatus !== 'in_progress') return false;
+    const stamp = task.updatedAt || task.lastActivityAt;
+    if (!stamp) return false;
+    const ts = new Date(stamp).getTime();
+    return Number.isFinite(ts) && now - ts > STALE_IN_PROGRESS_MS;
+  });
+
+  const replyEmails = (emails || []).filter((email: any) =>
+    ['URGENT', 'REPLY_NEEDED'].includes(email.category)
   );
-  const highTasks = (tasks || []).filter((task: any) => task.priority === 'high' && task.status !== 'completed').slice(0, 4);
-  const replyEmails = (emails || []).filter((email: any) => ['URGENT', 'REPLY_NEEDED'].includes(email.category)).slice(0, 4);
-  const prepEvents = (calendarEvents || [])
-    .filter((event: any) => {
-      const start = new Date(event.start || event.start_time || event.startTime || event.date).getTime();
-      return Number.isFinite(start) && start >= now && start - now <= 36 * 60 * 60 * 1000;
-    })
-    .slice(0, 3);
+  const prepEvents = (calendarEvents || []).filter((event: any) => {
+    const start = new Date(event.start || event.start_time || event.startTime || event.date).getTime();
+    return Number.isFinite(start) && start >= now && start - now <= 36 * 60 * 60 * 1000;
+  });
 
   const queue = [
-    ...replyEmails.map((email: any) => ({
-      id: `email-${email.id || email.subject}`,
+    ...replyEmails.slice(0, 3).map((email: any) => ({
+      id: `email-${email.id || email.message_id || email.subject}`,
       type: email.category === 'URGENT' ? 'urgent email' : 'reply needed',
       title: email.subject || 'Email needs review',
       detail: email.from_name || email.from_email || 'Gmail',
       tone: email.category === 'URGENT' ? 'red' : 'pink',
       action: onOpenEmails,
+      href: undefined,
     })),
     ...blockedTasks.slice(0, 5).map((task: any) => ({
       id: `blocked-${task.id}`,
@@ -984,29 +1018,44 @@ function NeedsMatQueue({ emails, tasks, calendarEvents, onOpenTasks, onOpenEmail
       detail: task.assignee ? `${task.assignee}${task.project ? ` • ${task.project}` : ''}` : task.project || task.identifier || 'Paperclip',
       tone: 'yellow',
       action: onOpenTasks,
+      href: task.url,
     })),
-    ...highTasks.map((task: any) => ({
+    ...highTasks.slice(0, 4).map((task: any) => ({
       id: `high-${task.id}`,
-      type: 'high priority task',
+      type: task.assignee ? 'high priority task' : 'high · unassigned',
       title: task.title,
-      detail: task.assignee ? `${task.assignee}${task.dueDate ? ` • due ${task.dueDate}` : ''}` : task.identifier || 'Paperclip',
-      tone: 'orange',
+      detail: task.assignee
+        ? `${task.assignee}${task.dueDate ? ` • due ${task.dueDate}` : ''}`
+        : `Unassigned${task.identifier ? ` • ${task.identifier}` : ''}`,
+      tone: task.assignee ? 'orange' : 'red',
       action: onOpenTasks,
+      href: task.url,
     })),
-    ...prepEvents.map((event: any) => ({
+    ...staleInProgress.slice(0, 3).map((task: any) => ({
+      id: `stale-${task.id}`,
+      type: 'stale in progress',
+      title: task.title,
+      detail: `${task.assignee || 'Unassigned'} • last update ${task.updatedAt ? new Date(task.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'unknown'}`,
+      tone: 'yellow',
+      action: onOpenTasks,
+      href: task.url,
+    })),
+    ...prepEvents.slice(0, 3).map((event: any) => ({
       id: `event-${event.id || event.summary}`,
       type: 'calendar prep',
       title: event.summary || 'Upcoming event',
       detail: new Date(event.start || event.start_time || event.startTime || event.date).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }),
       tone: 'cyan',
       action: undefined,
+      href: undefined,
     })),
-  ].slice(0, 8);
+  ].slice(0, 10);
 
   const counts = {
     emails: replyEmails.length,
     blockers: blockedTasks.length,
     high: highTasks.length,
+    stale: staleInProgress.length,
     events: prepEvents.length,
   };
 
@@ -1029,15 +1078,16 @@ function NeedsMatQueue({ emails, tasks, calendarEvents, onOpenTasks, onOpenEmail
               {queue.length} open
             </span>
           </div>
-          <p className="text-xs text-gray-500 mt-1">Approvals, blockers, replies, and prep items in one place</p>
+          <p className="text-xs text-gray-500 mt-1">Live Paperclip blockers, high-priority work, stale items, replies, and prep — no demo data.</p>
         </div>
         <button onClick={onOpenTasks} className="text-xs text-orange-300 hover:text-orange-200">Open board →</button>
       </div>
 
-      <div className="grid grid-cols-4 border-b border-border text-center text-xs">
+      <div className="grid grid-cols-5 border-b border-border text-center text-xs">
         <div className="py-2"><div className="font-mono text-white">{counts.emails}</div><div className="text-gray-500">Emails</div></div>
         <div className="py-2"><div className="font-mono text-white">{counts.blockers}</div><div className="text-gray-500">Blockers</div></div>
         <div className="py-2"><div className="font-mono text-white">{counts.high}</div><div className="text-gray-500">High</div></div>
+        <div className="py-2"><div className="font-mono text-white">{counts.stale}</div><div className="text-gray-500">Stale</div></div>
         <div className="py-2"><div className="font-mono text-white">{counts.events}</div><div className="text-gray-500">Prep</div></div>
       </div>
 
@@ -1047,12 +1097,8 @@ function NeedsMatQueue({ emails, tasks, calendarEvents, onOpenTasks, onOpenEmail
             <CheckCircle className="w-7 h-7 mx-auto mb-2 text-green-400/70" />
             Nothing needs Mat right now.
           </div>
-        ) : queue.map((item: any) => (
-          <button
-            key={item.id}
-            onClick={item.action}
-            className="w-full text-left rounded-lg border border-border bg-surface-light/70 p-3 hover:border-orange-500/30 transition-colors"
-          >
+        ) : queue.map((item: any) => {
+          const inner = (
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <div className="flex items-center gap-2 mb-1">
@@ -1065,8 +1111,38 @@ function NeedsMatQueue({ emails, tasks, calendarEvents, onOpenTasks, onOpenEmail
               </div>
               <Clock className="w-4 h-4 text-gray-600 flex-shrink-0 mt-1" />
             </div>
-          </button>
-        ))}
+          );
+
+          if (item.href) {
+            return (
+              <a
+                key={item.id}
+                href={item.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block w-full text-left rounded-lg border border-border bg-surface-light/70 p-3 hover:border-orange-500/30 transition-colors"
+              >
+                {inner}
+              </a>
+            );
+          }
+          return (
+            <button
+              key={item.id}
+              onClick={item.action}
+              className="w-full text-left rounded-lg border border-border bg-surface-light/70 p-3 hover:border-orange-500/30 transition-colors"
+            >
+              {inner}
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="px-3 pb-3">
+        <div className="rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-[11px] leading-snug text-gray-500">
+          <div className="font-medium text-gray-400 mb-1">Coming soon</div>
+          <div>Agent draft-approval queue, Hermes email draft approvals, and Granola action-item routing are not yet wired in. When sources land they will appear here automatically.</div>
+        </div>
       </div>
     </div>
   );
