@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
+import Link from 'next/link';
 import {
   Activity, Mail, Cpu, Zap, TrendingUp, AlertCircle,
-  CheckCircle, Clock, RefreshCw, Command, Reply, X,
+  CheckCircle, Clock, RefreshCw, Command, Reply, X, Briefcase,
 } from 'lucide-react';
 import { useCommandPalette, useRealtimeData, useAgentActions } from '../hooks/useMissionControl';
 import { useAgentStatus } from '../hooks/useAgentStatus';
@@ -498,6 +499,15 @@ export default function MatMissionControl() {
             >
               <RefreshCw className="w-5 h-5" />
             </button>
+
+            <Link
+              href="/crm"
+              className="flex items-center gap-2 rounded-xl border border-orange-400/30 bg-orange-500/10 hover:bg-orange-500/20 px-3 py-1.5 text-sm text-orange-300"
+              title="Open the CRM kanban"
+            >
+              <Briefcase className="w-4 h-4" />
+              <span className="hidden sm:inline">CRM</span>
+            </Link>
 
             {!isSarahMode && <NotificationCenter />}
 
