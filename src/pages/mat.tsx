@@ -264,6 +264,26 @@ export default function MatMissionControl() {
     setTasks(tasks.filter(t => t.id !== id));
   };
 
+  // Merge a Paperclip task PATCH response into local state.
+  // Used by NeedsMatQueue inline actions so the queue updates without
+  // waiting on the next 2-minute /api/tasks poll. Map server rawStatus
+  // back to the dashboard's flattened status field so attention heuristics stay correct.
+  const applyTaskPatch = (updated: any) => {
+    if (!updated || !updated.id) return;
+    setTasks((prev) =>
+      prev.map((t: any) => {
+        if (t.id !== updated.id) return t;
+        const merged = { ...t, ...updated };
+        const rs = String(updated.rawStatus || '').toLowerCase();
+        if (rs === 'blocked') merged.status = 'blocked';
+        else if (rs === 'in_progress' || rs === 'in_review') merged.status = 'in_progress';
+        else if (rs === 'done' || rs === 'completed' || rs === 'closed') merged.status = 'completed';
+        else if (rs) merged.status = 'pending';
+        return merged;
+      })
+    );
+  };
+
   return (
     <div className="mission-shell min-h-screen text-white flex flex-col">
       <Head>
@@ -625,7 +645,7 @@ export default function MatMissionControl() {
             {/* Mobile Work tab */}
             {mobileTab === 'work' && (
               <div className="space-y-4">
-                <NeedsMatQueue emails={emails} tasks={tasks} calendarEvents={calendarEvents} onOpenTasks={() => setShowTaskModal(true)} onOpenEmails={() => setShowEmailModal(true)} />
+                <NeedsMatQueue emails={emails} tasks={tasks} calendarEvents={calendarEvents} onOpenTasks={() => setShowTaskModal(true)} onOpenEmails={() => setShowEmailModal(true)} onTaskUpdate={applyTaskPatch} />
                 <MergedCalendarCard />
                 <EmailCard />
                 <PipelineSheetCard />
@@ -642,7 +662,7 @@ export default function MatMissionControl() {
             {desktopSection === 'work' && (
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-4">
-                  <NeedsMatQueue emails={emails} tasks={tasks} calendarEvents={calendarEvents} onOpenTasks={() => setShowTaskModal(true)} onOpenEmails={() => setShowEmailModal(true)} />
+                  <NeedsMatQueue emails={emails} tasks={tasks} calendarEvents={calendarEvents} onOpenTasks={() => setShowTaskModal(true)} onOpenEmails={() => setShowEmailModal(true)} onTaskUpdate={applyTaskPatch} />
                   <MergedCalendarCard />
                   <EmailCard />
                 </div>
@@ -825,8 +845,30 @@ export default function MatMissionControl() {
 const APPROVAL_REGEX = /\b(approve|approval|approvals|needs mat|for mat|decision|blocker|blocked|sign[- ]?off|review[- ]?ready)\b/i;
 const STALE_IN_PROGRESS_MS = 72 * 60 * 60 * 1000;
 
-function NeedsMatQueue({ emails, tasks, calendarEvents, onOpenTasks, onOpenEmails }: any) {
+function NeedsMatQueue({ emails, tasks, calendarEvents, onOpenTasks, onOpenEmails, onTaskUpdate }: any) {
   const now = Date.now();
+  const [pendingActionId, setPendingActionId] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+
+  const runTaskAction = async (taskId: string, patch: Record<string, unknown>, queueItemId: string) => {
+    if (!taskId) return;
+    setPendingActionId(queueItemId);
+    setActionError(null);
+    try {
+      const res = await fetch(`/api/tasks/${encodeURIComponent(taskId)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(patch),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || `Paperclip returned ${res.status}`);
+      if (data.task && typeof onTaskUpdate === 'function') onTaskUpdate(data.task);
+    } catch (err: any) {
+      setActionError(err?.message || 'Action failed');
+    } finally {
+      setPendingActionId(null);
+    }
+  };
 
   const activeTasks: any[] = (tasks || []).filter((t: any) => t.status !== 'completed');
 
@@ -876,6 +918,7 @@ function NeedsMatQueue({ emails, tasks, calendarEvents, onOpenTasks, onOpenEmail
       tone: 'yellow',
       action: onOpenTasks,
       href: task.url,
+      task,
     })),
     ...highTasks.slice(0, 4).map((task: any) => ({
       id: `high-${task.id}`,
@@ -887,6 +930,7 @@ function NeedsMatQueue({ emails, tasks, calendarEvents, onOpenTasks, onOpenEmail
       tone: task.assignee ? 'orange' : 'red',
       action: onOpenTasks,
       href: task.url,
+      task,
     })),
     ...staleInProgress.slice(0, 3).map((task: any) => ({
       id: `stale-${task.id}`,
@@ -896,6 +940,7 @@ function NeedsMatQueue({ emails, tasks, calendarEvents, onOpenTasks, onOpenEmail
       tone: 'yellow',
       action: onOpenTasks,
       href: task.url,
+      task,
     })),
     ...prepEvents.slice(0, 3).map((event: any) => ({
       id: `event-${event.id || event.summary}`,
@@ -948,6 +993,12 @@ function NeedsMatQueue({ emails, tasks, calendarEvents, onOpenTasks, onOpenEmail
         <div className="py-2"><div className="font-mono text-white">{counts.events}</div><div className="text-gray-500">Prep</div></div>
       </div>
 
+      {actionError && (
+        <div className="mx-3 mt-3 rounded border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-300">
+          {actionError}
+        </div>
+      )}
+
       <div className="p-3 space-y-2">
         {queue.length === 0 ? (
           <div className="py-6 text-center text-sm text-gray-500">
@@ -955,9 +1006,10 @@ function NeedsMatQueue({ emails, tasks, calendarEvents, onOpenTasks, onOpenEmail
             Nothing needs Mat right now.
           </div>
         ) : queue.map((item: any) => {
-          const inner = (
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
+          const rowClasses = 'w-full rounded-lg border border-border bg-surface-light/70 p-3 transition-colors hover:border-orange-500/30';
+          const headerAndBody = (
+            <div className="flex items-start justify-between gap-3 min-w-0">
+              <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 mb-1">
                   <span className={`text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full border ${toneClasses[item.tone] || toneClasses.orange}`}>
                     {item.type}
@@ -970,6 +1022,58 @@ function NeedsMatQueue({ emails, tasks, calendarEvents, onOpenTasks, onOpenEmail
             </div>
           );
 
+          // Paperclip-backed items get inline actions. Wrap in a non-button
+          // container so the action buttons (and the open-in-Paperclip link)
+          // aren't nested inside a parent <button>/<a>.
+          if (item.task) {
+            const task = item.task;
+            const isBlocked = String(task.rawStatus || task.status || '').toLowerCase() === 'blocked';
+            const inFlight = pendingActionId === item.id;
+            return (
+              <div key={item.id} className={rowClasses}>
+                {headerAndBody}
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  {isBlocked ? (
+                    <button
+                      disabled={inFlight}
+                      onClick={() => runTaskAction(task.id, { status: 'in_progress' }, item.id)}
+                      className="text-[11px] rounded border border-blue-500/30 bg-blue-500/10 px-2 py-1 text-blue-300 hover:bg-blue-500/20 disabled:opacity-50"
+                    >
+                      {inFlight ? 'Unblocking…' : 'Unblock'}
+                    </button>
+                  ) : (
+                    <button
+                      disabled={inFlight}
+                      onClick={() => runTaskAction(task.id, { status: 'done' }, item.id)}
+                      className="text-[11px] rounded border border-green-500/30 bg-green-500/10 px-2 py-1 text-green-300 hover:bg-green-500/20 disabled:opacity-50"
+                    >
+                      {inFlight ? 'Saving…' : 'Mark done'}
+                    </button>
+                  )}
+                  {task.priority !== 'low' && (
+                    <button
+                      disabled={inFlight}
+                      onClick={() => runTaskAction(task.id, { priority: 'low' }, item.id)}
+                      className="text-[11px] rounded border border-gray-500/30 bg-white/[0.03] px-2 py-1 text-gray-300 hover:bg-white/[0.06] disabled:opacity-50"
+                    >
+                      Lower priority
+                    </button>
+                  )}
+                  {item.href && (
+                    <a
+                      href={item.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="ml-auto text-[11px] text-orange-300 hover:text-orange-200"
+                    >
+                      Open in Paperclip ↗
+                    </a>
+                  )}
+                </div>
+              </div>
+            );
+          }
+
           if (item.href) {
             return (
               <a
@@ -977,9 +1081,9 @@ function NeedsMatQueue({ emails, tasks, calendarEvents, onOpenTasks, onOpenEmail
                 href={item.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block w-full text-left rounded-lg border border-border bg-surface-light/70 p-3 hover:border-orange-500/30 transition-colors"
+                className={`block text-left ${rowClasses}`}
               >
-                {inner}
+                {headerAndBody}
               </a>
             );
           }
@@ -987,9 +1091,9 @@ function NeedsMatQueue({ emails, tasks, calendarEvents, onOpenTasks, onOpenEmail
             <button
               key={item.id}
               onClick={item.action}
-              className="w-full text-left rounded-lg border border-border bg-surface-light/70 p-3 hover:border-orange-500/30 transition-colors"
+              className={`text-left ${rowClasses}`}
             >
-              {inner}
+              {headerAndBody}
             </button>
           );
         })}
