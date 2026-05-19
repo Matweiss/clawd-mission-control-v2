@@ -55,9 +55,13 @@ export default async function handler(_req: NextApiRequest, res: NextApiResponse
   }
 
   try {
+    // Filter to the dashboard owner when HUBSPOT_OWNER_ID is set so Mat's
+    // kanban only shows deals he owns. Leave unfiltered if the env is absent.
+    const ownerId = (process.env.HUBSPOT_OWNER_ID || '').trim() || undefined;
+
     const [pipelines, dealsResp] = await Promise.all([
       listDealPipelines(),
-      searchAllOpenDeals(150),
+      searchAllOpenDeals(150, ownerId),
     ]);
 
     const now = new Date();
@@ -124,6 +128,7 @@ export default async function handler(_req: NextApiRequest, res: NextApiResponse
       meta: {
         totalDeals: (dealsResp.results || []).length,
         fetchedAt: new Date().toISOString(),
+        ownerFilter: ownerId || null,
       },
     });
   } catch (err: any) {

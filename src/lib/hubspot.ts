@@ -102,8 +102,12 @@ export async function listDealPipelines() {
   return data.results || [];
 }
 
-export async function searchAllOpenDeals(limit = 100) {
-  const body = {
+export async function searchAllOpenDeals(limit = 100, ownerId?: string) {
+  const filterGroups = ownerId
+    ? [{ filters: [{ propertyName: 'hubspot_owner_id', operator: 'EQ', value: ownerId }] }]
+    : undefined;
+
+  const body: Record<string, unknown> = {
     limit,
     properties: [
       'dealname',
@@ -119,6 +123,8 @@ export async function searchAllOpenDeals(limit = 100) {
     ],
     sorts: [{ propertyName: 'hs_lastmodifieddate', direction: 'DESCENDING' }],
   };
+  if (filterGroups) body.filterGroups = filterGroups;
+
   return hubSpotRequest<HubSpotSearchResponse>('/crm/v3/objects/deals/search', {
     method: 'POST',
     body: JSON.stringify(body),
