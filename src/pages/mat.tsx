@@ -264,6 +264,16 @@ export default function MatMissionControl() {
     setTasks(tasks.filter(t => t.id !== id));
   };
 
+  // Prepend a newly-created Paperclip task into local state so it shows in
+  // the queue immediately (without waiting for the next 2-minute poll).
+  const applyTaskCreate = (created: any) => {
+    if (!created || !created.id) return;
+    setTasks((prev) => {
+      if (prev.some((t: any) => t.id === created.id)) return prev;
+      return [created, ...prev];
+    });
+  };
+
   // Merge a Paperclip task PATCH response into local state.
   // Used by NeedsMatQueue inline actions so the queue updates without
   // waiting on the next 2-minute /api/tasks poll. Map server rawStatus
@@ -645,7 +655,7 @@ export default function MatMissionControl() {
             {/* Mobile Work tab */}
             {mobileTab === 'work' && (
               <div className="space-y-4">
-                <NeedsMatQueue emails={emails} tasks={tasks} calendarEvents={calendarEvents} onOpenTasks={() => setShowTaskModal(true)} onOpenEmails={() => setShowEmailModal(true)} onTaskUpdate={applyTaskPatch} />
+                <NeedsMatQueue emails={emails} tasks={tasks} calendarEvents={calendarEvents} onOpenTasks={() => setShowTaskModal(true)} onOpenEmails={() => setShowEmailModal(true)} onTaskUpdate={applyTaskPatch} onTaskCreate={applyTaskCreate} />
                 <MergedCalendarCard />
                 <EmailCard />
                 <PipelineSheetCard />
@@ -662,7 +672,7 @@ export default function MatMissionControl() {
             {desktopSection === 'work' && (
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-4">
-                  <NeedsMatQueue emails={emails} tasks={tasks} calendarEvents={calendarEvents} onOpenTasks={() => setShowTaskModal(true)} onOpenEmails={() => setShowEmailModal(true)} onTaskUpdate={applyTaskPatch} />
+                  <NeedsMatQueue emails={emails} tasks={tasks} calendarEvents={calendarEvents} onOpenTasks={() => setShowTaskModal(true)} onOpenEmails={() => setShowEmailModal(true)} onTaskUpdate={applyTaskPatch} onTaskCreate={applyTaskCreate} />
                   <MergedCalendarCard />
                   <EmailCard />
                 </div>
@@ -894,6 +904,7 @@ function PaperclipTaskRow({
   const [formMode, setFormMode] = useState<null | 'unblock' | 'done'>(null);
   const [note, setNote] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [showReassign, setShowReassign] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -955,6 +966,26 @@ function PaperclipTaskRow({
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || `Priority change failed (${res.status})`);
+      if (data.task && typeof onTaskUpdate === 'function') onTaskUpdate(data.task);
+    } catch (err: any) {
+      onError?.(err?.message || 'Action failed');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const reassignTo = async (agentId: string | null) => {
+    setSubmitting(true);
+    setShowReassign(false);
+    onError?.(null);
+    try {
+      const res = await fetch(`/api/tasks/${encodeURIComponent(taskId)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ assigneeAgentId: agentId }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || `Reassign failed (${res.status})`);
       if (data.task && typeof onTaskUpdate === 'function') onTaskUpdate(data.task);
     } catch (err: any) {
       onError?.(err?.message || 'Action failed');
@@ -1044,7 +1075,7 @@ function PaperclipTaskRow({
           </div>
         </div>
       ) : (
-        <div className="mt-3 flex flex-wrap items-center gap-2">
+        <div className="mt-3 flex flex-wrap items-center gap-2 relative">
           {isBlocked ? (
             <button
               disabled={submitting}
@@ -1071,6 +1102,13 @@ function PaperclipTaskRow({
               {submitting ? 'Saving…' : 'Lower priority'}
             </button>
           )}
+          <button
+            disabled={submitting}
+            onClick={() => setShowReassign((v) => !v)}
+            className="text-[11px] rounded border border-purple-500/30 bg-purple-500/10 px-2 py-1 text-purple-300 hover:bg-purple-500/20 disabled:opacity-50"
+          >
+            Reassign{task.assignee ? ` (from ${task.assignee})` : ''}
+          </button>
           {item.href && (
             <a
               href={item.href}
@@ -1081,15 +1119,75 @@ function PaperclipTaskRow({
               Open in Paperclip ↗
             </a>
           )}
+          {showReassign && (
+            <div className="absolute left-0 top-full mt-1 z-10 w-56 rounded-lg border border-white/10 bg-[#171717] shadow-xl shadow-black/40 p-1 max-h-72 overflow-y-auto">
+              <button
+                onClick={() => reassignTo(null)}
+                className="w-full text-left text-[12px] rounded px-2 py-1 text-gray-400 hover:bg-white/[0.05]"
+              >
+                Unassign
+              </button>
+              <div className="my-1 border-t border-white/10" />
+              {AGENT_ROSTER.map((agent) => (
+                <button
+                  key={agent.id}
+                  disabled={agent.id === task.assigneeAgentId}
+                  onClick={() => reassignTo(agent.id)}
+                  className="w-full flex items-center gap-2 text-left text-[12px] rounded px-2 py-1 text-gray-200 hover:bg-white/[0.05] disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <span>{agent.emoji}</span>
+                  <span className="truncate">{agent.name}</span>
+                  <span className="ml-auto text-[10px] text-gray-500 truncate">{agent.role}</span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>
   );
 }
 
-function NeedsMatQueue({ emails, tasks, calendarEvents, onOpenTasks, onOpenEmails, onTaskUpdate }: any) {
+function NeedsMatQueue({ emails, tasks, calendarEvents, onOpenTasks, onOpenEmails, onTaskUpdate, onTaskCreate }: any) {
   const now = Date.now();
   const [actionError, setActionError] = useState<string | null>(null);
+  const [showCreate, setShowCreate] = useState(false);
+  const [newTitle, setNewTitle] = useState('');
+  const [newDescription, setNewDescription] = useState('');
+  const [newPriority, setNewPriority] = useState<'low' | 'medium' | 'high' | 'critical'>('medium');
+  const [newAssigneeId, setNewAssigneeId] = useState<string>(''); // '' = unassigned
+  const [creating, setCreating] = useState(false);
+
+  const createTask = async () => {
+    const title = newTitle.trim();
+    if (!title) return;
+    setCreating(true);
+    setActionError(null);
+    try {
+      const res = await fetch('/api/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title,
+          description: newDescription.trim() || undefined,
+          priority: newPriority,
+          assigneeAgentId: newAssigneeId || null,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || `Create failed (${res.status})`);
+      if (data.task && typeof onTaskCreate === 'function') onTaskCreate(data.task);
+      setShowCreate(false);
+      setNewTitle('');
+      setNewDescription('');
+      setNewPriority('medium');
+      setNewAssigneeId('');
+    } catch (err: any) {
+      setActionError(err?.message || 'Create failed');
+    } finally {
+      setCreating(false);
+    }
+  };
 
   const activeTasks: any[] = (tasks || []).filter((t: any) => t.status !== 'completed');
 
@@ -1195,8 +1293,70 @@ function NeedsMatQueue({ emails, tasks, calendarEvents, onOpenTasks, onOpenEmail
           </div>
           <p className="text-xs text-gray-500 mt-1">Live Paperclip blockers, high-priority work, stale items, replies, and prep — no demo data.</p>
         </div>
-        <button onClick={onOpenTasks} className="text-xs text-orange-300 hover:text-orange-200">Open board →</button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowCreate((v) => !v)}
+            className="text-xs px-2 py-1 rounded border border-orange-500/30 bg-orange-500/10 text-orange-300 hover:bg-orange-500/20"
+          >
+            {showCreate ? 'Cancel' : '+ New'}
+          </button>
+          <button onClick={onOpenTasks} className="text-xs text-orange-300 hover:text-orange-200">Open board →</button>
+        </div>
       </div>
+
+      {showCreate && (
+        <div className="border-b border-border bg-white/[0.02] px-3 py-3 space-y-2">
+          <input
+            value={newTitle}
+            onChange={(e) => setNewTitle(e.target.value)}
+            placeholder="Task title (required)"
+            maxLength={200}
+            disabled={creating}
+            className="w-full rounded border border-white/10 bg-black/30 px-2 py-1.5 text-[13px] text-gray-100 placeholder:text-gray-600 focus:border-orange-500/40 outline-none"
+          />
+          <textarea
+            value={newDescription}
+            onChange={(e) => setNewDescription(e.target.value)}
+            placeholder="Description (optional)"
+            rows={2}
+            disabled={creating}
+            className="w-full rounded border border-white/10 bg-black/30 px-2 py-1.5 text-[12px] text-gray-100 placeholder:text-gray-600 focus:border-orange-500/40 outline-none"
+          />
+          <div className="flex flex-wrap items-center gap-2">
+            <select
+              value={newPriority}
+              onChange={(e) => setNewPriority(e.target.value as any)}
+              disabled={creating}
+              className="rounded border border-white/10 bg-black/30 px-2 py-1 text-[12px] text-gray-200"
+            >
+              <option value="low">Low priority</option>
+              <option value="medium">Medium priority</option>
+              <option value="high">High priority</option>
+              <option value="critical">Critical priority</option>
+            </select>
+            <select
+              value={newAssigneeId}
+              onChange={(e) => setNewAssigneeId(e.target.value)}
+              disabled={creating}
+              className="rounded border border-white/10 bg-black/30 px-2 py-1 text-[12px] text-gray-200"
+            >
+              <option value="">Unassigned</option>
+              {AGENT_ROSTER.map((agent) => (
+                <option key={agent.id} value={agent.id}>
+                  {agent.emoji} {agent.name} — {agent.role}
+                </option>
+              ))}
+            </select>
+            <button
+              disabled={creating || !newTitle.trim()}
+              onClick={createTask}
+              className="ml-auto text-[11px] rounded border border-green-500/30 bg-green-500/10 px-3 py-1 text-green-300 hover:bg-green-500/20 disabled:opacity-40"
+            >
+              {creating ? 'Creating…' : 'Create in Paperclip'}
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-5 border-b border-border text-center text-xs">
         <div className="py-2"><div className="font-mono text-white">{counts.emails}</div><div className="text-gray-500">Emails</div></div>
