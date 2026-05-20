@@ -95,8 +95,23 @@ interface DealDetail {
   companies: Company[];
   gmail: GmailThread[];
   paperclipTasks: LinkedTask[];
-  notion: { connected: boolean; note: string };
-  granola: { connected: boolean; note: string };
+  notion: { connected: boolean; note: string | null; pages: NotionPageHit[] };
+  granola: { connected: boolean; note: string | null; meetings: GranolaMeeting[] };
+}
+
+interface NotionPageHit {
+  id: string;
+  title: string;
+  url: string;
+  lastEdited: string | null;
+  preview: string;
+}
+
+interface GranolaMeeting {
+  id: string;
+  title: string;
+  date: string | null;
+  participants: string[];
 }
 
 function formatDate(iso: string | null | undefined) {
@@ -633,12 +648,42 @@ function DealDrawer({
                 </div>
               </DrawerSection>
 
-              {/* Notion + Granola placeholders */}
-              <DrawerSection title="Notion notes">
-                <div className="text-[11px] text-gray-500">{data.notion.note}</div>
+              {/* Notion notes */}
+              <DrawerSection title={`Notion notes${data.notion.pages?.length ? ` (${data.notion.pages.length})` : ''}`}>
+                {data.notion.pages && data.notion.pages.length > 0 ? (
+                  data.notion.pages.map((p) => (
+                    <a
+                      key={p.id}
+                      href={p.url || '#'}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block rounded border border-white/5 bg-white/[0.02] px-2 py-1.5 hover:border-orange-500/30"
+                    >
+                      <div className="text-xs text-white truncate">{p.title}</div>
+                      {p.lastEdited && (
+                        <div className="text-[10px] text-gray-500">edited {relativeDays(p.lastEdited)}</div>
+                      )}
+                    </a>
+                  ))
+                ) : (
+                  <div className="text-[11px] text-gray-500">{data.notion.note}</div>
+                )}
               </DrawerSection>
-              <DrawerSection title="Granola meetings">
-                <div className="text-[11px] text-gray-500">{data.granola.note}</div>
+
+              {/* Granola meetings */}
+              <DrawerSection title={`Granola meetings${data.granola.meetings?.length ? ` (${data.granola.meetings.length})` : ''}`}>
+                {data.granola.meetings && data.granola.meetings.length > 0 ? (
+                  data.granola.meetings.map((m) => (
+                    <div key={m.id} className="rounded border border-white/5 bg-white/[0.02] px-2 py-1.5">
+                      <div className="text-xs text-white truncate">{m.title}</div>
+                      <div className="text-[10px] text-gray-500">
+                        {m.date || ''}{m.participants.length ? ` · ${m.participants.length} participants` : ''}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-[11px] text-gray-500">{data.granola.note}</div>
+                )}
               </DrawerSection>
             </>
           ) : null}

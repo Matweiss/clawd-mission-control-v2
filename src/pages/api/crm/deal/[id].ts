@@ -8,6 +8,14 @@ import {
 } from '../../../../lib/hubspot';
 import { agentNameOrFallback } from '../../../../lib/agents';
 import { getValidGoogleToken } from '../../auth/refresh-google';
+import {
+  isComposioConfigured,
+  searchNotionPages,
+  listRecentGranolaMeetings,
+  filterMeetingsForQuery,
+  type NotionPageHit,
+  type GranolaMeeting,
+} from '../../../../lib/composio';
 
 const PAPERCLIP_API_URL = process.env.PAPERCLIP_API_URL || 'https://paperclip.thematweiss.com';
 const PAPERCLIP_API_KEY = process.env.PAPERCLIP_API_KEY_STABLE || process.env.PAPERCLIP_API_KEY;
@@ -132,7 +140,7 @@ async function fetchGmailThreads(emails: string[]): Promise<GmailThread[]> {
     });
 }
 
-async function fetchLinkedPaperclipTasks(dealName: string, contactNames: string[]): Promise<LinkedTask[]> {
+async function fetchLinkedPaperclipTasks(dealName: string, names: string[]): Promise<LinkedTask[]> {
   if (!PAPERCLIP_API_KEY || !PAPERCLIP_COMPANY_ID) return [];
 
   // Pull active issues once; match by case-insensitive substring on title/description.
@@ -144,7 +152,11 @@ async function fetchLinkedPaperclipTasks(dealName: string, contactNames: string[
   const data = await res.json();
   const issues: any[] = Array.isArray(data) ? data : data.issues || data.data || [];
 
-  const needles = [dealName, ...contactNames]
+  // Match on the company/contact names AND a short stem of the deal name (its
+  // first 2 words), so a task titled "YouTopia Sports — …" links even though
+  // the full HubSpot deal name is much longer.
+  const dealStem = dealName.split(/\s+/).slice(0, 2).join(' ');
+  const needles = [dealStem, ...names]
     .map((s) => (s || '').toLowerCase().trim())
     .filter((s) => s.length >= 3); // skip super-short names that match everything
 
@@ -167,6 +179,38 @@ async function fetchLinkedPaperclipTasks(dealName: string, contactNames: string[
     }));
 }
 
+async function fetchNotionContext(searchTerms: string[]) {
+  if (!isComposioConfigured()) {
+    return { connected: false, pages: [] as NotionPageHit[], note: 'Notion not connected — set COMPOSIO_API_KEY and link Notion at platform.composio.dev.' };
+  }
+  // Search Notion for the deal name (best single signal). Falls back to empty.
+  const primary = searchTerms[0] || '';
+  if (!primary) return { connected: true, pages: [], note: 'No deal name to search Notion with.' };
+  try {
+    const pages = await searchNotionPages(primary, 5);
+    return { connected: true, pages, note: pages.length === 0 ? 'No matching Notion pages.' : null };
+  } catch (err: any) {
+    return { connected: true, pages: [], note: err?.message || 'Notion lookup failed.' };
+  }
+}
+
+async function fetchGranolaContext(searchTerms: string[]) {
+  if (!isComposioConfigured()) {
+    return { connected: false, meetings: [] as GranolaMeeting[], note: 'Granola not connected — set COMPOSIO_API_KEY and ensure Granola is linked to the project.' };
+  }
+  try {
+    const all = await listRecentGranolaMeetings('last_30_days');
+    const matched = filterMeetingsForQuery(all, searchTerms).slice(0, 6);
+    return {
+      connected: true,
+      meetings: matched,
+      note: matched.length === 0 ? 'No recent meetings mention this deal or company.' : null,
+    };
+  } catch (err: any) {
+    return { connected: true, meetings: [], note: err?.message || 'Granola lookup failed.' };
+  }
+}
+
 async function handleGet(req: NextApiRequest, res: NextApiResponse, dealId: string) {
   if (!isHubSpotConfigured()) {
     return res.status(500).json({ error: 'HubSpot env not configured' });
@@ -186,9 +230,14 @@ async function handleGet(req: NextApiRequest, res: NextApiResponse, dealId: stri
     const contactNames = contacts.map((c) => c.name);
     const emails = contacts.map((c) => c.email).filter(Boolean) as string[];
 
-    const [gmail, paperclipTasks] = await Promise.all([
+    const companyNames = companies.map((c) => c.name);
+    const searchTerms = [dealName, ...companyNames].filter(Boolean);
+
+    const [gmail, paperclipTasks, notion, granola] = await Promise.all([
       fetchGmailThreads(emails),
-      fetchLinkedPaperclipTasks(dealName, contactNames),
+      fetchLinkedPaperclipTasks(dealName, [...companyNames, ...contactNames]),
+      fetchNotionContext(searchTerms),
+      fetchGranolaContext(searchTerms),
     ]);
 
     return res.status(200).json({
@@ -209,9 +258,8 @@ async function handleGet(req: NextApiRequest, res: NextApiResponse, dealId: stri
       companies,
       gmail,
       paperclipTasks,
-      // Phase 2 placeholders — populated once Composio project has Notion/Granola connected accounts.
-      notion: { connected: false, note: 'Notion drawer section pending — link Notion at platform.composio.dev for this project.' },
-      granola: { connected: false, note: 'Granola drawer section pending — needs VPS-side sync (Granola is a local CLI MCP, not a public Composio toolkit).' },
+      notion,
+      granola,
     });
   } catch (err: any) {
     return res.status(500).json({ error: 'Failed to fetch deal context', detail: err?.message });
