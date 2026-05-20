@@ -49,7 +49,7 @@ function parseMcpSse(raw: string): any[] {
 export async function executeComposioTool<T = unknown>(
   toolSlug: string,
   args: Record<string, unknown>,
-  options: { timeoutMs?: number } = {}
+  options: { timeoutMs?: number; account?: string } = {}
 ): Promise<ComposioResult<T>> {
   const key = getComposioKey();
   if (!key) {
@@ -59,6 +59,11 @@ export async function executeComposioTool<T = unknown>(
   const timeoutMs = options.timeoutMs ?? 20_000;
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+  // Pin a specific connected account when given (e.g. the work Gmail), so the
+  // router doesn't fall back to its default account.
+  const toolCall: Record<string, unknown> = { tool_slug: toolSlug, arguments: args };
+  if (options.account) toolCall.account = options.account;
 
   try {
     const res = await fetch(getComposioMcpUrl(), {
@@ -74,7 +79,7 @@ export async function executeComposioTool<T = unknown>(
         method: 'tools/call',
         params: {
           name: 'COMPOSIO_MULTI_EXECUTE_TOOL',
-          arguments: { tools: [{ tool_slug: toolSlug, arguments: args }] },
+          arguments: { tools: [toolCall] },
         },
       }),
       signal: controller.signal,
@@ -212,4 +217,59 @@ export function filterMeetingsForQuery(meetings: GranolaMeeting[], needles: stri
     const haystack = `${m.title} ${m.participants.join(' ')}`.toLowerCase();
     return lowered.some((n) => haystack.includes(n));
   });
+}
+
+// ——— Gmail draft ———
+
+// The connected-account id for the account drafts should be created from.
+// Defaults to the work account (mat.weiss@lucrasports.com → gmail_toggle-yird);
+// override with COMPOSIO_GMAIL_ACCOUNT. The router otherwise defaults to a
+// personal account, which is the wrong sender.
+export function getComposioGmailAccount() {
+  return (process.env.COMPOSIO_GMAIL_ACCOUNT || 'gmail_toggle-yird').trim();
+}
+
+export interface GmailDraftInput {
+  to: string[];
+  cc?: string[];
+  subject: string;
+  body: string;
+}
+
+export interface GmailDraftResult {
+  ok: boolean;
+  draftId: string | null;
+  url: string | null;
+  error: string | null;
+}
+
+export async function createGmailDraft(input: GmailDraftInput): Promise<GmailDraftResult> {
+  if (!isComposioConfigured()) {
+    return { ok: false, draftId: null, url: null, error: 'COMPOSIO_MCP_KEY not set' };
+  }
+  const [primary, ...extra] = input.to;
+  if (!primary) {
+    return { ok: false, draftId: null, url: null, error: 'No recipient' };
+  }
+
+  const result = await executeComposioTool<any>(
+    'GMAIL_CREATE_EMAIL_DRAFT',
+    {
+      recipient_email: primary,
+      extra_recipients: extra,
+      cc: input.cc || [],
+      subject: input.subject,
+      body: input.body,
+      is_html: false,
+    },
+    { account: getComposioGmailAccount() }
+  );
+
+  if (!result.ok) {
+    return { ok: false, draftId: null, url: null, error: result.error };
+  }
+  const data: any = result.data || {};
+  const draftId = data.id || data.draft_id || data.message?.id || null;
+  const url = data.display_url || (draftId ? `https://mail.google.com/mail/u/0/#drafts/${draftId}` : null);
+  return { ok: true, draftId, url, error: null };
 }

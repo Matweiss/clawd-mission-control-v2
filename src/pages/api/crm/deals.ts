@@ -6,6 +6,9 @@ import {
   type HubSpotPipelineStage,
 } from '../../../lib/hubspot';
 
+// A deal is "stale" if it hasn't been touched in this many days.
+const STALE_DAYS = 21;
+
 interface DealCard {
   id: string;
   name: string;
@@ -18,6 +21,7 @@ interface DealCard {
   ownerId: string | null;
   lastModified: string | null;
   daysInStage: number | null;
+  isStale: boolean;
   url: string;
 }
 
@@ -100,6 +104,7 @@ export default async function handler(_req: NextApiRequest, res: NextApiResponse
       if (target.column.isClosed) continue; // skip closed-stage deals from the active kanban
 
       const amount = deal.properties.amount ? Number(deal.properties.amount) : null;
+      const days = daysBetween(deal.properties.hs_lastmodifieddate, now);
       const card: DealCard = {
         id: deal.id,
         name: deal.properties.dealname || `Deal ${deal.id}`,
@@ -111,7 +116,8 @@ export default async function handler(_req: NextApiRequest, res: NextApiResponse
         closeDate: deal.properties.closedate || null,
         ownerId: deal.properties.hubspot_owner_id || null,
         lastModified: deal.properties.hs_lastmodifieddate || null,
-        daysInStage: daysBetween(deal.properties.hs_lastmodifieddate, now),
+        daysInStage: days,
+        isStale: days != null && days >= STALE_DAYS,
         url: `https://app.hubspot.com/contacts/deals/${deal.id}`,
       };
       target.column.deals.push(card);

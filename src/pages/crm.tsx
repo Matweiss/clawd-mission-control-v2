@@ -25,6 +25,7 @@ interface DealCard {
   stageLabel: string;
   closeDate: string | null;
   daysInStage: number | null;
+  isStale: boolean;
   url: string;
 }
 
@@ -216,6 +217,13 @@ export default function CrmPage() {
     return pipelines.reduce((sum, g) => sum + g.stages.reduce((s, st) => s + st.totalValue, 0), 0);
   }, [pipelines]);
 
+  const staleCount = useMemo(() => {
+    return pipelines.reduce(
+      (sum, g) => sum + g.stages.reduce((s, st) => s + st.deals.filter((d) => d.isStale).length, 0),
+      0
+    );
+  }, [pipelines]);
+
   return (
     <div className="min-h-screen bg-[#0b0b0b] text-white flex flex-col">
       <Head>
@@ -233,6 +241,9 @@ export default function CrmPage() {
               <h1 className="text-lg font-bold tracking-tight">CRM</h1>
               <p className="text-xs text-gray-400">
                 Live HubSpot kanban — {totalActiveDeals} active deals · ${(totalActiveValue / 1000).toFixed(0)}k pipeline
+                {staleCount > 0 && (
+                  <span className="text-red-400"> · {staleCount} stale (&gt;21d)</span>
+                )}
               </p>
             </div>
           </div>
@@ -420,12 +431,19 @@ function DealKanbanCard({
       className="w-full text-left rounded-lg border border-white/10 bg-[#1a1a1a] p-2.5 hover:border-orange-500/40 transition-colors cursor-grab active:cursor-grabbing"
     >
       <div className="flex items-start justify-between gap-2">
-        <div className="text-sm text-white truncate">{deal.name}</div>
+        <div className="flex items-center gap-1.5 min-w-0">
+          {deal.isStale && (
+            <span title={`No activity in ${deal.daysInStage}d`} className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-red-500" />
+          )}
+          <span className="text-sm text-white truncate">{deal.name}</span>
+        </div>
         <div className="text-xs font-mono text-orange-300 flex-shrink-0">{deal.amountFormatted}</div>
       </div>
-      <div className="mt-1 flex items-center justify-between text-[10px] text-gray-500">
-        <span>{deal.closeDate ? `Close ${formatDate(deal.closeDate)}` : 'No close date'}</span>
-        <span>{deal.daysInStage != null ? `${deal.daysInStage}d` : ''}</span>
+      <div className="mt-1 flex items-center justify-between text-[10px]">
+        <span className="text-gray-500">{deal.closeDate ? `Close ${formatDate(deal.closeDate)}` : 'No close date'}</span>
+        <span className={deal.isStale ? 'text-red-400' : 'text-gray-500'}>
+          {deal.daysInStage != null ? `${deal.daysInStage}d${deal.isStale ? ' stale' : ''}` : ''}
+        </span>
       </div>
     </button>
   );
@@ -450,6 +468,55 @@ function DealDrawer({
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
   const [createSuccess, setCreateSuccess] = useState<string | null>(null);
+
+  // Log-note state
+  const [noteText, setNoteText] = useState('');
+  const [loggingNote, setLoggingNote] = useState(false);
+  const [noteMsg, setNoteMsg] = useState<string | null>(null);
+
+  const logNote = async () => {
+    const note = noteText.trim();
+    if (!note) return;
+    setLoggingNote(true);
+    setNoteMsg(null);
+    try {
+      const res = await fetch(`/api/crm/deal/${encodeURIComponent(dealId)}/note`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ note }),
+      });
+      const b = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(b.error || `Log failed (${res.status})`);
+      setNoteMsg('Logged to HubSpot ✓');
+      setNoteText('');
+    } catch (err: any) {
+      setNoteMsg(err?.message || 'Log failed');
+    } finally {
+      setLoggingNote(false);
+    }
+  };
+
+  // Draft follow-up email state
+  const [drafting, setDrafting] = useState(false);
+  const [draftMsg, setDraftMsg] = useState<string | null>(null);
+  const [draftUrl, setDraftUrl] = useState<string | null>(null);
+
+  const draftEmail = async () => {
+    setDrafting(true);
+    setDraftMsg(null);
+    setDraftUrl(null);
+    try {
+      const res = await fetch(`/api/crm/deal/${encodeURIComponent(dealId)}/draft-email`, { method: 'POST' });
+      const b = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(b.error || `Draft failed (${res.status})`);
+      setDraftMsg(b.to ? `Draft created → ${b.to}` : 'Draft created in Gmail');
+      setDraftUrl(b.url || null);
+    } catch (err: any) {
+      setDraftMsg(err?.message || 'Draft failed');
+    } finally {
+      setDrafting(false);
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -537,6 +604,45 @@ function DealDrawer({
                 >
                   Open in HubSpot <ExternalLink className="w-3 h-3" />
                 </a>
+
+                {/* Quick actions */}
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <button
+                    onClick={draftEmail}
+                    disabled={drafting}
+                    className="text-[11px] rounded border border-orange-500/30 bg-orange-500/10 px-2 py-1 text-orange-300 hover:bg-orange-500/20 disabled:opacity-50"
+                  >
+                    {drafting ? 'Drafting…' : '✉️ Draft follow-up'}
+                  </button>
+                  {draftUrl && (
+                    <a href={draftUrl} target="_blank" rel="noopener noreferrer" className="text-[11px] text-orange-300 hover:text-orange-200 underline">
+                      open draft ↗
+                    </a>
+                  )}
+                  {draftMsg && <span className="text-[11px] text-gray-400">{draftMsg}</span>}
+                </div>
+
+                {/* Log note */}
+                <div className="mt-2">
+                  <textarea
+                    value={noteText}
+                    onChange={(e) => setNoteText(e.target.value)}
+                    placeholder="Log a note / call to HubSpot…"
+                    rows={2}
+                    disabled={loggingNote}
+                    className="w-full rounded border border-white/10 bg-black/30 px-2 py-1.5 text-[12px] text-gray-100 placeholder:text-gray-600 focus:border-orange-500/40 outline-none"
+                  />
+                  <div className="mt-1 flex items-center gap-2">
+                    <button
+                      onClick={logNote}
+                      disabled={loggingNote || !noteText.trim()}
+                      className="text-[11px] rounded border border-white/15 bg-white/[0.04] px-2 py-1 text-gray-200 hover:bg-white/[0.08] disabled:opacity-40"
+                    >
+                      {loggingNote ? 'Logging…' : 'Log note'}
+                    </button>
+                    {noteMsg && <span className="text-[11px] text-gray-400">{noteMsg}</span>}
+                  </div>
+                </div>
               </section>
 
               {/* Contacts + companies */}
