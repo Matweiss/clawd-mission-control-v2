@@ -243,6 +243,48 @@ export interface GmailDraftResult {
   error: string | null;
 }
 
+export interface GmailThreadHit {
+  id: string;
+  subject: string;
+  from: string;
+  snippet: string;
+  date: string;
+  url: string;
+}
+
+// Read recent Gmail threads involving any of the given contact emails, from
+// the work account via the MCP router. Replaces the dead Google-OAuth read path.
+export async function searchGmailThreads(emails: string[], maxResults = 6): Promise<GmailThreadHit[]> {
+  if (!isComposioConfigured()) return [];
+  const targets = emails.filter(Boolean).slice(0, 4);
+  if (targets.length === 0) return [];
+  const query = targets.map((e) => `(from:${e} OR to:${e})`).join(' OR ');
+
+  const result = await executeComposioTool<any>(
+    'GMAIL_FETCH_EMAILS',
+    { query, max_results: maxResults, verbose: false },
+    { account: getComposioGmailAccount() }
+  );
+  if (!result.ok || !result.data) return [];
+
+  const data: any = result.data;
+  const messages: any[] = data.messages || data.emails || data.data?.messages || [];
+  if (!Array.isArray(messages)) return [];
+
+  return messages.slice(0, maxResults).map((m) => {
+    const id = m.messageId || m.id || m.threadId || '';
+    const ts = m.messageTimestamp || m.internalDate || '';
+    return {
+      id,
+      subject: m.subject || '(no subject)',
+      from: m.sender || m.from || 'Unknown',
+      snippet: m.preview || m.snippet || '',
+      date: ts ? String(ts) : '',
+      url: `https://mail.google.com/mail/u/0/#inbox/${m.threadId || id}`,
+    };
+  });
+}
+
 export async function createGmailDraft(input: GmailDraftInput): Promise<GmailDraftResult> {
   if (!isComposioConfigured()) {
     return { ok: false, draftId: null, url: null, error: 'COMPOSIO_MCP_KEY not set' };

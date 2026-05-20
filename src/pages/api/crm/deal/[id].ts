@@ -7,10 +7,10 @@ import {
   updateDealStage,
 } from '../../../../lib/hubspot';
 import { agentNameOrFallback } from '../../../../lib/agents';
-import { getValidGoogleToken } from '../../auth/refresh-google';
 import {
   isComposioConfigured,
   searchNotionPages,
+  searchGmailThreads,
   listRecentGranolaMeetings,
   filterMeetingsForQuery,
   type NotionPageHit,
@@ -94,50 +94,11 @@ async function fetchCompanies(ids: string[]): Promise<Company[]> {
     });
 }
 
+// Gmail read goes through the Composio MCP (work account) — the Google OAuth
+// refresh token is dead, so the old direct-API path returned nothing.
 async function fetchGmailThreads(emails: string[]): Promise<GmailThread[]> {
-  const token = await getValidGoogleToken();
-  if (!token || emails.length === 0) return [];
-
-  // Build a query that ORs all the contact emails; cap to first 4 to keep
-  // the query string reasonable.
-  const targets = emails.filter(Boolean).slice(0, 4);
-  if (targets.length === 0) return [];
-  const query = targets.map((e) => `(from:${e} OR to:${e})`).join(' OR ');
-
-  const listUrl = `https://gmail.googleapis.com/gmail/v1/users/me/messages?q=${encodeURIComponent(query)}&maxResults=8`;
-  const listRes = await fetch(listUrl, {
-    headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
-  });
-  if (!listRes.ok) return [];
-  const listData = await listRes.json();
-  const ids: string[] = (listData.messages || []).map((m: any) => m.id).slice(0, 6);
-  if (ids.length === 0) return [];
-
-  const detailResults = await Promise.allSettled(
-    ids.map((id) =>
-      fetch(`https://gmail.googleapis.com/gmail/v1/users/me/messages/${id}?format=metadata&metadataHeaders=Subject&metadataHeaders=From&metadataHeaders=Date`, {
-        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
-      }).then((r) => (r.ok ? r.json() : null))
-    )
-  );
-
-  return detailResults
-    .filter((r): r is PromiseFulfilledResult<any> => r.status === 'fulfilled' && !!r.value)
-    .map((r) => {
-      const msg = r.value;
-      const headers = msg.payload?.headers || [];
-      const subject = headers.find((h: any) => h.name === 'Subject')?.value || '(no subject)';
-      const from = headers.find((h: any) => h.name === 'From')?.value || 'Unknown';
-      const date = headers.find((h: any) => h.name === 'Date')?.value || '';
-      return {
-        id: msg.id,
-        subject,
-        from,
-        snippet: msg.snippet || '',
-        date,
-        url: `https://mail.google.com/mail/u/0/#inbox/${msg.threadId || msg.id}`,
-      };
-    });
+  if (emails.length === 0) return [];
+  return searchGmailThreads(emails, 6);
 }
 
 async function fetchLinkedPaperclipTasks(dealName: string, names: string[]): Promise<LinkedTask[]> {
